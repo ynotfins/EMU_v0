@@ -26,34 +26,36 @@ service cloud.firestore {
     match /incidents/{incidentId} {
       allow read: if authed();
 
-      // Only supes/admins can create/update core incident fields
-      allow create, delete: if (isSupe() || isAdmin());
+      // Only supes/admins can create/delete incidents
+      allow create, delete: if isSupe() || isAdmin();
 
-      // Everyone can update their own favorite/bookmark arrays only
-      allow update: if (isSupe() || isAdmin()) || (authed() && onlyToggleOwnFlags());
+      // Update: supes/admins can update anything, or regular users can update ONLY their flags
+      allow update: if isSupe() || isAdmin() || (authed() && onlyToggleOwnFlags());
 
       function onlyToggleOwnFlags() {
         let before = resource.data;
         let after  = request.resource.data;
+        let changed = after.diff(before).affectedKeys();
 
-        // Only these fields may change for non-supe/admin updates
-        let allowedKeys = ['favoritedBy','bookmarkedBy'];
-        let changedKeys = after.diff(before).affectedKeys();
-
-        // Ensure only allowed keys changed
-        if (!changedKeys.hasOnly(allowedKeys)) { return false; }
-
-        // Helper: user may only add/remove their UID in arrays
-        return arraysToggledBySelf(before.get('favoritedBy', []), after.get('favoritedBy', [])) &&
-               arraysToggledBySelf(before.get('bookmarkedBy', []), after.get('bookmarkedBy', []));
+        // Must only change favoritedBy or bookmarkedBy
+        return changed.hasOnly(['favoritedBy', 'bookmarkedBy']) &&
+               canToggleFavorite(before, after) &&
+               canToggleBookmark(before, after);
       }
 
-      function arraysToggledBySelf(beforeArr, afterArr) {
-        // The symmetric difference between arrays may contain at most the caller UID
-        // i.e., they can only add or remove their own UID.
-        let removed = beforeArr.toSet().difference(afterArr.toSet());
-        let added   = afterArr.toSet().difference(beforeArr.toSet());
-        // Both diffs must be subsets of [uid()]
+      function canToggleFavorite(before, after) {
+        let beforeSet = before.get('favoritedBy', []).toSet();
+        let afterSet = after.get('favoritedBy', []).toSet();
+        let removed = beforeSet.difference(afterSet);
+        let added = afterSet.difference(beforeSet);
+        return removed.hasOnly([uid()]) && added.hasOnly([uid()]);
+      }
+
+      function canToggleBookmark(before, after) {
+        let beforeSet = before.get('bookmarkedBy', []).toSet();
+        let afterSet = after.get('bookmarkedBy', []).toSet();
+        let removed = beforeSet.difference(afterSet);
+        let added = afterSet.difference(beforeSet);
         return removed.hasOnly([uid()]) && added.hasOnly([uid()]);
       }
 
@@ -75,4 +77,3 @@ service cloud.firestore {
     }
   }
 }
-
