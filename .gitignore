@@ -26,6 +26,10 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# Firebase Admin SDK keys (NEVER commit these!)
+firebase-admin-key.json
+*-firebase-adminsdk-*.json
+
 # Vercel
 .vercel
 
@@ -50,6 +54,13 @@ scripts/*.vsix
 *.swp
 *.swo
 *~
+
+# Cursor
+.cursor/*
+!.cursor/credentials.yaml
+!.cursor/profile.yaml
+!.cursor/environment.json
+!.cursor/rules/
 
 # Misc
 .turbo
