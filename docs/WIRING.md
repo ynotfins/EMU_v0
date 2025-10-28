@@ -359,8 +359,28 @@ service cloud.firestore {
     match /incidents/{incidentId} {
       allow read: if isAuthenticated();
       allow create: if isSupeOrAdmin();
-      allow update: if isAuthenticated();
       allow delete: if isAdmin();
+      
+      // Allow all authenticated users to update incidents, but restrict certain fields
+      allow update: if isAuthenticated() && (
+        // Anyone can update their own favorite/bookmark status
+        (onlyUpdatingUserArrays() && request.auth != null) ||
+        // Only supes and admins can update other fields
+        isSupeOrAdmin()
+      );
+      
+      // Helper: Check if only favoritedBy/bookmarkedBy arrays are being modified
+      function onlyUpdatingUserArrays() {
+        let affectedKeys = request.resource.data.diff(resource.data).affectedKeys();
+        return affectedKeys.hasOnly(['favoritedBy', 'bookmarkedBy']) &&
+               // User can only add/remove their own UID
+               ((!affectedKeys.hasAny(['favoritedBy']) || 
+                 request.auth.uid in request.resource.data.favoritedBy == 
+                 !(request.auth.uid in resource.data.get('favoritedBy', []))) &&
+                (!affectedKeys.hasAny(['bookmarkedBy']) || 
+                 request.auth.uid in request.resource.data.bookmarkedBy == 
+                 !(request.auth.uid in resource.data.get('bookmarkedBy', []))));
+      }
       
       // Files subcollection
       match /files/{fileId} {
@@ -420,6 +440,72 @@ service cloud.firestore {
   }
 }
 \`\`\`
+
+---
+
+---
+
+## Incidents Favorites & Bookmarks
+
+### Multi-User Arrays
+The `incidents` collection uses **array fields** for favorites and bookmarks to support multiple users:
+
+- **`favoritedBy`**: `string[]` - Array of user IDs who favorited this incident
+- **`bookmarkedBy`**: `string[]` - Array of user IDs who bookmarked this incident
+
+### Client-Side Implementation
+The `hooks/use-incidents.ts` hook provides these Firestore actions:
+
+```typescript
+// Add current user to favoritedBy array
+await toggleFavorite(incidentId)
+
+// Remove current user from favoritedBy array
+await unfavorite(incidentId)
+
+// Add current user to bookmarkedBy array
+await toggleBookmark(incidentId)
+
+// Remove current user from bookmarkedBy array
+await unbookmark(incidentId)
+```
+
+### Per-User Flag Derivation
+The `withUserFlags()` helper function derives `isFavorited` and `isBookmarked` flags based on the current user:
+
+```typescript
+function withUserFlags(incident: IncidentLite): IncidentLite {
+  const uid = auth.currentUser?.uid
+  return {
+    ...incident,
+    isFavorited: uid ? (incident.favoritedBy ?? []).includes(uid) : false,
+    isBookmarked: uid ? (incident.bookmarkedBy ?? []).includes(uid) : false,
+  }
+}
+```
+
+This is the **single source of truth** for computing user-specific flags. The UI reads these flags directly without recomputation.
+
+### Security Rules
+The Firestore security rules (see above) allow authenticated users to:
+- ✅ Add/remove **only their own UID** from `favoritedBy` or `bookmarkedBy` arrays
+- ❌ Cannot modify other users' favorite/bookmark status
+- ❌ Cannot update other incident fields (requires supe/admin role)
+
+### Example Firestore Document
+```json
+{
+  "id": "incident-123",
+  "incidentNumber": 1001,
+  "type": "Fire",
+  "address": "123 Main St",
+  "message": "Structure fire reported",
+  "favoritedBy": ["user-uid-1", "user-uid-2", "user-uid-3"],
+  "bookmarkedBy": ["user-uid-1", "user-uid-4"],
+  "updatedAt": "2025-10-28T23:30:00Z",
+  // ... other fields
+}
+```
 
 ---
 

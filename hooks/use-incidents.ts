@@ -25,14 +25,27 @@ function normalize(docId: string, data: any): IncidentLite {
     type: data.type || data.alertType || "Unknown",
     message: data.message || data.alertMessage || "",
     highAlert: data.highAlert || false,
-    isFavorited: false, // Computed client-side from favoritedBy array
-    isBookmarked: false, // Computed client-side from bookmarkedBy array
+    isFavorited: false, // Will be computed by withUserFlags()
+    isBookmarked: false, // Will be computed by withUserFlags()
     isSilenced: data.isSilenced || false,
     distanceMi: data.distanceMi,
     updates: data.updates || [],
     // Store raw arrays for favorite/bookmark logic
     favoritedBy: data.favoritedBy || [],
     bookmarkedBy: data.bookmarkedBy || [],
+  }
+}
+
+/**
+ * Derive per-user flags (isFavorited, isBookmarked) based on current user
+ * This is the single source of truth for computing user-specific flags
+ */
+function withUserFlags(incident: IncidentLite): IncidentLite {
+  const uid = auth.currentUser?.uid
+  return {
+    ...incident,
+    isFavorited: uid ? (incident.favoritedBy ?? []).includes(uid) : false,
+    isBookmarked: uid ? (incident.bookmarkedBy ?? []).includes(uid) : false,
   }
 }
 
@@ -59,20 +72,12 @@ export function useIncidents(filters?: Partial<IncidentFilters>) {
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const rawData = snapshot.docs.map((doc) => normalize(doc.id, doc.data()))
+        // Normalize Firestore data and apply per-user flags
+        const data = snapshot.docs
+          .map((doc) => withUserFlags(normalize(doc.id, doc.data())))
+          .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
         
-        // Sort by updatedAt descending (newest first)
-        rawData.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-        
-        // Compute isFavorited/isBookmarked based on current user
-        const userId = auth.currentUser?.uid
-        const normalized = rawData.map((inc) => ({
-          ...inc,
-          isFavorited: userId ? inc.favoritedBy?.includes(userId) : false,
-          isBookmarked: userId ? inc.bookmarkedBy?.includes(userId) : false,
-        }))
-        
-        setIncidents(normalized)
+        setIncidents(data)
         setIsLoading(false)
         setError(null)
       },
