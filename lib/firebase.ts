@@ -36,7 +36,10 @@ if (typeof window !== "undefined") {
   auth.onAuthStateChanged((user) => {
     if (!user) {
       signInAnonymously(auth).catch((e) => {
-        console.warn("[Firebase] Anonymous sign-in failed - enable in Firebase Console:", e.message);
+        console.warn(
+          "[Firebase] Anonymous sign-in failed - enable in Firebase Console:",
+          e.message
+        );
       });
     }
   });

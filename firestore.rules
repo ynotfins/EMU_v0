@@ -21,11 +21,11 @@ service cloud.firestore {
       allow write: if authed() && userId == uid();
     }
 
-    // --- Incidents (TEMPORARY: public reads for development) ---
+    // --- Incidents (TEMPORARY: public reads/writes for development) ---
     match /incidents/{incidentId} {
       allow read: if true; // TEMP: Allow unauthenticated reads
       allow create, delete: if isSupe() || isAdmin();
-      allow update: if isSupe() || isAdmin() || (authed() && onlyToggleOwnFlags());
+      allow update: if true; // TEMP: Allow all updates for development
 
       function onlyToggleOwnFlags() {
         let changed = request.resource.data.diff(resource.data).affectedKeys();
