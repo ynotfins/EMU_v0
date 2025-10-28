@@ -7,7 +7,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { IncidentListItem } from "@/components/incident-list-item"
 import { useIncidents } from "@/hooks/use-incidents"
 import { useFavoritesContext } from "@/lib/context/favorites-context"
-import { Star, Bookmark, FileText } from "lucide-react"
+import { Star, Bookmark, FileText, type LucideIcon } from "lucide-react"
+
+// Empty state component (moved outside to fix ESLint rule)
+function EmptyState({ icon: Icon, message }: { icon: LucideIcon; message: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      <Icon className="h-16 w-16 text-[#E5E7EB] mb-4" />
+      <p className="text-[#6B7280]">{message}</p>
+    </div>
+  )
+}
 
 export default function SupeFavoritesPage() {
   const router = useRouter()
@@ -22,13 +32,6 @@ export default function SupeFavoritesPage() {
   const handleOpenIncident = (id: string) => {
     router.push(`/supe/incident/${id}`)
   }
-
-  const EmptyState = ({ icon: Icon, message }: { icon: typeof Star; message: string }) => (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <Icon className="h-16 w-16 text-[#E5E7EB] mb-4" />
-      <p className="text-[#6B7280]">{message}</p>
-    </div>
-  )
 
   return (
     <RoleLayout role="supe">

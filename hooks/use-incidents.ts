@@ -1,6 +1,8 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react"
+import { collection, onSnapshot, query, orderBy, limit } from "firebase/firestore"
+import { db } from "@/lib/firebase"
 import type { IncidentLite } from "@/types/domain"
 import { useFavoritesContext } from "@/lib/context/favorites-context"
 
@@ -14,21 +16,41 @@ export interface IncidentFilters {
 }
 
 export function useIncidents(filters?: Partial<IncidentFilters>) {
-  const [isLoading] = useState(false)
-  const [error] = useState<Error | null>(null)
-  const { favorites, bookmarks, silenced } = useFavoritesContext()
+  const [incidents, setIncidents] = useState<IncidentLite[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
+  const { silenced } = useFavoritesContext()
 
-  // TODO: Replace with Firestore query to 'incidents' collection
-  // const incidentsRef = collection(db, 'incidents')
-  // const q = query(incidentsRef, orderBy('createdAt', 'desc'))
-  // Use onSnapshot for real-time updates
+  // Real-time Firestore listener
+  useEffect(() => {
+    const incidentsRef = collection(db, "incidents")
+    const q = query(incidentsRef, orderBy("updatedAt", "desc"), limit(100))
+    
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as IncidentLite[]
+        
+        setIncidents(data)
+        setIsLoading(false)
+        setError(null)
+      },
+      (err) => {
+        console.error("[useIncidents] Firestore error:", err)
+        setError(err as Error)
+        setIsLoading(false)
+      }
+    )
+
+    return () => unsubscribe()
+  }, [])
+
+  // Client-side filtering
   const data = useMemo<IncidentLite[]>(() => {
-    let filtered: IncidentLite[] = []
-
-    // TODO: Apply Firestore filters here instead of client-side filtering
-    // - where('status', '==', 'active')
-    // - where('distanceMi', '<=', filters.distanceMi)
-    // - where('type', 'in', filters.types)
+    let filtered = incidents
 
     if (!filters) return filtered
 
@@ -63,7 +85,7 @@ export function useIncidents(filters?: Partial<IncidentFilters>) {
     }
 
     return filtered
-  }, [favorites, bookmarks, silenced, filters])
+  }, [incidents, silenced, filters])
 
   return { data, isLoading, error }
 }

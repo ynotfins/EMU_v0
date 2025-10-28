@@ -1,24 +1,20 @@
 // Firebase Cloud Messaging Service Worker
-// This file will be configured during Cursor wiring phase
-// It handles background push notifications when the app is not in focus
+// This file handles background push notifications
 
-// TODO: Import Firebase scripts
-// importScripts('https://www.gstatic.com/firebasejs/10.x.x/firebase-app-compat.js')
-// importScripts('https://www.gstatic.com/firebasejs/10.x.x/firebase-messaging-compat.js')
+// Placeholder for FCM service worker
+// Will be wired with Firebase messaging later
 
-// TODO: Initialize Firebase with config
-// firebase.initializeApp({ ... })
+self.addEventListener("push", (event) => {
+  console.log("[FCM SW] Push notification received", event)
+  
+  // TODO: Wire FCM notification handling
+  // Parse event.data and show notification
+})
 
-// TODO: Handle background messages
-// const messaging = firebase.messaging()
-// messaging.onBackgroundMessage((payload) => {
-//   console.log('[SW] Background message received:', payload)
-//   const notificationTitle = payload.notification.title
-//   const notificationOptions = {
-//     body: payload.notification.body,
-//     icon: '/app-icon.png'
-//   }
-//   self.registration.showNotification(notificationTitle, notificationOptions)
-// })
-
-console.log("[SW] Service worker placeholder loaded. Configure during Cursor wiring.")
+self.addEventListener("notificationclick", (event) => {
+  console.log("[FCM SW] Notification clicked", event)
+  
+  // TODO: Handle notification click
+  // Open app or specific route
+  event.notification.close()
+})
