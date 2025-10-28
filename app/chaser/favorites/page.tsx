@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { RoleLayout } from "@/components/role-layout"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { IncidentListItem } from "@/components/incident-list-item"
-import { useIncidents } from "@/hooks/use-incidents"
+import { useIncidents, toggleFavorite, unfavorite, toggleBookmark, unbookmark } from "@/hooks/use-incidents"
 import { useFavoritesContext } from "@/lib/context/favorites-context"
 import { Star, Bookmark, FileText, type LucideIcon } from "lucide-react"
 
@@ -22,12 +22,32 @@ function EmptyState({ icon: Icon, message }: { icon: LucideIcon; message: string
 export default function ChaserFavoritesPage() {
   const router = useRouter()
   const { data: allIncidents } = useIncidents()
-  const { toggleFavorite, toggleBookmark, toggleSilence } = useFavoritesContext()
+  const { toggleSilence } = useFavoritesContext()
   const [activeTab, setActiveTab] = useState("favorites")
 
-  const favoritedIncidents = allIncidents.filter((inc) => inc.isFavorited)
-  const bookmarkedIncidents = allIncidents.filter((inc) => inc.isBookmarked)
-  const notedIncidents = allIncidents.filter((inc) => inc.id === "inc-001" || inc.id === "inc-003")
+  const safeIncidents = Array.isArray(allIncidents) ? allIncidents : []
+  const favoritedIncidents = safeIncidents.filter((inc) => inc.isFavorited)
+  const bookmarkedIncidents = safeIncidents.filter((inc) => inc.isBookmarked)
+  const notedIncidents = safeIncidents.filter((inc) => inc.id === "inc-001" || inc.id === "inc-003")
+
+  // Handle favorite/bookmark with Firestore toggle logic
+  const handleToggleFavorite = async (id: string) => {
+    const incident = safeIncidents.find((inc) => inc.id === id)
+    if (incident?.isFavorited) {
+      await unfavorite(id)
+    } else {
+      await toggleFavorite(id)
+    }
+  }
+
+  const handleToggleBookmark = async (id: string) => {
+    const incident = safeIncidents.find((inc) => inc.id === id)
+    if (incident?.isBookmarked) {
+      await unbookmark(id)
+    } else {
+      await toggleBookmark(id)
+    }
+  }
 
   const handleOpenIncident = (id: string) => {
     router.push(`/chaser/incident/${id}`)
@@ -67,8 +87,8 @@ export default function ChaserFavoritesPage() {
                   key={incident.id}
                   incident={incident}
                   onOpen={handleOpenIncident}
-                  onToggleFavorite={toggleFavorite}
-                  onToggleBookmark={toggleBookmark}
+                onToggleFavorite={handleToggleFavorite}
+                onToggleBookmark={handleToggleBookmark}
                   onToggleSilence={toggleSilence}
                 />
               ))
@@ -84,8 +104,8 @@ export default function ChaserFavoritesPage() {
                   key={incident.id}
                   incident={incident}
                   onOpen={handleOpenIncident}
-                  onToggleFavorite={toggleFavorite}
-                  onToggleBookmark={toggleBookmark}
+                onToggleFavorite={handleToggleFavorite}
+                onToggleBookmark={handleToggleBookmark}
                   onToggleSilence={toggleSilence}
                 />
               ))
@@ -101,8 +121,8 @@ export default function ChaserFavoritesPage() {
                   key={incident.id}
                   incident={incident}
                   onOpen={handleOpenIncident}
-                  onToggleFavorite={toggleFavorite}
-                  onToggleBookmark={toggleBookmark}
+                onToggleFavorite={handleToggleFavorite}
+                onToggleBookmark={handleToggleBookmark}
                   onToggleSilence={toggleSilence}
                 />
               ))

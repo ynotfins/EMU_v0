@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation"
 import { RoleLayout } from "@/components/role-layout"
 import { FilterBar } from "@/components/filter-bar"
 import { IncidentListItem } from "@/components/incident-list-item"
-import { useIncidents } from "@/hooks/use-incidents"
+import { useIncidents, toggleFavorite, unfavorite, toggleBookmark, unbookmark } from "@/hooks/use-incidents"
 import { useFilters } from "@/hooks/use-filters"
 import { useProfile } from "@/hooks/use-profile"
 import { useFavoritesContext } from "@/lib/context/favorites-context"
@@ -16,7 +16,26 @@ export default function SupeIncidentsPage() {
   const { filters, setDistance, setTypes, setKeyword, setHighAlertOnly, setMinUpdates } = useFilters()
   const { data: incidents } = useIncidents(filters)
   const { data: profile, updateSettings } = useProfile()
-  const { toggleFavorite, toggleBookmark, toggleSilence } = useFavoritesContext()
+  const { toggleSilence } = useFavoritesContext()
+
+  // Handle favorite/bookmark with Firestore toggle logic
+  const handleToggleFavorite = async (id: string) => {
+    const incident = incidents?.find((inc) => inc.id === id)
+    if (incident?.isFavorited) {
+      await unfavorite(id)
+    } else {
+      await toggleFavorite(id)
+    }
+  }
+
+  const handleToggleBookmark = async (id: string) => {
+    const incident = incidents?.find((inc) => inc.id === id)
+    if (incident?.isBookmarked) {
+      await unbookmark(id)
+    } else {
+      await toggleBookmark(id)
+    }
+  }
 
   const handleOpenIncident = (id: string) => {
     router.push(`/supe/incident/${id}`)
@@ -31,6 +50,9 @@ export default function SupeIncidentsPage() {
       </RoleLayout>
     )
   }
+
+  // Null guards
+  const safeIncidents = Array.isArray(incidents) ? incidents : []
 
   return (
     <RoleLayout role="supe">
@@ -64,18 +86,18 @@ export default function SupeIncidentsPage() {
 
         {/* Incidents List */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {incidents.length === 0 ? (
+          {safeIncidents.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-[#6B7280]">No incidents found</p>
             </div>
           ) : (
-            incidents.map((incident) => (
+            safeIncidents.map((incident) => (
               <IncidentListItem
                 key={incident.id}
                 incident={incident}
                 onOpen={handleOpenIncident}
-                onToggleFavorite={toggleFavorite}
-                onToggleBookmark={toggleBookmark}
+                onToggleFavorite={handleToggleFavorite}
+                onToggleBookmark={handleToggleBookmark}
                 onToggleSilence={toggleSilence}
               />
             ))

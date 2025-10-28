@@ -21,6 +21,9 @@ export interface IncidentLite {
   isSilenced?: boolean // Added to track silenced incidents
   updates?: IncidentUpdate[]
   highAlert?: boolean
+  // Firestore arrays for multi-user favorites/bookmarks
+  favoritedBy?: string[]
+  bookmarkedBy?: string[]
 }
 
 export interface Note {
