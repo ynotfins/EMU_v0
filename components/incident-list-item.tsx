@@ -39,7 +39,13 @@ export function IncidentListItem({
   }
 
   return (
-    <Card className="relative p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => onOpen(incident.id)}>
+    <Card 
+      className={cn(
+        "relative p-4 cursor-pointer hover:shadow-md transition-shadow",
+        silenced && "opacity-50 bg-gray-50"
+      )} 
+      onClick={() => onOpen(incident.id)}
+    >
       {barHeightPercent > 0 && (
         <div
           className="absolute left-0 top-0 w-1 bg-[#007AFF] rounded-l-lg transition-all"
@@ -95,10 +101,14 @@ export function IncidentListItem({
           </button>
           <button
             onClick={handleToggleSilence}
-            className="p-1 hover:bg-[#F2F2F7] rounded transition-colors"
+            className={cn(
+              "p-1 rounded transition-colors",
+              silenced ? "bg-[#6B7280] hover:bg-[#9CA3AF]" : "hover:bg-[#F2F2F7]"
+            )}
             aria-label={silenced ? "Unsilence" : "Silence"}
+            title={silenced ? "Click to unsilence" : "Click to silence"}
           >
-            <BellOff className={cn("h-5 w-5", silenced ? "fill-[#6B7280] text-[#6B7280]" : "text-[#6B7280]")} />
+            <BellOff className={cn("h-5 w-5", silenced ? "text-white" : "text-[#6B7280]")} />
           </button>
         </div>
       </div>

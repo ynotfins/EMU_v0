@@ -161,9 +161,11 @@ export function useIncidents(filters?: Partial<IncidentFilters>) {
 
     if (!filters) return filtered;
 
-    if (!filters.showSilenced) {
-      filtered = filtered.filter((inc) => !silenced.has(inc.id));
-    }
+    // NOTE: Do NOT filter out silenced incidents - they should remain visible
+    // The UI will show them with visual indicators
+    // if (!filters.showSilenced) {
+    //   filtered = filtered.filter((inc) => !silenced.has(inc.id));
+    // }
 
     if (filters.distanceMi !== undefined) {
       filtered = filtered.filter(
