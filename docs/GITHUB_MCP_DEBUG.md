@@ -9,18 +9,22 @@ This is a common issue with GitHub MCP in Cursor.
 ## 🔍 Root Causes
 
 ### 1. Missing or Invalid GitHub Token
+
 **Symptom**: Yellow status, never turns green
 **Fix**: Generate new Personal Access Token
 
 ### 2. Incorrect MCP Configuration Path
+
 **Symptom**: MCP settings not being read
 **Fix**: Verify settings file location
 
 ### 3. Token Permissions Too Limited
+
 **Symptom**: MCP connects but hangs on authentication
 **Fix**: Grant correct scopes
 
 ### 4. Network/Proxy Issues
+
 **Symptom**: Connection timeout
 **Fix**: Check firewall/proxy settings
 
@@ -37,6 +41,7 @@ This is a common issue with GitHub MCP in Cursor.
 3. **Expiration**: 90 days (or custom)
 
 4. **Select Scopes**:
+
    - ✅ `repo` (Full control of private repositories)
    - ✅ `read:org` (Read org and team membership)
    - ✅ `read:user` (Read user profile data)
@@ -49,11 +54,13 @@ This is a common issue with GitHub MCP in Cursor.
 ### Step 2: Find Your Cursor MCP Settings File
 
 **Windows Path**:
+
 ```
 %APPDATA%\Cursor\User\globalStorage\saoudrizwan.claude-dev\settings\cline_mcp_settings.json
 ```
 
 **Quick open in PowerShell**:
+
 ```powershell
 code "$env:APPDATA\Cursor\User\globalStorage\saoudrizwan.claude-dev\settings\cline_mcp_settings.json"
 ```
@@ -80,7 +87,8 @@ code "$env:APPDATA\Cursor\User\globalStorage\saoudrizwan.claude-dev\settings\cli
 }
 ```
 
-**Important**: 
+**Important**:
+
 - Token starts with `ghp_`
 - Use double quotes (JSON format)
 - No trailing commas
@@ -119,6 +127,7 @@ npx -y @modelcontextprotocol/server-github --help
 ### Step 6: Check MCP Status
 
 Look for GitHub MCP in:
+
 - Bottom status bar (should show green checkmark)
 - Settings → Extensions → MCP (should list "github")
 - Dev Console: `Ctrl+Shift+I` → Console tab (check for errors)
@@ -130,16 +139,19 @@ Look for GitHub MCP in:
 Once green, try these commands in chat:
 
 ### Test 1: List Repository
+
 ```
 "List files in this GitHub repository"
 ```
 
 ### Test 2: Create Issue
+
 ```
 "Create a GitHub issue titled 'Test MCP Connection' with body 'Testing GitHub MCP setup'"
 ```
 
 ### Test 3: Search Code
+
 ```
 "Search this repository for 'Firebase' and show me where it's used"
 ```
@@ -149,6 +161,7 @@ Once green, try these commands in chat:
 ## 🚨 Advanced Troubleshooting
 
 ### Check Cursor Dev Console
+
 ```
 1. Ctrl+Shift+I (open DevTools)
 2. Console tab
@@ -157,6 +170,7 @@ Once green, try these commands in chat:
 ```
 
 ### Check Network Requests
+
 ```
 1. Ctrl+Shift+I (open DevTools)
 2. Network tab
@@ -167,6 +181,7 @@ Once green, try these commands in chat:
 ```
 
 ### Test GitHub Token Directly
+
 ```powershell
 $token = "ghp_YOUR_TOKEN_HERE"
 $headers = @{ Authorization = "Bearer $token" }
@@ -203,13 +218,13 @@ gh pr list
 
 ## 📊 Common Error Messages
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| "Command not found: npx" | Node.js not in PATH | Restart terminal, check `node --version` |
-| "401 Unauthorized" | Invalid GitHub token | Regenerate token with correct scopes |
-| "ENOTFOUND registry.npmjs.org" | Network issue | Check proxy/firewall settings |
-| "Timeout waiting for MCP server" | Server crashed on startup | Check Cursor console for stack trace |
-| "Cannot find module" | Package download failed | Try: `npm install -g @modelcontextprotocol/server-github` |
+| Error                            | Cause                     | Fix                                                       |
+| -------------------------------- | ------------------------- | --------------------------------------------------------- |
+| "Command not found: npx"         | Node.js not in PATH       | Restart terminal, check `node --version`                  |
+| "401 Unauthorized"               | Invalid GitHub token      | Regenerate token with correct scopes                      |
+| "ENOTFOUND registry.npmjs.org"   | Network issue             | Check proxy/firewall settings                             |
+| "Timeout waiting for MCP server" | Server crashed on startup | Check Cursor console for stack trace                      |
+| "Cannot find module"             | Package download failed   | Try: `npm install -g @modelcontextprotocol/server-github` |
 
 ---
 
@@ -245,9 +260,9 @@ Once working, you can:
 If GitHub MCP is still stuck after following this guide:
 
 **Skip it for now** and use:
+
 - Git CLI (`git commit`, `git push`)
 - GitHub CLI (`gh issue create`)
 - Web browser (github.com)
 
 Focus on building features instead of debugging MCP setup!
-

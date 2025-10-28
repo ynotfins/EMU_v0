@@ -2,49 +2,37 @@
 
 This directory contains Cursor-specific configuration and documentation.
 
+## ⚠️ Credentials Location
+
+**This project uses GLOBAL credential management.**
+
+All credentials, API keys, and project information are stored in:
+- **`C:\Users\ynotf\.mcp\global-credentials.yaml`**
+- **`C:\Users\ynotf\.mcp\global-profile.yaml`**
+
+**DO NOT create** `.cursor/credentials.yaml` or `.cursor/profile.yaml` in this project.
+
+See: **`C:\Users\ynotf\.cursor\rules\global-mcp-system.md`** for details.
+
 ## Files
 
-### `credentials.yaml` ✅ Safe to commit
-Centralized credential reference and configuration guide.
+### No Project-Specific Credential Files ❌
 
-**Contains**:
-- Firebase project info
-- API key references (uses `${VAR}` syntax, not actual values)
-- Service URLs
-- Key file locations
-- Security reminders
+This project does NOT have:
+- ~~`credentials.yaml`~~ (use global instead)
+- ~~`profile.yaml`~~ (use global instead)
 
-**Purpose**: Template for managing credentials across team/sessions
-
-**Security**: Uses environment variable syntax, no actual secrets
-
----
-
-### `profile.yaml` ✅ Safe to commit
-Complete project profile and metadata.
-
-**Contains**:
-- Project identity and description
-- Technology stack
-- Architecture patterns
-- User roles and permissions
-- Data model
-- File structure
-- Development setup
-- Deployment info
-- Known issues
-- Roadmap
-
-**Purpose**: Comprehensive project reference for AI and team members
-
-**Security**: No sensitive data, purely documentation
+All project credentials are in: `C:\Users\ynotf\.mcp\global-credentials.yaml`
+All project metadata is in: `C:\Users\ynotf\.mcp\global-profile.yaml`
 
 ---
 
 ### `environment.json` ✅ Safe to commit
+
 Cursor IDE behavior settings.
 
 **Contains**:
+
 - `agentCanUpdateSnapshot`: Allow agent to update project snapshots
 
 **Purpose**: Control Cursor AI capabilities
@@ -52,9 +40,11 @@ Cursor IDE behavior settings.
 ---
 
 ### `rules/` ✅ Safe to commit
+
 Cursor rules for AI assistant behavior.
 
 **Contains**:
+
 - `.cursor/autonomous-rule-creation` - Auto-create rules from feedback
 - `.cursor/coding-standards` - Python coding standards
 - `.cursor/memory-bank-instructions` - AI memory management
@@ -93,6 +83,7 @@ Cursor rules for AI assistant behavior.
 ## Security Notes
 
 ### ✅ Safe to Commit
+
 - `credentials.yaml` (template with `${VAR}` references)
 - `profile.yaml` (project metadata only)
 - `environment.json` (IDE settings)
@@ -100,6 +91,7 @@ Cursor rules for AI assistant behavior.
 - This `README.md`
 
 ### ❌ NEVER Commit
+
 - `.env.local` (actual API keys)
 - `firebase-admin-key.json` (admin access)
 - `*.pem`, `*.key` (private keys)
@@ -110,12 +102,14 @@ Cursor rules for AI assistant behavior.
 ## Updating These Files
 
 ### When to Update `credentials.yaml`
+
 - Added new API service
 - Changed key locations
 - Updated security rules
 - New environment variables
 
 ### When to Update `profile.yaml`
+
 - Major feature added/changed
 - Technology stack changes
 - New user roles
@@ -123,10 +117,12 @@ Cursor rules for AI assistant behavior.
 - Updated roadmap
 
 ### When to Update `environment.json`
+
 - Change Cursor AI permissions
 - Enable/disable AI features
 
 ### When to Update `rules/`
+
 - New coding standards
 - Changed file organization
 - AI behavior adjustments
@@ -137,11 +133,11 @@ Cursor rules for AI assistant behavior.
 
 These files complement but don't replace the Memory Bank (`docs/memory-bank/`):
 
-| File | Purpose | Audience | Update Frequency |
-|------|---------|----------|------------------|
-| `.cursor/credentials.yaml` | Credential reference | Team | When adding services |
-| `.cursor/profile.yaml` | Project metadata | Team + AI | When major changes occur |
-| `docs/memory-bank/` | AI context & decisions | AI primary | After each session |
+| File                       | Purpose                | Audience   | Update Frequency         |
+| -------------------------- | ---------------------- | ---------- | ------------------------ |
+| `.cursor/credentials.yaml` | Credential reference   | Team       | When adding services     |
+| `.cursor/profile.yaml`     | Project metadata       | Team + AI  | When major changes occur |
+| `docs/memory-bank/`        | AI context & decisions | AI primary | After each session       |
 
 **Memory Bank** = What the AI knows about the project
 **Cursor config** = How the team & AI work with the project
@@ -155,6 +151,7 @@ MCP (Model Context Protocol) servers are configured separately in:
 **Windows**: `%APPDATA%\Cursor\User\globalStorage\saoudrizwan.claude-dev\settings\cline_mcp_settings.json`
 
 **Example**:
+
 ```json
 {
   "mcpServers": {
@@ -184,15 +181,19 @@ See `docs/FIREBASE_MCP_SETUP.md` and `docs/GITHUB_MCP_DEBUG.md` for details.
 ## Troubleshooting
 
 ### "Cursor can't find credentials"
+
 → Check that `firebase-admin-key.json` and `.env.local` exist in project root
 
 ### "MCP server won't connect"
+
 → Check global MCP settings file (see path above)
 
 ### "AI isn't following rules"
+
 → Verify rules are in `.cursor/rules/` and Cursor has reloaded
 
 ### "Credentials exposed in Git"
+
 → Check `.gitignore`, ensure `.env.local` and `firebase-admin-key.json` are listed
 
 ---
@@ -207,4 +208,3 @@ See `docs/FIREBASE_MCP_SETUP.md` and `docs/GITHUB_MCP_DEBUG.md` for details.
 ---
 
 **Last Updated**: 2025-10-28
-

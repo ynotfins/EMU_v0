@@ -3,11 +3,13 @@
 ## 🤔 Background Agent Status
 
 **Background Agent** is currently in beta and requires:
+
 1. ✅ GitHub repository connected (you have this)
 2. ✅ Cursor Pro/Business subscription (check your plan)
 3. ✅ Explicit enablement in settings
 
 **Why it might not be available:**
+
 - May require Cursor Pro/Business tier
 - May be in limited beta (not all accounts have access)
 - Check: Settings → Features → Background Agent
@@ -23,6 +25,7 @@
 **Status**: ✅ Already installed in Cursor
 
 **What it does**:
+
 - Control Chrome/Edge browser from Cursor
 - Take screenshots of your app
 - Test UI interactions automatically
@@ -30,6 +33,7 @@
 - Performance profiling
 
 **Use cases for EMU_v0**:
+
 - ✅ Test incident list rendering
 - ✅ Test favorites/bookmarks toggling
 - ✅ Screenshot different roles (chaser vs supe)
@@ -37,6 +41,7 @@
 - ✅ Verify Firebase real-time updates
 
 **How to use**:
+
 ```
 In chat: "Open Chrome and navigate to localhost:3000"
 In chat: "Take a screenshot of the incidents page"
@@ -50,6 +55,7 @@ In chat: "Click the favorite button on the first incident"
 **Status**: ❌ Not yet configured
 
 **What it does**:
+
 - Read/write Firestore from Cursor
 - Query Firebase data directly
 - Test security rules
@@ -57,6 +63,7 @@ In chat: "Click the favorite button on the first incident"
 - Check auth state
 
 **Use cases for EMU_v0**:
+
 - ✅ Seed incident test data
 - ✅ Check user favorites/bookmarks
 - ✅ Test Firestore queries
@@ -64,6 +71,7 @@ In chat: "Click the favorite button on the first incident"
 - ✅ Monitor real-time listeners
 
 **Setup**:
+
 ```json
 // Add to Cursor MCP settings
 {
@@ -89,6 +97,7 @@ In chat: "Click the favorite button on the first incident"
 **Status**: ❌ Not yet configured
 
 **What it does**:
+
 - Create issues from chat
 - Review PRs
 - Search repository
@@ -96,12 +105,14 @@ In chat: "Click the favorite button on the first incident"
 - Commit/push automation
 
 **Use cases for EMU_v0**:
+
 - ✅ Create feature issues
 - ✅ Track bugs
 - ✅ Generate changelogs
 - ✅ Auto-commit progress
 
 **Setup**:
+
 ```json
 {
   "mcpServers": {
@@ -135,18 +146,21 @@ In chat: "Click the favorite button on the first incident"
 **Status**: ❌ Not yet configured
 
 **What it does**:
+
 - Advanced browser automation
 - E2E testing
 - Screenshot comparison
 - Performance testing
 
 **Use cases for EMU_v0**:
+
 - ✅ E2E test flows (login → view incident → favorite)
 - ✅ Test across different screen sizes
 - ✅ Automated regression testing
 - ✅ Generate UI documentation
 
 **Setup**:
+
 ```json
 {
   "mcpServers": {
@@ -173,12 +187,15 @@ In chat: "Click the favorite button on the first incident"
 ## 🎯 Recommended Setup Priority
 
 ### Must Have (Do Now)
+
 1. ✅ **Chrome DevTools MCP** - Already available, test it!
 
 ### Should Have (Do Next)
+
 2. 🔥 **Firebase MCP** - Direct Firestore access would be game-changing
 
 ### Nice to Have (Do Later)
+
 3. 🟡 **GitHub MCP** - Useful but not critical
 4. 🟡 **Puppeteer MCP** - Only if Chrome DevTools isn't enough
 
@@ -199,6 +216,7 @@ Want me to test it? Just say "test Chrome MCP"
 ## 📝 How to Configure MCP Servers in Cursor
 
 ### Windows Path:
+
 `%APPDATA%\Cursor\User\globalStorage\mcp-settings.json`
 
 or
@@ -206,6 +224,7 @@ or
 Settings → Extensions → Model Context Protocol → Edit Settings
 
 ### Format:
+
 ```json
 {
   "mcpServers": {
@@ -229,7 +248,7 @@ Settings → Extensions → Model Context Protocol → Edit Settings
 3. 🚀 **Start building features** (MCP helps but isn't blocking)
 
 **Want me to:**
+
 - A) Test Chrome DevTools MCP with your app?
 - B) Help set up Firebase MCP?
 - C) Skip MCP for now and continue Firebase development?
-

@@ -57,8 +57,6 @@ scripts/*.vsix
 
 # Cursor
 .cursor/*
-!.cursor/credentials.yaml
-!.cursor/profile.yaml
 !.cursor/environment.json
 !.cursor/README.md
 !.cursor/rules/
