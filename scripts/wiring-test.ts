@@ -5,6 +5,12 @@ import { resolve } from "path"
 config({ path: resolve(process.cwd(), ".env.local") })
 config({ path: resolve(process.cwd(), ".env") })
 
+// Debug: Check if env vars are loaded
+console.log("🔍 Environment check:")
+console.log("  API Key loaded:", process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? "✅ Yes" : "❌ No")
+console.log("  Project ID:", process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "❌ Missing")
+console.log()
+
 import { testFirebaseAccess } from "../lib/diagnostics"
 
 ;(async () => {
@@ -24,4 +30,3 @@ import { testFirebaseAccess } from "../lib/diagnostics"
   
   process.exit(result.ok ? 0 : 1)
 })()
-

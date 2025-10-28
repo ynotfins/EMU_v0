@@ -15,16 +15,19 @@
 **Storage**: VS Code's workspace storage database (not git-tracked)
 
 **How**:
+
 1. Open Extensions (`Ctrl+Shift+X`)
 2. Click gear ⚙️ on extension
 3. Select "Disable (Workspace)"
 
 **Pros**:
+
 - ✅ Official VS Code feature
 - ✅ Reliable
 - ✅ Per-workspace
 
 **Cons**:
+
 - ❌ Manual process
 - ❌ Not version-controlled
 - ❌ Doesn't sync across machines
@@ -38,17 +41,20 @@
 **Status**: ✅ Configured in this workspace
 
 **How it works**:
+
 1. Install the "Disable Extensions" extension
 2. It reads `.vscode/ext.config.json`
 3. Auto-disables listed extensions when workspace opens
 
 **Pros**:
+
 - ✅ Automated
 - ✅ Version-controlled (committed to git)
 - ✅ Syncs across machines
 - ✅ Team-wide enforcement
 
 **Cons**:
+
 - ❌ Requires installing one more extension
 - ❌ Not official VS Code feature
 
@@ -60,11 +66,13 @@
 **Example**: `"python.enabled": false`
 
 **What it does**:
+
 - ✅ Disables language servers
 - ✅ Turns off file watchers
 - ✅ Stops background processes
 
 **What it DOESN'T do**:
+
 - ❌ Doesn't unload the extension
 - ❌ Extension still shows as "Enabled"
 - ❌ Still uses some memory/startup time
@@ -78,11 +86,13 @@
 ### What We Have:
 
 1. **`.vscode/settings.json`**: Feature-level disables for Python, Java, Docker, etc.
+
    - Prevents heavy language servers from running
    - Reduces CPU/memory usage
    - Extensions technically still "enabled" but mostly dormant
 
 2. **`.vscode/ext.config.json`**: Auto-disable config for "Disable Extensions" extension
+
    - Lists 26 extensions to disable
    - Requires installing `muzaisimao.vscode-disable-extensions`
    - Will auto-disable on workspace open
@@ -99,6 +109,7 @@
 ### Option A: Use Third-Party Extension (Recommended)
 
 **Install the auto-disabler**:
+
 1. Open Extensions (`Ctrl+Shift+X`)
 2. Search: `muzaisimao.vscode-disable-extensions`
 3. Click "Install"
@@ -112,6 +123,7 @@
 ### Option B: Manual Disable (Traditional)
 
 **Disable each extension manually**:
+
 - See list in `docs/EXTENSION_CLEANUP.md`
 - Takes 5 minutes
 - Doesn't sync to other machines
@@ -123,7 +135,7 @@
 I should have been clearer from the start:
 
 **What I said**: "I'll disable extensions in settings.json"
-**What's actually possible**: "I'll disable extension *features* in settings.json"
+**What's actually possible**: "I'll disable extension _features_ in settings.json"
 
 There's no native VS Code way to disable extensions via JSON config files. The third-party extension is the closest we can get to automated workspace-level disabling.
 
@@ -136,4 +148,3 @@ There's no native VS Code way to disable extensions via JSON config files. The t
 3. **Done**: Extensions auto-disable based on `ext.config.json`
 
 This gives you the automated behavior you originally asked for.
-

@@ -11,6 +11,7 @@ VS Code workspace configuration can **recommend** or mark extensions as **unwant
 ## 🎯 Goal: Keep Only 9 Essential Extensions
 
 ### ✅ Keep These (Recommended):
+
 1. **dbaeumer.vscode-eslint** - ESLint linting
 2. **bradlc.vscode-tailwindcss** - Tailwind CSS IntelliSense
 3. **esbenp.prettier-vscode** - Code formatting
@@ -24,27 +25,32 @@ VS Code workspace configuration can **recommend** or mark extensions as **unwant
 ### ❌ Disable These (Unwanted):
 
 **Python/Data Science** (not needed for this Next.js/TypeScript project):
+
 - `ms-python.python`
 - `ms-python.debugpy`
 - `ms-vscode.vscode-pylance`
 
 **Docker/Containers** (not actively used):
+
 - `ms-azuretools.vscode-docker`
 - `ms-azuretools.vscode-docker-compose`
 - `ms-azuretools.vscode-azurecontainerapps`
 - `anyspere.vscode-dev-containers`
 
 **Cloud Tools** (not needed):
+
 - `googlecloudtools.cloudcode`
 - `googlecloudtools.firebase-dataconnect`
 - `google.geminicodeassist`
 
 **Mobile Development** (not needed):
+
 - `adelphes.android-dev-ext`
 - `surendrajat.apklab`
 - `expo.vscode-expo-tools`
 
 **Java/Kotlin** (not needed):
+
 - `vscjava.vscode-java-pack`
 - `vscjava.vscode-maven`
 - `vscjava.vscode-gradle`
@@ -53,6 +59,7 @@ VS Code workspace configuration can **recommend** or mark extensions as **unwant
 - `mathiasfrohlich.Kotlin`
 
 **Other Tools**:
+
 - `ms-vscode.powershell` - PowerShell language server
 - `graphql.vscode-graphql` - GraphQL tools
 - `redhat.vscode-xml` - XML tools
@@ -69,6 +76,7 @@ VS Code workspace configuration can **recommend** or mark extensions as **unwant
 1. **Open Extensions**: `Ctrl+Shift+X` (Windows/Linux) or `Cmd+Shift+X` (Mac)
 
 2. **For each unwanted extension**:
+
    - Search for the extension by name
    - Click the **gear icon** ⚙️ next to the extension
    - Select **"Disable (Workspace)"**
@@ -78,6 +86,7 @@ VS Code workspace configuration can **recommend** or mark extensions as **unwant
 ### Method 2: Quick Disable Script
 
 Run the audit script to see the full list:
+
 ```bash
 npm run ext:audit
 ```
@@ -101,10 +110,12 @@ code --uninstall-extension ms-azuretools.vscode-docker
 ## ✅ Verification
 
 After disabling, you should see:
+
 - **~9 enabled** (only the recommended ones)
 - **~17+ disabled** (all the unwanted ones)
 
 Run this to check the policy:
+
 ```bash
 npm run ext:audit
 ```
@@ -114,6 +125,7 @@ npm run ext:audit
 ## 🚀 Performance Benefits
 
 Disabling unused extensions:
+
 - ✅ Reduces Cursor startup time
 - ✅ Lowers memory usage
 - ✅ Prevents conflicting language servers
@@ -144,4 +156,3 @@ To completely reset:
 4. Manually disable unwanted extensions again
 
 **Reminder**: VS Code does not provide a programmatic way to disable extensions at the workspace level. This is a limitation of the VS Code extension system.
-

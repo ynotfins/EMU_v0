@@ -59,4 +59,3 @@ console.log("   2. For each unwanted extension above:");
 console.log("      - Click gear icon → 'Disable (Workspace)'");
 console.log("      - Or right-click → 'Disable (Workspace)'\n");
 console.log("   This will update your local workspace storage.");
-
