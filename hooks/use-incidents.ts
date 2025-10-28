@@ -9,8 +9,8 @@ import { useFavoritesContext } from "@/lib/context/favorites-context"
 
 // Normalize inconsistent Firestore data into IncidentLite type
 function normalize(docId: string, data: any): IncidentLite {
-  // Handle timestamp variations
-  let updatedAt = data.updatedAt || data.timestamp || new Date().toISOString()
+  // Handle timestamp variations - try multiple fields and handle Firestore Timestamp objects
+  let updatedAt = data.updatedAt || data.lastSeenAt || data.lastTs || data.timestamp || data.ts || new Date().toISOString()
   if (typeof updatedAt === "object" && updatedAt.seconds) {
     updatedAt = new Date(updatedAt.seconds * 1000).toISOString()
   }
@@ -19,12 +19,12 @@ function normalize(docId: string, data: any): IncidentLite {
   const county = data.county || ""
   const city = data.city || ""
   const address = data.address || data.addr || data.street || ""
-  const type = data.type || data.alertType || "Unknown"
-  const message = data.message || data.alertMessage || ""
+  const type = data.type || data.lastType || data.alertType || "Unknown"
+  const message = data.message || data.lastMessage || data.alertMessage || ""
   
   return {
     id: docId,
-    incidentNumber: data.incidentNumber || data.alertNumber || 0,
+    incidentNumber: data.incidentNumber || data.incidentId || parseInt(docId) || 0,
     updatedAt,
     state,
     county,

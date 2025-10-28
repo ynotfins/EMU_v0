@@ -13,7 +13,7 @@
     "rules:deploy": "firebase deploy --only firestore:rules",
     "rules:open": "firebase open firestore",
     "roles:seed": "tsx scripts/seed-roles.ts",
-    "incidents:seed": "tsx scripts/seed-incidents.ts",
+    "incidents:seed": "tsx scripts/seed-admin.ts",
     "ext:audit": "tsx scripts/check-extensions.ts",
     "ext:install": "powershell -ExecutionPolicy Bypass -File scripts/install-disable-extensions.ps1"
   },
