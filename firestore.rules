@@ -9,6 +9,12 @@ service cloud.firestore {
     function isSupe() { return authed() && exists(/databases/$(database)/documents/roles/supes/$(uid())); }
     function isAdmin() { return authed() && exists(/databases/$(database)/documents/roles/admins/$(uid())); }
 
+    // --- Diagnostics (auth-only; safe to keep) ---
+    match /diagnostic/{doc} {
+      allow read: if authed();
+      allow write: if false;
+    }
+
     // --- Profiles ---
     match /profiles/{userId} {
       allow read: if authed();

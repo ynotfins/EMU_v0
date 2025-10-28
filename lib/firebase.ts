@@ -1,5 +1,5 @@
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app"
-import { getAuth, type Auth } from "firebase/auth"
+import { getAuth, signInAnonymously, type Auth } from "firebase/auth"
 import { getFirestore, type Firestore } from "firebase/firestore"
 import { getStorage } from "firebase/storage"
 import { getMessaging, type Messaging } from "firebase/messaging"
@@ -29,5 +29,14 @@ export const storage = getStorage(app)
 
 // Messaging only available in browser context
 export const messaging: Messaging | null = typeof window !== "undefined" ? getMessaging(app) : null
+
+// Dev bootstrap: ensure we are authenticated so rules allow reads/toggles
+if (typeof window !== "undefined") {
+  try {
+    void signInAnonymously(auth)
+  } catch (e) {
+    console.warn("[Firebase] Anonymous sign-in failed:", e)
+  }
+}
 
 export default app
