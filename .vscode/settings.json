@@ -4,6 +4,17 @@
   // ===== AUTOMATED EXTENSION DISABLING =====
   // Explicitly disables all unwanted extensions for Next.js project
   
+  // ===== YOLO + AUTONOMOUS MODE =====
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always",
+    "source.organizeImports": "always"
+  },
+  "files.autoSave": "onFocusChange",
+  "git.enableSmartCommit": true,
+  "git.autofetch": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  
   // ===== RECOMMENDED EXTENSIONS (ENABLED) =====
   "eslint.enable": true,
   "tailwindCSS.enable": true,

@@ -1,0 +1,86 @@
+---
+alwaysApply: true
+---
+
+# Autonomous Commit Conventions
+
+## Auto-Commit Rules
+
+Commit frequently and automatically when:
+
+### ✅ Auto-commit triggers:
+1. **Feature complete** - Working feature implemented
+2. **Bug fixed** - Issue resolved and tested
+3. **Types fixed** - TypeScript errors resolved
+4. **Refactor done** - Code structure improved
+5. **Tests passing** - New tests added and green
+6. **Docs updated** - Documentation matches code
+7. **Deps updated** - Dependencies installed/upgraded
+8. **Config changed** - Configuration files modified
+
+### 📝 Commit Message Format
+
+Use conventional commits with clear, concise messages:
+
+```
+<type>: <description>
+
+[optional body]
+```
+
+**Types:**
+- `feat:` New feature
+- `fix:` Bug fix
+- `refactor:` Code restructuring
+- `docs:` Documentation only
+- `style:` Formatting, missing semicolons
+- `test:` Adding tests
+- `chore:` Maintenance tasks
+- `perf:` Performance improvement
+
+**Examples:**
+- `feat: add user authentication flow`
+- `fix: resolve TypeScript null safety errors`
+- `refactor: extract reusable components`
+- `docs: update Memory Bank with current state`
+- `chore: install and configure ESLint`
+
+### 🔄 Push Strategy
+
+**Push to GitHub when:**
+- Multiple related commits accumulated (3-5 commits)
+- Significant feature completed
+- End of work session
+- User explicitly requests sync
+
+**Don't push every commit** - batch related work together.
+
+### 🎯 Atomic Commits
+
+Each commit should:
+- Be a logical unit of work
+- Pass tests (if tests exist)
+- Leave project in working state
+- Have clear, descriptive message
+
+## Examples
+
+### ✅ Good Commit Sequence
+```
+fix: add null guards to profile pages
+fix: add missing onToggleSilence prop to favorites
+fix: correct Firebase Storage import
+test: verify all TypeScript errors resolved
+docs: update Memory Bank progress
+```
+
+### ❌ Bad Commit Sequence
+```
+fix stuff
+more fixes
+oops
+final fix I promise
+actually final this time
+```
+
+**Status**: Autonomous commit mode enabled ✅
