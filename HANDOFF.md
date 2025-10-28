@@ -13,6 +13,8 @@
 4. **Firebase SDK**: Fully wired with real-time listeners
 5. **TypeScript**: 0 errors, clean build
 6. **Git**: All changes committed and pushed
+7. **Live Alerts**: BNN feed displaying in real-time
+8. **Favorites/Bookmarks**: ⭐ and 🔖 buttons working (temp dev mode)
 
 ---
 
@@ -93,8 +95,10 @@ D:\github\EMU_v0\
 - **Dev Server**: ✅ Running
 - **Firebase Config**: ✅ Loaded
 - **Real-Time Listeners**: ✅ Active
-- **Security Rules**: ✅ Deployed
+- **Security Rules**: ✅ Deployed (TEMP: public reads/writes for dev)
 - **Live Data**: ✅ **WORKING - Incidents displaying from BNN feed**
+- **Favorites/Bookmarks**: ✅ **WORKING - ⭐ and 🔖 functional**
+- **Authentication**: ⚠️ **NEEDS ATTENTION - Enable Anonymous Auth**
 
 ---
 
@@ -110,10 +114,30 @@ D:\github\EMU_v0\
 
 ## 🆘 If Issues
 
-1. **No incidents showing?** → Add data to Firestore manually (see above)
+1. **No incidents showing?** → Check Firestore has data in `incidents` collection
 2. **MCP servers red?** → Reload Cursor window
 3. **Dev server not starting?** → Kill node processes, remove `.next/dev/lock`
 4. **Firebase errors?** → Check `.env.local` exists with correct keys
+5. **Favorites not persisting?** → Firestore rules are in DEV mode (public writes)
+
+## ⚠️ CRITICAL: Before Production Deploy
+
+**Current security rules allow PUBLIC WRITES** - this is ONLY for development!
+
+**Before going to production:**
+
+1. **Enable Anonymous Authentication** in Firebase Console:
+   - Go to: https://console.firebase.google.com/project/emu-incidents/authentication/providers
+   - Click "Anonymous" → Toggle "Enable" → Save
+
+2. **Revert Security Rules** to require authentication:
+   - In `firestore.rules`, change `allow update: if true;` back to proper auth checks
+   - Redeploy: `firebase deploy --only firestore:rules`
+
+3. **Test with Authentication**:
+   - Anonymous sign-in should work
+   - Favorites/bookmarks should persist per user
+   - Other users shouldn't see your favorites
 
 ---
 
