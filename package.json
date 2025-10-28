@@ -12,7 +12,8 @@
     "wiring:test": "tsx scripts/wiring-test.ts",
     "rules:deploy": "firebase deploy --only firestore:rules",
     "rules:open": "firebase open firestore",
-    "roles:seed": "tsx scripts/seed-roles.ts"
+    "roles:seed": "tsx scripts/seed-roles.ts",
+    "ext:audit": "tsx scripts/check-extensions.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

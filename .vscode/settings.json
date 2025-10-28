@@ -29,9 +29,13 @@
   "python.analysis.typeCheckingMode": "off",
   "python.testing.pytestEnabled": false,
   "python.languageServer": "None",
+  "python.terminal.activateEnvironment": false,
+  "python.autoComplete.extraPaths": [],
 
   "docker.languageserver.formatter.enabled": false,
   "docker.explorerRefreshInterval": 0,
+  "docker.commands.build": "",
+  "docker.commands.run": "",
 
   "cloudcode.duetai.enabled": false,
   "cloudcode.autoDependencies": false,
@@ -40,12 +44,25 @@
   "firebase.dataconnect.enabled": false,
 
   "graphql-config.load.enabled": false,
+  "graphql.enableCodeLens": false,
 
   "powershell.enableProfileLoading": false,
+  "powershell.integratedConsole.showOnStartup": false,
 
-  // Keep these explicit flags from prior workspace
   "sonarlint.automaticAnalysis": false,
   "sonarlint.focusOnNewCode": false,
+  "sonarlint.disableTelemetry": true,
+
+  "java.server.launchMode": "Standard",
+  "java.configuration.runtimes": [],
+  "java.reloadProjects.automatic": false,
+
+  "xml.validation.enabled": false,
+  "xml.fileAssociations": [],
+
+  "android.enableGradle": false,
+
+  "expo.enableTelemetry": false,
 
   // Cursor-specific UX prefs kept
   "cursor.composer.shouldChimeAfterChatFinishes": true,
