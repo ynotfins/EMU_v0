@@ -1,5 +1,7 @@
 # Project Brief: EMU Alerts
 
+🔗 **Anchored Docs**: README.md, WIRING.md, EXTENSIONS.md, BUILD_REPORT.md, ROUTES.md, COMPONENTS.md, TESTPLAN.md, API_MAP.md
+
 ## Project Name
 **EMU Alerts** - Emergency Management Unit Alert System
 
