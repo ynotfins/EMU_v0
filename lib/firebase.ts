@@ -31,13 +31,15 @@ export const storage = getStorage(app);
 export const messaging: Messaging | null =
   typeof window !== "undefined" ? getMessaging(app) : null;
 
-// Dev bootstrap: ensure we are authenticated so rules allow reads/toggles
+// Dev bootstrap: attempt anonymous sign-in (requires Anonymous Auth enabled in Console)
 if (typeof window !== "undefined") {
-  try {
-    void signInAnonymously(auth);
-  } catch (e) {
-    console.warn("[Firebase] Anonymous sign-in failed:", e);
-  }
+  auth.onAuthStateChanged((user) => {
+    if (!user) {
+      signInAnonymously(auth).catch((e) => {
+        console.warn("[Firebase] Anonymous sign-in failed - enable in Firebase Console:", e.message);
+      });
+    }
+  });
 }
 
 export default app;

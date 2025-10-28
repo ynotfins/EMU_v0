@@ -21,9 +21,9 @@ service cloud.firestore {
       allow write: if authed() && userId == uid();
     }
 
-    // --- Incidents (auth-only reads, toggle own favorites/bookmarks) ---
+    // --- Incidents (TEMPORARY: public reads for development) ---
     match /incidents/{incidentId} {
-      allow read: if authed();
+      allow read: if true; // TEMP: Allow unauthenticated reads
       allow create, delete: if isSupe() || isAdmin();
       allow update: if isSupe() || isAdmin() || (authed() && onlyToggleOwnFlags());
 
@@ -40,9 +40,9 @@ service cloud.firestore {
       }
     }
 
-    // --- Alerts (auth-only reads) ---
+    // --- Alerts (TEMPORARY: public reads for development) ---
     match /alerts/{alertId} {
-      allow read: if authed();
+      allow read: if true; // TEMP: Allow unauthenticated reads
       allow create, update, delete: if authed();
     }
 
