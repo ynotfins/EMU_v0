@@ -8,7 +8,8 @@
     "dev": "next dev",
     "lint": "eslint .",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "wiring:test": "tsx scripts/wiring-test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
