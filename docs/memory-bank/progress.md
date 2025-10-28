@@ -40,25 +40,42 @@
 - **Test Plan**: `/docs/TESTPLAN.md` - Manual testing checklist
 - **README**: `/docs/README.md` - Project overview
 
-## What's In Progress (Stubbed)
+## What's In Progress (Partially Implemented)
 
-### Custom Hooks - Stubbed ⚠️
-All hooks exist but return empty/mock data with TODO comments:
-- `useIncidents()` - Need Firestore query: `/incidents` collection
-- `useIncident(id)` - Need Firestore doc: `/incidents/{id}`
-- `useProfile(uid)` - Need Firestore doc: `/profiles/{uid}`
-- `useThreads(uid)` - Need Firestore query: `/threads` where member
-- `useMessages(threadId)` - Need Firestore subcollection: `/threads/{id}/messages`
-- `useFiles(incidentId)` - Need Firestore query: `/files` where incidentId
-- `useLiveLocations()` - Need Firestore query: `/profiles` where location enabled
-- `useFilters()` - Client-only (works, no Firebase needed)
+### Custom Hooks - Mixed Status ⚡
+| Hook | Status | Notes |
+|------|--------|-------|
+| `useIncidents()` | ✅ **LIVE** | Firestore `onSnapshot`, real-time updates, normalizes data, computes user flags |
+| `useIncident(id)` | ✅ **LIVE** | Firestore doc listener, error handling with `logError()` |
+| `useProfile(uid)` | ⚠️ **Stubbed** | Returns DEV_PROFILE, settings persist to localStorage |
+| `useThreads(uid)` | ⚠️ **Stubbed** | Need Firestore query: `/threads` where member |
+| `useMessages(threadId)` | ⚠️ **Stubbed** | Need Firestore subcollection: `/threads/{id}/messages` |
+| `useFiles(incidentId)` | ⚠️ **Stubbed** | Need Firestore query: `/files` where incidentId |
+| `useLiveLocations()` | ⚠️ **Stubbed** | Need Firestore query: `/profiles` where location enabled |
+| `useFilters()` | ✅ **Client-only** | Works (no Firebase needed) |
 
-### Firebase Integration - Initialized ⚠️
-- **Firebase SDK**: Initialized in `/lib/firebase.ts` and `/lib/fcm.ts`
-- **Firestore**: getFirestore() called but no queries
-- **Auth**: getAuth() called but no authentication flow
-- **Storage**: getStorage() called but no file uploads
-- **FCM**: Messaging initialized but no push notifications
+### Firebase Integration - Partially Wired 🔥
+- **Firebase SDK**: ✅ Fully initialized in `/lib/firebase.ts` and `/lib/fcm.ts`
+- **Firestore**: ✅ **LIVE** - Real-time listeners for incidents, writes for favorites/bookmarks
+- **Auth**: ⚠️ getAuth() initialized but using DEV_UID fallback (no auth flow yet)
+- **Storage**: ⚠️ getStorage() called but no file uploads
+- **FCM**: ⚠️ Messaging initialized (browser-only guard) but no push flow
+
+### Firestore Actions - Partially Implemented ⚡
+| Action | Status | Implementation |
+|--------|--------|----------------|
+| `toggleFavorite(id)` | ✅ **LIVE** | `updateDoc` + `arrayUnion` with current user UID |
+| `unfavorite(id)` | ✅ **LIVE** | `updateDoc` + `arrayRemove` with current user UID |
+| `toggleBookmark(id)` | ✅ **LIVE** | `updateDoc` + `arrayUnion` with current user UID |
+| `unbookmark(id)` | ✅ **LIVE** | `updateDoc` + `arrayRemove` with current user UID |
+| `respondToAlert(id)` | ⚠️ **Stubbed** | TODO: Update status, assignedTo |
+| `silenceAlert(id)` | ✅ **Local** | Uses `localStorage` (per-device) |
+
+### Utility Libraries - Complete ✅
+- **`lib/dev.ts`**: DEV_UID fallback for unauthenticated development
+- **`lib/logger.ts`**: Structured error logging with `AppError` class and `logError()`
+- **`lib/silence.ts`**: Local silence state management (localStorage)
+- **`lib/utils.ts`**: Existing utilities (cn, etc.)
 
 ### Actions (Server Actions) - Stubs ⚠️
 Exist in `/lib/actions/` but not implemented:
@@ -72,18 +89,19 @@ Exist in `/lib/actions/` but not implemented:
 
 ### Critical Path (Must Have)
 
-#### 1. Fix TypeScript Errors ❌
-**Status**: Blocking deployment
-- 38 errors across 11 files
-- See `activeContext.md` for detailed breakdown
-- **Estimate**: 1-2 hours
+#### 1. Fix TypeScript Errors ✅
+**Status**: COMPLETE
+- Fixed all 38 errors across 11 files
+- Added null checks, type guards, correct imports
+- 0 TypeScript errors, clean build
 
-#### 2. Implement Firestore Queries ❌
-**Status**: Stubbed with TODOs
-- Replace mock data in all hooks with real Firestore queries
-- Add real-time listeners with `onSnapshot`
-- Implement optimistic updates
-- **Estimate**: 4-6 hours
+#### 2. Implement Firestore Queries ⚡
+**Status**: 2/8 hooks completed
+- ✅ `useIncidents()` - Real-time collection listener with normalization
+- ✅ `useIncident(id)` - Real-time doc listener with error handling
+- ✅ Favorites/bookmarks Firestore writes
+- ⚠️ Remaining: `useProfile`, `useThreads`, `useMessages`, `useFiles`, `useLiveLocations`
+- **Estimate**: 2-4 hours remaining
 
 #### 3. Implement Authentication ❌
 **Status**: Mock login only
@@ -171,33 +189,52 @@ Exist in `/lib/actions/` but not implemented:
 
 ## Known Issues
 
-### Type Safety Issues ❌
-- **38 TypeScript errors** (see `activeContext.md`)
-- Must fix before deployment
+### Type Safety Issues ✅
+- All TypeScript errors fixed!
+- 0 errors, clean build
 
-### Dependency Issues ⚠️
+### Dependency Issues ✅
 - **vaul + React 19**: Requires `--legacy-peer-deps` (functional, just a warning)
-- **tsx missing**: Can't run `npm run check-env` without it
+- **tsx**: ✅ Installed
+- **dotenv**: ✅ Installed
 
-### Environment Setup ⚠️
-- No Firebase project created yet
-- No environment variables configured
-- Google Maps API key not generated
-- FCM VAPID key not generated
+### Environment Setup ✅
+- ✅ `.env.local` created with NEXT_PUBLIC_* keys
+- ✅ Firebase project ID configured (emu-incidents)
+- ⚠️ Google Maps API key needs real value (currently placeholder)
+- ⚠️ FCM VAPID key needs real value (currently placeholder)
 
 ## Evolution of Project Decisions
 
-### Initial Approach
+### Initial Approach (v0 Generation)
 - v0 AI generated initial UI/UX based on requirements
 - Complete component library created in first iteration
 - Mock data used for all features
 - Firebase integration planned but not implemented
 
+### Session 1: Type Safety + Setup (Complete)
+- Fixed all 38 TypeScript errors
+- Installed tooling (ESLint, tsx, dotenv)
+- Configured environment variables
+- YOLO mode enabled for rapid iteration
+
+### Session 2: Firebase Wiring (Complete)
+- ✅ Real-time Firestore listeners for incidents
+- ✅ Favorites/bookmarks with multi-user arrays
+- ✅ Data normalization for inconsistent fields
+- ✅ Per-user flag derivation helper
+- ✅ Error handling with structured logging
+- ✅ DEV_UID fallback for auth-less development
+- ✅ Local silence state (localStorage)
+- ✅ Profile settings persistence
+
 ### Current Approach
-- Firebase stubs with clear TODOs for implementation
-- Type-first development (all types defined upfront)
-- Role-based directory structure for clear authorization
-- Custom hooks pattern for data access layer
+- **Real-time first**: All data uses `onSnapshot` for live updates
+- **Normalize on read**: Handle inconsistent Firestore schemas gracefully
+- **Local-first for UI state**: Silence, settings cache to localStorage
+- **DEV_UID pattern**: Allow development without auth setup
+- **Server/client split**: Proper Next.js 15 patterns with `use()`
+- **Type-first development**: All types defined upfront, enforced strictly
 
 ### Future Considerations
 - May need to add middleware for route protection
@@ -206,25 +243,38 @@ Exist in `/lib/actions/` but not implemented:
 - Evaluate offline-first architecture for poor connectivity scenarios
 
 ## Metrics & Stats
-- **Total Files**: ~100+ files
+- **Total Files**: ~110+ files (added utilities)
 - **Components**: 40+ shadcn/ui + 15+ custom
 - **Pages**: 20+ pages across all roles
-- **Custom Hooks**: 8 hooks
+- **Custom Hooks**: 8 hooks (2 fully wired, 6 stubbed)
+- **Utilities**: 4 libraries (dev, logger, silence, utils)
 - **Type Definitions**: 10+ domain types
 - **Documentation Files**: 8 markdown files
-- **Lines of Code**: ~5,000+ LOC (estimated)
+- **Lines of Code**: ~5,500+ LOC (estimated)
+- **Git Commits**: 11 commits (this session)
+- **TypeScript Errors Fixed**: 38 → 0
 
 ## Completion Estimate
 Based on remaining work:
-- **Critical Path**: 14-21 hours
-- **Important Features**: 13-17 hours
-- **Nice to Have**: 7-11 hours
-- **Total**: 34-49 hours (roughly 1-2 weeks for one developer)
+- **Critical Path**: ~~14-21~~ → **8-12 hours** (TypeScript fixed, 2 hooks wired)
+- **Important Features**: 13-17 hours (unchanged)
+- **Nice to Have**: 7-11 hours (unchanged)
+- **Total**: ~~34-49~~ → **28-40 hours** (roughly 1 week for one developer)
+
+## Progress This Session ✅
+1. ✅ Fixed all 38 TypeScript errors
+2. ✅ Added tsx and dotenv to devDependencies
+3. ✅ Set up `.env.local` with Firebase keys
+4. ✅ Implemented 2 Firestore hooks with real-time listeners
+5. ✅ Created utilities for dev mode, logging, and local state
+6. ✅ Implemented favorites/bookmarks Firestore writes
+7. ✅ Added error handling and user feedback
+8. ✅ 11 commits pushed to GitHub
 
 ## Next Session Goals
-1. Fix all 38 TypeScript errors
-2. Add tsx to devDependencies
-3. Set up Firebase project and environment variables
-4. Begin implementing Firestore queries in hooks
-5. Test real-time data flow with Firebase
+1. Add test incidents to Firestore and verify real-time updates
+2. Implement remaining hooks: `useProfile`, `useThreads`, `useMessages`, `useFiles`, `useLiveLocations`
+3. Deploy to Firebase Hosting
+4. Implement Firebase Auth (replace DEV_UID)
+5. Add file upload with Firebase Storage
 
