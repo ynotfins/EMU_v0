@@ -1,25 +1,23 @@
 # Active Context: EMU Alerts
 
 ## Current Status
-**Project Stage**: Development - Firebase + Security Rules Deployed, Production-Ready
+**Project Stage**: Development - App Running, Needs Test Data
 
-**Last Updated**: 2025-10-28 - Firestore Rules + Diagnostics Complete  
-**Session**: firestore-rules-deployed
+**Last Updated**: 2025-10-28 - MCP Configured, App Running, Empty Firestore  
+**Session**: mcp-setup-app-running
 
 ## Current Work Focus
-Firebase fully wired with production-grade security rules deployed:
-- ✅ Dependencies installed (271 packages + tsx, dotenv)
-- ✅ TypeScript: 0 errors (all 38 fixed + new utilities)
-- ✅ ESLint: Configured and working
+**CRITICAL**: App is running but Firestore is empty - no incidents showing
+
+**Current State**:
 - ✅ Dev server: Running at http://localhost:3000
-- ✅ Git: 16 commits pushed to GitHub
-- ✅ YOLO Mode: ENABLED ⚡
+- ✅ .env.local: Created with Firebase config (from Firebase MCP)
+- ✅ MCP servers: Firebase + GitHub (Chrome DevTools/Vercel removed to stay under tool limit)
 - ✅ Firebase SDK: FULLY WIRED 🔥
 - ✅ Real-time listeners: ACTIVE ⚡
-- ✅ Firestore writes: WORKING ✍️
 - ✅ Security Rules: DEPLOYED 🔒
-- ✅ Wiring Test: PASSING ✅
-- ✅ Diagnostics: COMPLETE 🧪
+- ⚠️ **Firestore: EMPTY** - No test data, incidents page is blank
+- ⚠️ Seed script created but hit validation error (need manual data entry)
 
 ## Recent Changes (This Session)
 **Phase 1: Setup & Type Safety**
@@ -86,13 +84,30 @@ All TypeScript errors fixed, Firestore rules deployed, wiring test passing!
 
 ## Next Immediate Steps
 
-### Priority 1: Add Test Data & Verify Real-Time 🧪
-1. **Add test incidents to Firestore** via Firebase Console
-   - Collection: `incidents`
-   - Add documents with structure from `/docs/WIRING.md`
-2. **Test real-time updates** - modify doc in console, see UI update instantly
-3. **Test favorites/bookmarks** - click ⭐/🔖, verify Firestore arrays update
-4. **Test error states** - navigate to non-existent incident ID
+### URGENT Priority 1: Add Test Data Manually 🧪
+**The app is running but Firestore is empty!**
+
+1. **Open Firebase Console**: `npm run rules:open` or go to https://console.firebase.google.com
+2. **Navigate to**: Firestore Database → Data tab
+3. **Create collection**: `incidents`
+4. **Add test document**:
+   ```json
+   {
+     "incidentNumber": 1234567,
+     "type": "Working Fire",
+     "message": "Structure fire with heavy smoke showing",
+     "address": "1234 Sunset Blvd",
+     "city": "Los Angeles",
+     "county": "Los Angeles",
+     "state": "CA",
+     "distanceMi": 2.3,
+     "updatedAt": Timestamp(now),
+     "favoritedBy": [],
+     "bookmarkedBy": []
+   }
+   ```
+5. **Refresh app** - incident should appear immediately!
+6. **Test favorites** - click ⭐, verify `favoritedBy` array updates
 
 ### Priority 2: Deploy to Firebase Hosting 🚀
 1. Run `npm run build` (verify build passes)
