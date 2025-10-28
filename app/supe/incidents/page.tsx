@@ -51,8 +51,10 @@ export default function SupeIncidentsPage() {
     )
   }
 
-  // Null guards
-  const safeIncidents = Array.isArray(incidents) ? incidents : []
+  // Null guards and sort by updatedAt descending (newest first)
+  const safeIncidents = Array.isArray(incidents)
+    ? [...incidents].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    : []
 
   return (
     <RoleLayout role="supe">

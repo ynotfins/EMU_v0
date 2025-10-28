@@ -14,16 +14,23 @@ function normalize(docId: string, data: any): IncidentLite {
     updatedAt = new Date(updatedAt.seconds * 1000).toISOString()
   }
 
+  const state = data.state || ""
+  const county = data.county || ""
+  const city = data.city || ""
+  const address = data.address || data.addr || data.street || ""
+  const type = data.type || data.alertType || "Unknown"
+  const message = data.message || data.alertMessage || ""
+  
   return {
     id: docId,
     incidentNumber: data.incidentNumber || data.alertNumber || 0,
     updatedAt,
-    state: data.state || "",
-    county: data.county || "",
-    city: data.city || "",
-    address: data.address || data.addr || data.street || "",
-    type: data.type || data.alertType || "Unknown",
-    message: data.message || data.alertMessage || "",
+    state,
+    county,
+    city,
+    address,
+    type,
+    message,
     highAlert: data.highAlert || false,
     isFavorited: false, // Will be computed by withUserFlags()
     isBookmarked: false, // Will be computed by withUserFlags()
@@ -34,6 +41,34 @@ function normalize(docId: string, data: any): IncidentLite {
     favoritedBy: data.favoritedBy || [],
     bookmarkedBy: data.bookmarkedBy || [],
   }
+}
+
+/**
+ * Format incident list lines for consistent mobile display
+ * Returns standardized strings for the 3-line layout
+ */
+export function formatListLines(incident: IncidentLite) {
+  const line1Date = new Date(incident.updatedAt)
+  const dateStr = line1Date.toLocaleDateString(undefined, {
+    month: "2-digit",
+    day: "2-digit",
+    year: "numeric",
+  })
+  const timeStr = line1Date.toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+  const distance = incident.distanceMi != null ? `${Math.round(incident.distanceMi)} mi` : ""
+  const header = `${dateStr} ${timeStr}`
+  const metaRight = distance ? ` · ${distance}` : ""
+  const l1 = `${header}${metaRight}`
+  
+  const l2Left = `${incident.state} | ${incident.county} | ${incident.city} | ${incident.address}`.replace(/\s+\|\s+\|/g, " |")
+  const l2 = l2Left
+  
+  const l3 = `${incident.type} | ${incident.message}`.replace(/\s+\|\s+\|/g, " |")
+  
+  return { l1, l2, l3 }
 }
 
 /**
