@@ -205,6 +205,8 @@ export function useIncidents(filters?: Partial<IncidentFilters>) {
 // Firestore actions for favorites and bookmarks
 export async function toggleFavorite(incidentId: string): Promise<void> {
   const userId = getUid(auth.currentUser?.uid);
+  console.log("[toggleFavorite] Starting - userId:", userId, "incidentId:", incidentId);
+  
   if (!userId) {
     console.warn("[toggleFavorite] No user logged in");
     return;
@@ -212,11 +214,14 @@ export async function toggleFavorite(incidentId: string): Promise<void> {
 
   try {
     const incidentRef = doc(db, "incidents", incidentId);
+    console.log("[toggleFavorite] Updating Firestore...");
     await updateDoc(incidentRef, {
       favoritedBy: arrayUnion(userId),
     });
+    console.log("[toggleFavorite] ✅ Success! Added", userId, "to favoritedBy");
   } catch (error) {
-    console.error("[toggleFavorite] Error:", error);
+    console.error("[toggleFavorite] ❌ Error:", error);
+    throw error;
   }
 }
 
@@ -239,6 +244,8 @@ export async function unfavorite(incidentId: string): Promise<void> {
 
 export async function toggleBookmark(incidentId: string): Promise<void> {
   const userId = getUid(auth.currentUser?.uid);
+  console.log("[toggleBookmark] Starting - userId:", userId, "incidentId:", incidentId);
+  
   if (!userId) {
     console.warn("[toggleBookmark] No user logged in");
     return;
@@ -246,11 +253,14 @@ export async function toggleBookmark(incidentId: string): Promise<void> {
 
   try {
     const incidentRef = doc(db, "incidents", incidentId);
+    console.log("[toggleBookmark] Updating Firestore...");
     await updateDoc(incidentRef, {
       bookmarkedBy: arrayUnion(userId),
     });
+    console.log("[toggleBookmark] ✅ Success! Added", userId, "to bookmarkedBy");
   } catch (error) {
-    console.error("[toggleBookmark] Error:", error);
+    console.error("[toggleBookmark] ❌ Error:", error);
+    throw error;
   }
 }
 

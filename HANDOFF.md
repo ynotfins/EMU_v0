@@ -127,10 +127,12 @@ D:\github\EMU_v0\
 **Before going to production:**
 
 1. **Enable Anonymous Authentication** in Firebase Console:
+
    - Go to: https://console.firebase.google.com/project/emu-incidents/authentication/providers
    - Click "Anonymous" → Toggle "Enable" → Save
 
 2. **Revert Security Rules** to require authentication:
+
    - In `firestore.rules`, change `allow update: if true;` back to proper auth checks
    - Redeploy: `firebase deploy --only firestore:rules`
 
