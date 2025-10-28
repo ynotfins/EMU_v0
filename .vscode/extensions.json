@@ -1,0 +1,67 @@
+{
+  // Recommended Extensions for EMU Alerts (Next.js/TypeScript/Tailwind CSS)
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "bradlc.vscode-tailwindcss",
+    "dsznajder.es7-react-js-snippets",
+    "christian-kohler.path-intellisense",
+    "eamodio.gitlens",
+    "usernamehw.errorlens",
+    "gruntfuggly.todo-tree",
+    "streetsidesoftware.code-spell-checker",
+    "editorconfig.editorconfig",
+    "redhat.vscode-yaml",
+    "unifiedjs.vscode-mdx",
+    "prisma.prisma"
+  ],
+  // Extensions to Disable for This Project (Not Applicable to Next.js Web App)
+  "unwantedRecommendations": [
+    // Java Extensions
+    "redhat.java",
+    "vscjava.vscode-java-pack",
+    "vscjava.vscode-java-debug",
+    "vscjava.vscode-java-test",
+    "vscjava.vscode-java-dependency",
+    "vscjava.vscode-maven",
+    "vscjava.vscode-gradle",
+    "josevseb.google-java-format-for-vs-code",
+    // Python Extensions
+    "ms-python.python",
+    "ms-python.debugpy",
+    "ms-python.vscode-pylance",
+    // React Native/Expo (not needed for web)
+    "expo.vscode-expo-tools",
+    "msjsdiag.vscode-react-native",
+    "adelphes.android-dev-ext",
+    "surendrajat.apklab",
+    "loyieking.smalise",
+    // Docker (unless you add it later)
+    "ms-azuretools.vscode-docker",
+    "ms-azuretools.vscode-containers",
+    "anysphere.remote-containers",
+    // Mobile Development
+    "mathiasfrohlich.kotlin",
+    "vsciot-vscode.vscode-arduino",
+    // Other Languages
+    "golang.go",
+    "rust-lang.rust-analyzer",
+    "ms-dotnettools.csharp",
+    "ms-vscode.cpptools",
+    // Cloud/DevOps (unless using)
+    "googlecloudtools.cloudcode",
+    "googlecloudtools.firebase-dataconnect-vscode",
+    "google.geminicodeassist",
+    "ms-kubernetes-tools.vscode-kubernetes-tools",
+    // GraphQL (not used in this project)
+    "graphql.vscode-graphql-syntax",
+    // Analysis Tools
+    "sonarsource.sonarlint-vscode",
+    // i18n (not configured)
+    "lokalise.i18n-ally",
+    // XML
+    "redhat.vscode-xml",
+    // GitHub Actions (if not using)
+    "github.vscode-github-actions"
+  ]
+}
+

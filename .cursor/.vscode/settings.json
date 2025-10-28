@@ -1,0 +1,118 @@
+{
+  // EMU Incidents - React Native/Expo/TypeScript Project Profile
+  
+  // ===== AUTOMATED EXTENSION DISABLING =====
+  // Disables functionality of irrelevant extensions without opening 26 windows
+  
+  // Java Extensions - Complete Shutdown
+  "java.enabled": false,
+  "java.jdt.ls.enabled": false,
+  "java.server.launchMode": "Disabled",
+  "java.autobuild.enabled": false,
+  "java.import.gradle.enabled": false,
+  "java.import.maven.enabled": false,
+  "maven.executable.preferMavenWrapper": false,
+  "maven.view.enabled": false,
+  
+  // Python Extensions - Complete Shutdown
+  "python.enabled": false,
+  "python.languageServer": "None",
+  "python.linting.enabled": false,
+  "python.formatting.provider": "none",
+  "python.analysis.disabled": true,
+  
+  // Docker Extensions - Complete Shutdown
+  "docker.enabled": false,
+  "docker.dockerComposeBuild": false,
+  "docker.dockerComposeDetached": false,
+  
+  // Kotlin - Disable
+  "kotlin.languageServer.enabled": false,
+  
+  // GraphQL - Disable
+  "graphql-config.load.enabled": false,
+  
+  // GitHub Actions - Disable
+  "github-actions.workflows.pinned.refresh.enabled": false,
+  
+  // SonarLint - Disable
+  "sonarlint.disableTelemetry": true,
+  "sonarlint.pathToNodeExecutable": "",
+  
+  // Google Cloud - Disable
+  "cloudcode.autoDependencies": false,
+  "cloudcode.duetai.enabled": false,
+  
+  // TypeScript/JavaScript Settings
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "javascript.validate.enable": true,
+  "typescript.validate.enable": true,
+  
+  // ESLint
+  "eslint.enable": true,
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  
+  // File Associations
+  "files.associations": {
+    "*.tsx": "typescriptreact",
+    "*.ts": "typescript",
+    "*.js": "javascript",
+    "*.jsx": "javascriptreact"
+  },
+  
+  // Search Exclusions (Performance)
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/android": true,
+    "**/ios": true,
+    "**/.expo": true,
+    "**/.git": true,
+    "**/dist": true,
+    "**/build": true
+  },
+  
+  // File Watcher Exclusions (Performance)
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/android/**": true,
+    "**/ios/**": true,
+    "**/.expo/**": true,
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true
+  },
+  
+  // Editor Settings
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "[typescript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  
+  // Expo Settings
+  "expo.autoOpen": false,
+  
+  // Git Settings
+  "git.enabled": true,
+  "gitlens.enabled": true,
+  
+  // Error Lens
+  "errorLens.enabled": true,
+  
+  // Tailwind CSS IntelliSense (for NativeWind)
+  "tailwindCSS.experimental.classRegex": [
+    ["className\\s*=\\s*[\"'`]([^\"'`]*)[\"'`]", "([^\"'`]*)"]
+  ]
+}
+

@@ -1,0 +1,38 @@
+{
+  // Recommended Extensions for EMU Incidents (React Native/Expo/TypeScript)
+  "recommendations": [
+    "expo.vscode-expo-tools",
+    "dbaeumer.vscode-eslint",
+    "christian-kohler.path-intellisense",
+    "eamodio.gitlens",
+    "usernamehw.errorlens",
+    "gruntfuggly.todo-tree",
+    "streetsidesoftware.code-spell-checker",
+    "editorconfig.editorconfig",
+    "redhat.vscode-yaml"
+  ],
+  // Extensions to Disable for This Project
+  "unwantedRecommendations": [
+    "redhat.java",
+    "vscjava.vscode-java-pack",
+    "vscjava.vscode-java-debug",
+    "vscjava.vscode-java-test",
+    "vscjava.vscode-java-dependency",
+    "vscjava.vscode-maven",
+    "vscjava.vscode-gradle",
+    "ms-python.python",
+    "ms-python.debugpy",
+    "mathiasfrohlich.kotlin",
+    "ms-azuretools.vscode-docker",
+    "ms-azuretools.vscode-containers",
+    "anysphere.remote-containers",
+    "googlecloudtools.cloudcode",
+    "googlecloudtools.firebase-dataconnect-vscode",
+    "adelphes.android-dev-ext",
+    "surendrajat.apklab",
+    "loyieking.smalise",
+    "graphql.vscode-graphql-syntax",
+    "sonarsource.sonarlint-vscode"
+  ]
+}
+

@@ -1,0 +1,19 @@
+---
+description: **/*.py
+alwaysApply: false
+---
+**/*.py
+
+# Python File Organization
+
+All Python files must be placed in the `src` folder.
+
+## Requirements
+- Place all `.py` files in the `src/` directory
+- Organize modules logically within `src/` using subdirectories as needed
+- Keep the root directory clean of Python source files
+
+## Application
+- Apply this rule when creating new Python files
+- Apply this rule when organizing or refactoring existing Python files
+**/*.py

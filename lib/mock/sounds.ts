@@ -1,0 +1,15 @@
+export const mockHighAlertSounds = [
+  { id: "sound-001", name: "Classic Alarm" },
+  { id: "sound-002", name: "Emergency Siren" },
+  { id: "sound-003", name: "Fire Bell" },
+  { id: "sound-004", name: "Air Horn" },
+  { id: "sound-005", name: "Urgent Beep" },
+  { id: "sound-006", name: "Alert Tone" },
+  { id: "sound-007", name: "Warning Chime" },
+  { id: "sound-008", name: "Emergency Buzz" },
+  { id: "sound-009", name: "Rapid Pulse" },
+  { id: "sound-010", name: "Critical Alert" },
+  { id: "sound-011", name: "Dispatch Tone" },
+  { id: "sound-012", name: "Station Bell" },
+  { id: "sound-013", name: "Priority Alert" },
+]

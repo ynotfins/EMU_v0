@@ -1,0 +1,194 @@
+{
+  // EMU Alerts - Next.js/TypeScript/Tailwind CSS Project Profile
+  
+  // ===== AUTOMATED EXTENSION DISABLING =====
+  // Explicitly disables all unwanted extensions for Next.js project
+  
+  // ===== RECOMMENDED EXTENSIONS (ENABLED) =====
+  "eslint.enable": true,
+  "tailwindCSS.enable": true,
+  "gitlens.enabled": true,
+  "errorLens.enabled": true,
+  "todo-tree.highlights.enabled": true,
+  "cSpell.enabled": true,
+  
+  // ===== JAVA EXTENSIONS (DISABLED) =====
+  "java.enabled": false,
+  "java.jdt.ls.enabled": false,
+  "java.server.launchMode": "Disabled",
+  "java.autobuild.enabled": false,
+  "java.import.gradle.enabled": false,
+  "java.import.maven.enabled": false,
+  "maven.executable.preferMavenWrapper": false,
+  "maven.view.enabled": false,
+  "redhat.java.disabled": true,
+  
+  // ===== PYTHON EXTENSIONS (DISABLED) =====
+  "python.enabled": false,
+  "python.languageServer": "None",
+  "python.linting.enabled": false,
+  "python.formatting.provider": "none",
+  "python.analysis.disabled": true,
+  "python.analysis.autoImportCompletions": false,
+  "python.analysis.indexing": false,
+  
+  // ===== REACT NATIVE / EXPO (DISABLED) =====
+  "expo.autoOpen": false,
+  "react-native.showUserTips": false,
+  "react-native-tools.showUserTips": false,
+  
+  // ===== DOCKER EXTENSIONS (DISABLED) =====
+  "docker.enabled": false,
+  "docker.dockerComposeBuild": false,
+  "docker.dockerComposeDetached": false,
+  "docker.showStartPage": false,
+  
+  // ===== MOBILE DEVELOPMENT (DISABLED) =====
+  "kotlin.languageServer.enabled": false,
+  "android-dev-ext.enabled": false,
+  
+  // ===== OTHER LANGUAGES (DISABLED) =====
+  "go.useLanguageServer": false,
+  "rust-analyzer.enable": false,
+  "C_Cpp.intelliSenseEngine": "Disabled",
+  "dotnet.backgroundAnalysis.enabled": false,
+  
+  // ===== GRAPHQL (DISABLED) =====
+  "graphql-config.load.enabled": false,
+  "graphql.useSchemaFileDefinitions": false,
+  
+  // ===== GITHUB ACTIONS (DISABLED) =====
+  "github-actions.workflows.pinned.refresh.enabled": false,
+  
+  // ===== SONARLINT (DISABLED) =====
+  "sonarlint.disableTelemetry": true,
+  "sonarlint.pathToNodeExecutable": "",
+  "sonarlint.rules": {},
+  
+  // ===== GOOGLE CLOUD (DISABLED) =====
+  "cloudcode.autoDependencies": false,
+  "cloudcode.duetai.enabled": false,
+  "firebase.dataconnect.enabled": false,
+  
+  // ===== KUBERNETES (DISABLED) =====
+  "vs-kubernetes": {
+    "vs-kubernetes.disable-linters": true
+  },
+  
+  // ===== I18N ALLY (DISABLED) =====
+  "i18n-ally.enabledFrameworks": [],
+  
+  // ===== TYPESCRIPT/JAVASCRIPT (ENABLED) =====
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "javascript.validate.enable": true,
+  "typescript.validate.enable": true,
+  "typescript.suggest.autoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  
+  // ===== ESLINT (ENABLED) =====
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.format.enable": true,
+  "eslint.lintTask.enable": true,
+  
+  // File Associations
+  "files.associations": {
+    "*.tsx": "typescriptreact",
+    "*.ts": "typescript",
+    "*.js": "javascript",
+    "*.jsx": "javascriptreact"
+  },
+  
+  // Search Exclusions (Performance)
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/.git": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/.vercel": true
+  },
+  
+  // File Watcher Exclusions (Performance)
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/.next/**": true,
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/.vercel/**": true
+  },
+  
+  // Editor Settings
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "[typescript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  
+  // ===== GIT / GITLENS (ENABLED) =====
+  "git.enabled": true,
+  "git.autofetch": true,
+  "gitlens.showWelcomeOnInstall": false,
+  "gitlens.showWhatsNewAfterUpgrades": false,
+  
+  // ===== ERROR LENS (ENABLED) =====
+  "errorLens.enabledDiagnosticLevels": [
+    "error",
+    "warning",
+    "info"
+  ],
+  "errorLens.excludeBySource": [
+    "cSpell"
+  ],
+  
+  // ===== TAILWIND CSS INTELLISENSE (ENABLED) =====
+  "tailwindCSS.experimental.classRegex": [
+    ["cn\\(([^)]*)\\)", "(?:'|\"|`)([^\"'`]*)(?:'|\"|`)"],
+    ["className\\s*=\\s*[\"'`]([^\"'`]*)[\"'`]", "([^\"'`]*)"]
+  ],
+  "tailwindCSS.includeLanguages": {
+    "typescript": "javascript",
+    "typescriptreact": "javascript"
+  },
+  "tailwindCSS.emmetCompletions": true,
+  
+  // ===== CODE SPELL CHECKER (ENABLED) =====
+  "cSpell.language": "en",
+  "cSpell.enableFiletypes": [
+    "typescript",
+    "typescriptreact",
+    "javascript",
+    "javascriptreact",
+    "markdown"
+  ],
+  
+  // ===== TODO TREE (ENABLED) =====
+  "todo-tree.general.tags": [
+    "TODO",
+    "FIXME",
+    "BUG",
+    "HACK",
+    "NOTE"
+  ],
+  "todo-tree.highlights.defaultHighlight": {
+    "icon": "alert",
+    "type": "text"
+  },
+  
+  // Next.js Settings
+  "files.exclude": {
+    "**/.next": true
+  }
+}
+
