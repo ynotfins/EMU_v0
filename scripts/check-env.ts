@@ -6,6 +6,13 @@
  * Note: NEXT_PUBLIC_* variables are intentionally client-accessible by Next.js design.
  */
 
+import { config } from "dotenv"
+import { resolve } from "path"
+
+// Load .env.local first (takes priority), then .env
+config({ path: resolve(process.cwd(), ".env.local") })
+config({ path: resolve(process.cwd(), ".env") })
+
 // Construct variable names dynamically
 const prefix = "NEXT_PUBLIC_"
 const firebaseVars = [
