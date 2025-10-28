@@ -25,5 +25,7 @@
     "vscjava.vscode-java-test",
     "mathiasfrohlich.Kotlin",
     "LoyieKing.es6-mocha-snippets"
-  ]
+  ],
+  "autoReload": false,
+  "openInNewWindow": false
 }
