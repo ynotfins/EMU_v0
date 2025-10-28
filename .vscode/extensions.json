@@ -1,6 +1,7 @@
 {
   // Install/keep these
   "recommendations": [
+    "muzaisimao.vscode-disable-extensions",
     "dbaeumer.vscode-eslint",
     "bradlc.vscode-tailwindcss",
     "esbenp.prettier-vscode",

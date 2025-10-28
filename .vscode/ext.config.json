@@ -1,0 +1,30 @@
+{
+  "disabled": [
+    "ms-python.python",
+    "ms-python.debugpy",
+    "ms-vscode.vscode-pylance",
+    "ms-vscode.powershell",
+    "ms-azuretools.vscode-docker",
+    "ms-azuretools.vscode-docker-compose",
+    "ms-azuretools.vscode-azurecontainerapps",
+    "googlecloudtools.cloudcode",
+    "googlecloudtools.firebase-dataconnect",
+    "google.geminicodeassist",
+    "graphql.vscode-graphql",
+    "redhat.vscode-xml",
+    "anyspere.vscode-dev-containers",
+    "lokalise.i18n-ally",
+    "sonarsource.sonarlint-vscode",
+    "adelphes.android-dev-ext",
+    "surendrajat.apklab",
+    "expo.vscode-expo-tools",
+    "vscjava.vscode-java-pack",
+    "vscjava.vscode-maven",
+    "vscjava.vscode-gradle",
+    "redhat.java",
+    "vscjava.vscode-java-test",
+    "mathiasfrohlich.Kotlin",
+    "LoyieKing.es6-mocha-snippets"
+  ]
+}
+
