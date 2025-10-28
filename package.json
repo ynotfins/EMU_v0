@@ -9,7 +9,9 @@
     "lint": "eslint .",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "wiring:test": "tsx scripts/wiring-test.ts"
+    "wiring:test": "tsx scripts/wiring-test.ts",
+    "rules:deploy": "firebase deploy --only firestore:rules",
+    "rules:open": "firebase open firestore"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
