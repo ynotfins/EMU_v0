@@ -6,11 +6,21 @@ import { useFavoritesContext } from "@/lib/context/favorites-context"
 import { useState } from "react"
 import { RoleLayout } from "@/components/role-layout"
 
-export default function SupeIncidentClient({ id }: { id: string }) {
-  const { data: incident } = useIncident(id)
+export default function Client({ id }: { id: string }) {
+  const { data: incident, error } = useIncident(id)
   const { data: files } = useFiles(id)
   const { toggleFavorite, toggleBookmark } = useFavoritesContext()
   const [noteText, setNoteText] = useState("")
+
+  if (error) {
+    return (
+      <RoleLayout role="supe">
+        <div className="flex items-center justify-center h-screen">
+          <p className="text-red-600">Error: {error}</p>
+        </div>
+      </RoleLayout>
+    )
+  }
 
   if (!incident) {
     return (

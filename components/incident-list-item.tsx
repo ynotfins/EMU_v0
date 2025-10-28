@@ -1,18 +1,20 @@
 "use client"
 
+import { useState } from "react"
 import { Heart, Bookmark, BellOff } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import type { IncidentLite } from "@/types/domain"
 import { formatListLines } from "@/hooks/use-incidents"
+import { isSilenced, toggleSilenceLocal } from "@/lib/silence"
 
 interface IncidentListItemProps {
   incident: IncidentLite
   onOpen: (id: string) => void
   onToggleFavorite: (id: string) => void
   onToggleBookmark: (id: string) => void
-  onToggleSilence: (id: string) => void
+  onToggleSilence?: (id: string) => void
 }
 
 export function IncidentListItem({
@@ -25,6 +27,16 @@ export function IncidentListItem({
   const { l1, l2, l3 } = formatListLines(incident)
   const updateCount = incident.updates?.length || 0
   const barHeightPercent = updateCount > 0 ? Math.min(updateCount, 5) * 20 : 0
+  
+  // Track silence state locally
+  const [silenced, setSilenced] = useState(() => isSilenced(incident.id))
+  
+  const handleToggleSilence = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const newState = toggleSilenceLocal(incident.id)
+    setSilenced(newState)
+    onToggleSilence?.(incident.id)
+  }
 
   return (
     <Card className="relative p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => onOpen(incident.id)}>
@@ -82,15 +94,11 @@ export function IncidentListItem({
             />
           </button>
           <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onToggleSilence(incident.id)
-            }}
+            onClick={handleToggleSilence}
             className="p-1 hover:bg-[#F2F2F7] rounded transition-colors"
+            aria-label={silenced ? "Unsilence" : "Silence"}
           >
-            <BellOff
-              className={cn("h-5 w-5", incident.isSilenced ? "fill-[#6B7280] text-[#6B7280]" : "text-[#6B7280]")}
-            />
+            <BellOff className={cn("h-5 w-5", silenced ? "fill-[#6B7280] text-[#6B7280]" : "text-[#6B7280]")} />
           </button>
         </div>
       </div>

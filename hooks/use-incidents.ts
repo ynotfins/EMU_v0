@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react"
 import { collection, onSnapshot, query, orderBy, limit, doc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore"
 import { db, auth } from "@/lib/firebase"
+import { getUid } from "@/lib/dev"
 import type { IncidentLite } from "@/types/domain"
 import { useFavoritesContext } from "@/lib/context/favorites-context"
 
@@ -170,7 +171,7 @@ export function useIncidents(filters?: Partial<IncidentFilters>) {
 
 // Firestore actions for favorites and bookmarks
 export async function toggleFavorite(incidentId: string): Promise<void> {
-  const userId = auth.currentUser?.uid
+  const userId = getUid(auth.currentUser?.uid)
   if (!userId) {
     console.warn("[toggleFavorite] No user logged in")
     return
@@ -187,7 +188,7 @@ export async function toggleFavorite(incidentId: string): Promise<void> {
 }
 
 export async function unfavorite(incidentId: string): Promise<void> {
-  const userId = auth.currentUser?.uid
+  const userId = getUid(auth.currentUser?.uid)
   if (!userId) {
     console.warn("[unfavorite] No user logged in")
     return
@@ -204,7 +205,7 @@ export async function unfavorite(incidentId: string): Promise<void> {
 }
 
 export async function toggleBookmark(incidentId: string): Promise<void> {
-  const userId = auth.currentUser?.uid
+  const userId = getUid(auth.currentUser?.uid)
   if (!userId) {
     console.warn("[toggleBookmark] No user logged in")
     return
@@ -221,7 +222,7 @@ export async function toggleBookmark(incidentId: string): Promise<void> {
 }
 
 export async function unbookmark(incidentId: string): Promise<void> {
-  const userId = auth.currentUser?.uid
+  const userId = getUid(auth.currentUser?.uid)
   if (!userId) {
     console.warn("[unbookmark] No user logged in")
     return

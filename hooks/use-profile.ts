@@ -28,7 +28,7 @@ const DEV_PROFILE: Profile = {
 }
 
 export function useProfile() {
-  const [data] = useState<Profile | null>(DEV_PROFILE)
+  const [data, setData] = useState<Profile | null>(DEV_PROFILE)
   const [isLoading] = useState(false)
   const [error] = useState<Error | null>(null)
 
@@ -39,11 +39,31 @@ export function useProfile() {
 
   const updateSettings = (settings: Partial<Profile["settings"]>) => {
     console.debug("[useProfile] updateSettings:", settings)
+    
+    // Update local state
+    setData((prev) => (prev ? { ...prev, settings: { ...prev.settings, ...settings } } : prev))
+    
+    // Persist key settings to localStorage
+    if (settings.pushEnabled !== undefined) {
+      try {
+        localStorage.setItem("emu.push", JSON.stringify(settings.pushEnabled))
+      } catch {}
+    }
+    if (settings.trackingEnabled !== undefined) {
+      try {
+        localStorage.setItem("emu.tracking", JSON.stringify(settings.trackingEnabled))
+      } catch {}
+    }
+    
     // TODO: Update Firestore: user_profiles/{currentUserId} merge settings field
   }
 
   const updatePayout = (payout: Partial<Profile["payout"]>) => {
     console.debug("[useProfile] updatePayout:", payout)
+    
+    // Update local state
+    setData((prev) => (prev ? { ...prev, payout: { ...prev.payout, ...payout } } : prev))
+    
     // TODO: Update Firestore: user_profiles/{currentUserId} merge payout field
   }
 

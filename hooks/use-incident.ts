@@ -1,17 +1,44 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { db } from "@/lib/firebase"
+import { doc, onSnapshot } from "firebase/firestore"
+import { logError } from "@/lib/logger"
 import type { Incident } from "@/types/domain"
 
 export function useIncident(id: string) {
-  const [data] = useState<Incident | null>(null)
-  const [isLoading] = useState(false)
-  const [error] = useState<Error | null>(null)
+  const [data, setData] = useState<Incident | undefined>()
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | undefined>()
 
-  // TODO: Replace with Firestore query to 'incidents/{id}' document
-  // const docRef = doc(db, 'incidents', id)
-  // Use onSnapshot for real-time updates
-  // Also fetch subcollections: incidents/{id}/files, incidents/{id}/homeowner_forms
+  useEffect(() => {
+    if (!id) {
+      setError("missing-id")
+      setIsLoading(false)
+      return
+    }
+
+    const ref = doc(db, "incidents", id)
+    const unsub = onSnapshot(
+      ref,
+      (snap) => {
+        setIsLoading(false)
+        if (!snap.exists()) {
+          setError("not-found")
+          setData(undefined)
+          return
+        }
+        setError(undefined)
+        setData({ id: snap.id, ...(snap.data() as any) })
+      },
+      (e) => {
+        setIsLoading(false)
+        setError(logError(e, "incident-snapshot", { id }).code)
+      },
+    )
+
+    return () => unsub()
+  }, [id])
 
   return { data, isLoading, error }
 }
