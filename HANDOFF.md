@@ -23,8 +23,9 @@
 **Root Cause**: Schema mismatch - live data uses `lastType`, `lastMessage`, `lastSeenAt` but app expected `type`, `message`, `updatedAt`
 
 **Solution**: Updated `normalize()` function to handle both schemas:
+
 - Added `lastType` → `type` mapping
-- Added `lastMessage` → `message` mapping  
+- Added `lastMessage` → `message` mapping
 - Added `lastSeenAt`, `lastTs` → `updatedAt` mapping
 - Added `incidentId` → `incidentNumber` mapping
 
@@ -37,10 +38,12 @@
 Once you have data:
 
 1. **Test Favorites**: Click ⭐ on an incident
+
    - Check Firestore: `favoritedBy` array updates
    - UI updates immediately
 
-2. **Test Real-Time**: 
+2. **Test Real-Time**:
+
    - Open incident in app
    - Edit `message` field in Firebase Console
    - Watch it update in app without refresh
@@ -123,4 +126,3 @@ D:\github\EMU_v0\
 ---
 
 **Ready to go!** Add test data to Firestore and the app will come alive. 🚀
-

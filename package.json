@@ -6,6 +6,7 @@
     "build": "next build",
     "check-env": "tsx scripts/check-env.ts",
     "dev": "next dev",
+    "dev:debug": "NODE_OPTIONS='--inspect' next dev",
     "lint": "eslint .",
     "start": "next start",
     "typecheck": "tsc --noEmit",
