@@ -16,46 +16,19 @@
 
 ---
 
-## ⚠️ CRITICAL ISSUE: No Data
+## ✅ FIXED: Live Data Now Working!
 
-**Problem**: Firestore database is empty - no incidents showing in app
+**Problem**: App wasn't showing live incidents from Firestore
 
-**Why**: Seed script hit validation error, need manual data entry
+**Root Cause**: Schema mismatch - live data uses `lastType`, `lastMessage`, `lastSeenAt` but app expected `type`, `message`, `updatedAt`
 
----
+**Solution**: Updated `normalize()` function to handle both schemas:
+- Added `lastType` → `type` mapping
+- Added `lastMessage` → `message` mapping  
+- Added `lastSeenAt`, `lastTs` → `updatedAt` mapping
+- Added `incidentId` → `incidentNumber` mapping
 
-## 🔥 IMMEDIATE FIX (5 minutes)
-
-### Add Test Data to Firestore:
-
-1. **Open Firebase Console**:
-   ```bash
-   npm run rules:open
-   ```
-   Or go to: https://console.firebase.google.com/project/emu-incidents/firestore
-
-2. **Create Collection**: Click "Start collection" → Name it `incidents`
-
-3. **Add Document** (Auto-ID):
-   ```json
-   {
-     "incidentNumber": 1234567,
-     "type": "Working Fire",
-     "message": "Structure fire with heavy smoke showing",
-     "address": "1234 Sunset Blvd",
-     "city": "Los Angeles",
-     "county": "Los Angeles",
-     "state": "CA",
-     "distanceMi": 2.3,
-     "updatedAt": [Click "timestamp" and use current time],
-     "favoritedBy": [],
-     "bookmarkedBy": []
-   }
-   ```
-
-4. **Add 2-3 more incidents** (change incidentNumber, type, address)
-
-5. **Refresh app** → Incidents appear instantly! 🎉
+**Result**: ✅ Your live incidents from BNN are now displaying!
 
 ---
 
@@ -118,7 +91,7 @@ D:\github\EMU_v0\
 - **Firebase Config**: ✅ Loaded
 - **Real-Time Listeners**: ✅ Active
 - **Security Rules**: ✅ Deployed
-- **Test Data**: ❌ **EMPTY - ADD MANUALLY**
+- **Live Data**: ✅ **WORKING - Incidents displaying from BNN feed**
 
 ---
 
