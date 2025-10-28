@@ -26,26 +26,33 @@ service cloud.firestore {
       // App must be signed in to read incidents.
       allow read: if authed();
 
-      // Core fields create/update by supe/admin only.
-      allow create, update, delete: if isSupe() || isAdmin();
-
-      // Everyone may toggle only their own UID in these arrays.
-      allow update: if authed() && onlyToggleOwnFlags();
+      // Core fields create/update/delete by supe/admin only, OR user toggling own flags
+      allow create, delete: if isSupe() || isAdmin();
+      allow update: if isSupe() || isAdmin() || (authed() && onlyToggleOwnFlags());
 
       function onlyToggleOwnFlags() {
         let before = resource.data;
         let after  = request.resource.data;
-        let allowed = ['favoritedBy','bookmarkedBy'];
-        let changed = before.diff(after).changedKeys();
-        if (!changed.hasOnly(allowed)) { return false; }
-        return canToggleSelf(before.favoritedBy, after.favoritedBy) &&
-               canToggleSelf(before.bookmarkedBy, after.bookmarkedBy);
+        let changed = after.diff(before).affectedKeys();
+        
+        return changed.hasOnly(['favoritedBy', 'bookmarkedBy']) &&
+               canToggleFavs(before, after) &&
+               canToggleBms(before, after);
       }
-      function canToggleSelf(b, a) {
-        let before = b == null ? [] : b;
-        let after  = a == null ? [] : a;
-        let removed = before.diff(after);
-        let added   = after.diff(before);
+      
+      function canToggleFavs(before, after) {
+        let beforeList = before.get('favoritedBy', []);
+        let afterList = after.get('favoritedBy', []);
+        let removed = beforeList.toSet().difference(afterList.toSet());
+        let added = afterList.toSet().difference(beforeList.toSet());
+        return removed.hasOnly([uid()]) && added.hasOnly([uid()]);
+      }
+      
+      function canToggleBms(before, after) {
+        let beforeList = before.get('bookmarkedBy', []);
+        let afterList = after.get('bookmarkedBy', []);
+        let removed = beforeList.toSet().difference(afterList.toSet());
+        let added = afterList.toSet().difference(beforeList.toSet());
         return removed.hasOnly([uid()]) && added.hasOnly([uid()]);
       }
 
@@ -68,10 +75,12 @@ service cloud.firestore {
 
     // ---- Threads (group + per-incident) ----
     match /threads/{threadId} {
-      allow read, write: if authed() && request.auth.uid in resource.data.participants;
+      allow read: if authed() && request.auth.uid in resource.data.participants;
+      allow write: if authed() && request.auth.uid in resource.data.participants;
+      
       match /messages/{messageId} {
-        allow read, write: if authed() &&
-          request.auth.uid in get(/databases/$(database)/documents/threads/$(threadId)).data.participants;
+        allow read: if authed() && request.auth.uid in get(/databases/$(database)/documents/threads/$(threadId)).data.participants;
+        allow write: if authed() && request.auth.uid in get(/databases/$(database)/documents/threads/$(threadId)).data.participants;
       }
     }
 
@@ -81,6 +90,8 @@ service cloud.firestore {
     }
 
     // Deny everything else
-    match /{document=**} { allow read, write: if false; }
+    match /{document=**} { 
+      allow read, write: if false; 
+    }
   }
 }
