@@ -1,150 +1,45 @@
-# Extension Disabling - The Actual Truth
+# Extension Disabling Truth
 
-## ❌ Common Misconception
+## ❌ What DOESN'T Work
 
-**You CANNOT disable extensions via `settings.json`** - this is a VS Code limitation.
+### `settings.json` CANNOT disable extensions
+```json
+{
+  "python.enabled": false  // ❌ Only disables Python features, extension still loads
+}
+```
 
----
+### `extensions.json` unwanted list
+```json
+{
+  "unwantedRecommendations": ["ms-python.python"]  // ❌ Only hides recommendations
+}
+```
 
-## 🎯 What's Actually Possible
+## ✅ What DOES Work
 
-### Method 1: Manual Disable (Official)
+### Option 1: Manual UI Disable (Most Reliable)
+1. Open Extensions: `Ctrl+Shift+X`
+2. Find extension (e.g., "Python")
+3. Click gear icon → **Disable (Workspace)**
+4. Repeat for each unwanted extension
 
-**Status**: Only official way
-**Persistence**: Workspace-level
-**Storage**: VS Code's workspace storage database (not git-tracked)
+### Option 2: Third-Party Extension (Unreliable in Cursor)
+- `muzaisimao.vscode-disable-extensions` works in VS Code
+- In Cursor: opens new window, doesn't work properly
+- **NOT RECOMMENDED for Cursor**
 
-**How**:
+### Option 3: Uninstall (Nuclear Option)
+- Permanently removes extension
+- Affects ALL workspaces
+- Use only if never needed
 
-1. Open Extensions (`Ctrl+Shift+X`)
-2. Click gear ⚙️ on extension
-3. Select "Disable (Workspace)"
+## 🎯 Current Status
 
-**Pros**:
+**Target**: 10 enabled, 26 disabled
+**Actual**: 24 enabled, 17 disabled
+**Gap**: 14 extensions need manual disabling
 
-- ✅ Official VS Code feature
-- ✅ Reliable
-- ✅ Per-workspace
+## 📝 Next Step
 
-**Cons**:
-
-- ❌ Manual process
-- ❌ Not version-controlled
-- ❌ Doesn't sync across machines
-
----
-
-### Method 2: Third-Party Extension (Automated)
-
-**Extension**: [Disable Extensions](https://marketplace.visualstudio.com/items?itemName=muzaisimao.vscode-disable-extensions)
-**Config File**: `.vscode/ext.config.json`
-**Status**: ✅ Configured in this workspace
-
-**How it works**:
-
-1. Install the "Disable Extensions" extension
-2. It reads `.vscode/ext.config.json`
-3. Auto-disables listed extensions when workspace opens
-
-**Pros**:
-
-- ✅ Automated
-- ✅ Version-controlled (committed to git)
-- ✅ Syncs across machines
-- ✅ Team-wide enforcement
-
-**Cons**:
-
-- ❌ Requires installing one more extension
-- ❌ Not official VS Code feature
-
----
-
-### Method 3: Feature Disables (What We Did)
-
-**File**: `.vscode/settings.json`
-**Example**: `"python.enabled": false`
-
-**What it does**:
-
-- ✅ Disables language servers
-- ✅ Turns off file watchers
-- ✅ Stops background processes
-
-**What it DOESN'T do**:
-
-- ❌ Doesn't unload the extension
-- ❌ Extension still shows as "Enabled"
-- ❌ Still uses some memory/startup time
-
-**Value**: Reduces performance impact even if extensions stay enabled
-
----
-
-## 🎯 Our Current Setup
-
-### What We Have:
-
-1. **`.vscode/settings.json`**: Feature-level disables for Python, Java, Docker, etc.
-
-   - Prevents heavy language servers from running
-   - Reduces CPU/memory usage
-   - Extensions technically still "enabled" but mostly dormant
-
-2. **`.vscode/ext.config.json`**: Auto-disable config for "Disable Extensions" extension
-
-   - Lists 26 extensions to disable
-   - Requires installing `muzaisimao.vscode-disable-extensions`
-   - Will auto-disable on workspace open
-
-3. **`.vscode/extensions.json`**: Recommendations and unwanted list
-   - Prompts to install recommended extensions
-   - Marks unwanted extensions
-   - Doesn't actually disable anything
-
----
-
-## 📋 Your Two Options
-
-### Option A: Use Third-Party Extension (Recommended)
-
-**Install the auto-disabler**:
-
-1. Open Extensions (`Ctrl+Shift+X`)
-2. Search: `muzaisimao.vscode-disable-extensions`
-3. Click "Install"
-4. Reload window
-5. Extensions in `ext.config.json` will auto-disable
-
-**Pros**: One-time setup, then automatic
-
----
-
-### Option B: Manual Disable (Traditional)
-
-**Disable each extension manually**:
-
-- See list in `docs/EXTENSION_CLEANUP.md`
-- Takes 5 minutes
-- Doesn't sync to other machines
-
----
-
-## 🤝 My Apology
-
-I should have been clearer from the start:
-
-**What I said**: "I'll disable extensions in settings.json"
-**What's actually possible**: "I'll disable extension _features_ in settings.json"
-
-There's no native VS Code way to disable extensions via JSON config files. The third-party extension is the closest we can get to automated workspace-level disabling.
-
----
-
-## ✅ Recommendation
-
-1. **Install**: `muzaisimao.vscode-disable-extensions`
-2. **Reload**: Window
-3. **Done**: Extensions auto-disable based on `ext.config.json`
-
-This gives you the automated behavior you originally asked for.
+Use the manual guide in `docs/EXTENSION_CLEANUP.md`

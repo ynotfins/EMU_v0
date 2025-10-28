@@ -1,135 +1,97 @@
-# How to Disable Extensions in Cursor (The Real Way)
+# Manual Extension Disabling Guide for Cursor
 
-## 🤦 My Mistake
+## 🎯 Goal
+Disable 14 unwanted extensions to go from **24 enabled → 10 enabled**
 
-I recommended a VS Code extension that **doesn't exist in Cursor**. Sorry for the confusion!
+## 📋 Step-by-Step Instructions
 
-**The truth**: Cursor doesn't have an automated extension disabling feature. You must do it manually.
+### 1. Open Extensions Panel
+Press: `Ctrl+Shift+X`
 
----
+### 2. Search for Each Extension Below
 
-## ✅ The ONLY Way That Works in Cursor
+For each extension in the list:
 
-### Manual Disable (5 Minutes)
-
-1. **Open Extensions Panel**: Press `Ctrl+Shift+X`
-
-2. **For each unwanted extension, click gear ⚙️ → "Disable (Workspace)"**
-
-3. **Quick Filter Method**: Search by category to batch-disable
-
----
-
-## 📋 Extensions to Disable (26 total)
-
-### Search "python" → Disable All:
-- ❌ Python (ms-python.python)
-- ❌ Python Debugger (ms-python.debugpy)  
-- ❌ Pylance (ms-vscode.vscode-pylance)
-
-### Search "docker" → Disable All:
-- ❌ Docker (ms-azuretools.vscode-docker)
-- ❌ Docker Compose (ms-azuretools.vscode-docker-compose)
-- ❌ Azure Container Apps (ms-azuretools.vscode-azurecontainerapps)
-- ❌ Dev Containers (anyspere.vscode-dev-containers)
-
-### Search "java" → Disable All:
-- ❌ Extension Pack for Java (vscjava.vscode-java-pack)
-- ❌ Language Support for Java (redhat.java)
-- ❌ Maven for Java (vscjava.vscode-maven)
-- ❌ Gradle for Java (vscjava.vscode-gradle)
-- ❌ Test Runner for Java (vscjava.vscode-java-test)
-
-### Search "android" → Disable All:
-- ❌ Android Dev Extension (adelphes.android-dev-ext)
-- ❌ APKLab (surendrajat.apklab)
-
-### Search "google" → Disable All:
-- ❌ Cloud Code (googlecloudtools.cloudcode)
-- ❌ Firebase Data Connect (googlecloudtools.firebase-dataconnect)
-- ❌ Gemini Code Assist (google.geminicodeassist)
-
-### Search "expo" → Disable:
-- ❌ Expo Tools (expo.vscode-expo-tools)
-
-### Search individually:
-- ❌ PowerShell (ms-vscode.powershell)
-- ❌ GraphQL (graphql.vscode-graphql)
-- ❌ XML (redhat.vscode-xml)
-- ❌ i18n Ally (lokalise.i18n-ally)
-- ❌ SonarLint (sonarsource.sonarlint-vscode)
-- ❌ Kotlin (mathiasfrohlich.Kotlin)
-- ❌ ES6 Mocha Snippets (LoyieKing.es6-mocha-snippets)
+1. **Type the extension name** in the search box
+2. **Find it in the results** (look for exact match)
+3. **Click the gear icon** (⚙️) next to the extension
+4. **Select: "Disable (Workspace)"**
+5. **Repeat** for next extension
 
 ---
 
-## 🎯 Expected Result
+## 🚫 Extensions to Disable
 
-**After disabling**:
-- ✅ 9 enabled (ESLint, Tailwind, Prettier, GitLens, ErrorLens, Code Spell Checker, Path Intellisense, EditorConfig, YAML)
-- ❌ 26+ disabled (Python, Java, Docker, Cloud tools, Mobile tools, etc.)
+### Python Toolchain (3 extensions)
+- [ ] **Python** (ms-python.python)
+- [ ] **Pylance** (ms-python.vscode-pylance)
+- [ ] **Python Debugger** (ms-python.debugpy)
 
----
+### Cloud & Container Tools (5 extensions)
+- [ ] **Docker** (ms-azuretools.vscode-docker)
+- [ ] **Docker Compose** (ms-azuretools.vscode-docker-compose)
+- [ ] **Azure Container Apps** (ms-azuretools.vscode-azurecontainerapps)
+- [ ] **Cloud Code** (googlecloudtools.cloudcode)
+- [ ] **Firebase DataConnect** (googlecloudtools.firebase-dataconnect)
 
-## 🚀 Performance Benefits
+### Mobile & Java Development (6 extensions)
+- [ ] **Android Dev Ext** (adelphes.android-dev-ext)
+- [ ] **APKLab** (surendrajat.apklab)
+- [ ] **Expo Tools** (expo.vscode-expo-tools)
+- [ ] **Java Extension Pack** (vscjava.vscode-java-pack)
+- [ ] **Kotlin** (mathiasfrohlich.Kotlin)
+- [ ] **Language Support for Java** (redhat.java)
 
-After disabling, you'll see:
-- ⚡ **5-10x faster** Cursor startup
-- 💾 **60-70% less** memory usage (no Python/Java language servers)
-- 🎯 **Faster IntelliSense** (no competing TypeScript analyzers)
-- 🧹 **Cleaner UI** (no irrelevant commands/panels)
+### Other Language Tools (5 extensions)
+- [ ] **GraphQL** (graphql.vscode-graphql)
+- [ ] **XML** (redhat.vscode-xml)
+- [ ] **PowerShell** (ms-vscode.powershell)
+- [ ] **SonarLint** (sonarsource.sonarlint-vscode)
+- [ ] **i18n Ally** (lokalise.i18n-ally)
 
----
-
-## ✅ What's Already Done
-
-The `.vscode/settings.json` file already has aggressive feature disables:
-
-```json
-"python.enabled": false,
-"java.server.launchMode": "Standard",
-"docker.languageserver.formatter.enabled": false,
-// ... etc
-```
-
-**This helps** reduce resource usage, but extensions are still loaded. Manual disabling fully unloads them.
-
----
-
-## 🔄 After You Disable
-
-Run this to verify:
-```bash
-npm run ext:audit
-```
-
-Check the Extensions panel - should show ~9 enabled, ~26 disabled.
+### AI Assistants (1 extension)
+- [ ] **Gemini Code Assist** (google.geminicodeassist)
 
 ---
 
-## 💡 Pro Tip: Use Search Filters
+## ✅ Extensions to KEEP ENABLED
 
-In the Extensions panel, you can filter by:
-- `@installed` - Show all installed extensions
-- `@enabled` - Show only enabled extensions  
-- `@disabled` - Show only disabled extensions
-- `@builtin` - Show built-in extensions (don't disable these!)
+These should remain enabled (do NOT disable):
 
----
-
-## ⚠️ Don't Disable These (Essential for Next.js/TypeScript):
-
-- ✅ ESLint
-- ✅ Tailwind CSS IntelliSense
-- ✅ Prettier
-- ✅ GitLens
-- ✅ Error Lens
-- ✅ Code Spell Checker
-- ✅ Path Intellisense
-- ✅ EditorConfig
-- ✅ YAML
+- ✅ **ESLint** (dbaeumer.vscode-eslint)
+- ✅ **Prettier** (esbenp.prettier-vscode)
+- ✅ **Tailwind CSS IntelliSense** (bradlc.vscode-tailwindcss)
+- ✅ **GitLens** (eamodio.gitlens)
+- ✅ **Error Lens** (usernamehw.errorlens)
+- ✅ **Code Spell Checker** (streetsidesoftware.code-spell-checker)
+- ✅ **Path Intellisense** (christian-kohler.path-intellisense)
+- ✅ **EditorConfig** (editorconfig.editorconfig)
+- ✅ **YAML** (redhat.vscode-yaml)
+- ✅ **GitHub Pull Requests** (github.vscode-pull-request-github)
 
 ---
 
-**Status**: Manual disabling is the only way in Cursor. Takes 5 minutes, massive performance improvement.
+## 🔄 After Disabling All
 
+1. **Reload Window**: `Ctrl+Shift+P` → "Developer: Reload Window"
+2. **Verify**: `Ctrl+Shift+X` → Type `@enabled` → Should see ~10 extensions
+3. **Check speed**: Cursor should feel noticeably faster
+
+---
+
+## 💡 Tips
+
+- Use `@enabled` in Extensions search to see only enabled ones
+- Use `@disabled` to see disabled ones
+- **Workspace disable** = only affects this project
+- **Disable** (global) = affects ALL projects
+- Can re-enable anytime via same gear menu
+
+---
+
+## 📊 Expected Results
+
+**Before**: 24 enabled, slow startup, high memory
+**After**: 10 enabled, fast startup, low memory
+
+**Performance gain**: ~5-10x faster Cursor startup
