@@ -1,65 +1,55 @@
-// Firestore Security Rules — EMU Alerts
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function authed() { return request.auth != null; }
     function uid() { return request.auth.uid; }
     function isSupe() { return authed() && exists(/databases/$(database)/documents/roles/supes/$(uid())); }
-    function isAdmin() { return authed() && exists(/databases/$(database)/documents/roles/admins/$(uid())); }
+    function isAdmin(){ return authed() && exists(/databases/$(database)/documents/roles/admins/$(uid())); }
 
-    // ---------- DIAGNOSTIC (toggle to true only during testing)
-    function allowDiag() { return true; } // set false after testing
+    // Optional temporary diagnostics. Flip to true only while testing.
+    function allowDiag(){ return false; }
 
-    // Diagnostics read
+    // ---- Diagnostics (read-only) ----
     match /diagnostic/{doc} {
       allow read: if allowDiag() || authed();
       allow write: if false;
     }
 
-    // Profiles (users manage their own, supes/admins can read all)
+    // ---- Profiles ----
     match /profiles/{userId} {
       allow read: if authed();
       allow write: if authed() && userId == uid();
     }
 
-    // Incidents collection
+    // ---- Incidents root ----
     match /incidents/{incidentId} {
+      // App must be signed in to read incidents.
       allow read: if authed();
 
-      // Only supes/admins can create/delete incidents
-      allow create, delete: if isSupe() || isAdmin();
+      // Core fields create/update by supe/admin only.
+      allow create, update, delete: if isSupe() || isAdmin();
 
-      // Update: supes/admins can update anything, or regular users can update ONLY their flags
-      allow update: if isSupe() || isAdmin() || (authed() && onlyToggleOwnFlags());
+      // Everyone may toggle only their own UID in these arrays.
+      allow update: if authed() && onlyToggleOwnFlags();
 
       function onlyToggleOwnFlags() {
         let before = resource.data;
         let after  = request.resource.data;
-        let changed = after.diff(before).affectedKeys();
-
-        // Must only change favoritedBy or bookmarkedBy
-        return changed.hasOnly(['favoritedBy', 'bookmarkedBy']) &&
-               canToggleFavorite(before, after) &&
-               canToggleBookmark(before, after);
+        let allowed = ['favoritedBy','bookmarkedBy'];
+        let changed = before.diff(after).changedKeys();
+        if (!changed.hasOnly(allowed)) { return false; }
+        return canToggleSelf(before.favoritedBy, after.favoritedBy) &&
+               canToggleSelf(before.bookmarkedBy, after.bookmarkedBy);
       }
-
-      function canToggleFavorite(before, after) {
-        let beforeSet = before.get('favoritedBy', []).toSet();
-        let afterSet = after.get('favoritedBy', []).toSet();
-        let removed = beforeSet.difference(afterSet);
-        let added = afterSet.difference(beforeSet);
+      function canToggleSelf(b, a) {
+        let before = b == null ? [] : b;
+        let after  = a == null ? [] : a;
+        let removed = before.diff(after);
+        let added   = after.diff(before);
         return removed.hasOnly([uid()]) && added.hasOnly([uid()]);
       }
 
-      function canToggleBookmark(before, after) {
-        let beforeSet = before.get('bookmarkedBy', []).toSet();
-        let afterSet = after.get('bookmarkedBy', []).toSet();
-        let removed = beforeSet.difference(afterSet);
-        let added = afterSet.difference(beforeSet);
-        return removed.hasOnly([uid()]) && added.hasOnly([uid()]);
-      }
-
-      // Subcollections
+      // ---- Subcollections ----
       match /updates/{updateId} {
         allow read: if authed();
         allow write: if isSupe() || isAdmin();
@@ -75,5 +65,22 @@ service cloud.firestore {
         allow delete: if isSupe() || isAdmin();
       }
     }
+
+    // ---- Threads (group + per-incident) ----
+    match /threads/{threadId} {
+      allow read, write: if authed() && request.auth.uid in resource.data.participants;
+      match /messages/{messageId} {
+        allow read, write: if authed() &&
+          request.auth.uid in get(/databases/$(database)/documents/threads/$(threadId)).data.participants;
+      }
+    }
+
+    // ---- User-scoped locations ----
+    match /users/{userId}/locations/{locId} {
+      allow read, write: if authed() && userId == uid();
+    }
+
+    // Deny everything else
+    match /{document=**} { allow read, write: if false; }
   }
 }
