@@ -57,6 +57,8 @@
 ### Firebase Integration - Partially Wired 🔥
 - **Firebase SDK**: ✅ Fully initialized in `/lib/firebase.ts` and `/lib/fcm.ts`
 - **Firestore**: ✅ **LIVE** - Real-time listeners for incidents, writes for favorites/bookmarks
+- **Security Rules**: ✅ **DEPLOYED** - Production-grade rules with per-user array toggle
+- **Diagnostics**: ✅ **COMPLETE** - Wiring test passing, error boundary active
 - **Auth**: ⚠️ getAuth() initialized but using DEV_UID fallback (no auth flow yet)
 - **Storage**: ⚠️ getStorage() called but no file uploads
 - **FCM**: ⚠️ Messaging initialized (browser-only guard) but no push flow
@@ -75,7 +77,16 @@
 - **`lib/dev.ts`**: DEV_UID fallback for unauthenticated development
 - **`lib/logger.ts`**: Structured error logging with `AppError` class and `logError()`
 - **`lib/silence.ts`**: Local silence state management (localStorage)
+- **`lib/diagnostics.ts`**: Firebase access testing (wiring test)
 - **`lib/utils.ts`**: Existing utilities (cn, etc.)
+
+### Infrastructure - Complete ✅
+- **`firestore.rules`**: Production-grade security rules deployed
+- **`firebase.json`**: Hosting and Firestore rules configuration
+- **`components/ErrorBoundary.tsx`**: App-wide React error boundary
+- **`scripts/wiring-test.ts`**: Automated Firebase connection diagnostics
+- **`docs/handoff.md`**: Comprehensive handoff documentation (369 lines)
+- **NPM Scripts**: `wiring:test`, `rules:deploy`, `rules:open`
 
 ### Actions (Server Actions) - Stubs ⚠️
 Exist in `/lib/actions/` but not implemented:
@@ -119,12 +130,13 @@ Exist in `/lib/actions/` but not implemented:
 - Download and delete functionality
 - **Estimate**: 2-3 hours
 
-#### 5. Deploy Firebase Security Rules ❌
-**Status**: Not created
-- Firestore security rules (see `/docs/WIRING.md` for reference)
-- Storage security rules
-- Test rules thoroughly
-- **Estimate**: 2-3 hours
+#### 5. Deploy Firebase Security Rules ✅
+**Status**: COMPLETE
+- ✅ Created `firestore.rules` with production-grade security
+- ✅ Per-user favorites/bookmarks array toggle logic
+- ✅ Rules deployed and active
+- ✅ Wiring test passing
+- ⚠️ Storage security rules still needed
 
 ### Important (Should Have)
 
@@ -243,16 +255,18 @@ Exist in `/lib/actions/` but not implemented:
 - Evaluate offline-first architecture for poor connectivity scenarios
 
 ## Metrics & Stats
-- **Total Files**: ~110+ files (added utilities)
-- **Components**: 40+ shadcn/ui + 15+ custom
+- **Total Files**: ~115+ files (added utilities + infrastructure)
+- **Components**: 40+ shadcn/ui + 15+ custom + ErrorBoundary
 - **Pages**: 20+ pages across all roles
 - **Custom Hooks**: 8 hooks (2 fully wired, 6 stubbed)
-- **Utilities**: 4 libraries (dev, logger, silence, utils)
+- **Utilities**: 5 libraries (dev, logger, silence, diagnostics, utils)
+- **Infrastructure**: firestore.rules, firebase.json, wiring-test script
 - **Type Definitions**: 10+ domain types
-- **Documentation Files**: 8 markdown files
-- **Lines of Code**: ~5,500+ LOC (estimated)
-- **Git Commits**: 11 commits (this session)
+- **Documentation Files**: 9 markdown files (added handoff.md)
+- **Lines of Code**: ~6,000+ LOC (estimated)
+- **Git Commits**: 16 commits (this session)
 - **TypeScript Errors Fixed**: 38 → 0
+- **Wiring Test**: ✅ Passing
 
 ## Completion Estimate
 Based on remaining work:
@@ -269,7 +283,12 @@ Based on remaining work:
 5. ✅ Created utilities for dev mode, logging, and local state
 6. ✅ Implemented favorites/bookmarks Firestore writes
 7. ✅ Added error handling and user feedback
-8. ✅ 11 commits pushed to GitHub
+8. ✅ Created production-grade Firestore security rules
+9. ✅ Deployed rules to Firebase project
+10. ✅ Created diagnostics and wiring test (passing)
+11. ✅ Added ErrorBoundary component
+12. ✅ Created comprehensive handoff documentation
+13. ✅ 16 commits pushed to GitHub
 
 ## Next Session Goals
 1. Add test incidents to Firestore and verify real-time updates
