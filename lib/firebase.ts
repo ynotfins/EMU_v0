@@ -27,9 +27,23 @@ export const auth: Auth = getAuth(app);
 export const db: Firestore = getFirestore(app);
 export const storage = getStorage(app);
 
-// Messaging only available in browser context
-export const messaging: Messaging | null =
-  typeof window !== "undefined" ? getMessaging(app) : null;
+// Messaging only available in browser context AND if browser supports it
+export const messaging: Messaging | null = (() => {
+  if (typeof window === "undefined") return null;
+  
+  try {
+    // Check if browser supports service workers (required for FCM)
+    if (!("serviceWorker" in navigator)) {
+      console.warn("[Firebase] ⚠️ Service Worker not supported - Push notifications disabled");
+      return null;
+    }
+    
+    return getMessaging(app);
+  } catch (error) {
+    console.warn("[Firebase] ⚠️ Messaging not supported on this browser:", error);
+    return null;
+  }
+})();
 
 // Log authentication state changes (for debugging)
 if (typeof window !== "undefined") {
