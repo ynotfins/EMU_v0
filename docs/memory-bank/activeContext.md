@@ -1,16 +1,16 @@
 # Active Context: EMU Alerts
 
 ## Current Status
-**Project Stage**: Production-Ready - Distance Calculation Complete
+**Project Stage**: Production-Ready - Final Polish & Deployment
 
-**Last Updated**: 2025-10-29 - Client-Side Distance Calculation Implemented  
-**Session**: distance-calculation-complete
+**Last Updated**: 2025-10-29 - Stay Signed In Forever + Color Standardization  
+**Session**: production-ready-final-polish
 
 ## Current Work Focus
-**Real-time distance calculation between users and incidents**
+**User stays signed in forever + standardized colors + HTTPS deployment for mobile location**
 
 **Current State**:
-- ✅ Dev server: Ready to run at http://localhost:3000
+- ✅ Dev server: Running at http://localhost:3000
 - ✅ Live BNN data: Displaying correctly from Firestore
 - ✅ Distance calculation: Client-side with geocoding + caching
 - ✅ Location tracking: Real-time user GPS via browser API
@@ -18,12 +18,96 @@
 - ✅ Caching: Smart lat/lng storage in Firestore
 - ✅ UI: Location permission banners on incidents pages
 - ✅ Security: Firestore rules updated and deployed
-- ✅ Documentation: Complete guides created
-- ⚠️ **Extensions**: Geocode + Validate extensions need to be UNINSTALLED (broken, expensive, not needed)
-- ⚠️ **Testing**: Needs local + mobile testing
-- ⚠️ **Deployment**: Ready for Cloudflare Pages deployment
+- ✅ **Auth Persistence**: Set to LOCAL - users NEVER time out
+- ✅ **Real-time Updates**: All data auto-updates via onSnapshot
+- ✅ **Color Standards**: All colors standardized (docs/COLOR_STANDARDS.md)
+- ✅ **Better Errors**: Location errors now show helpful messages
+- ✅ **Documentation**: Comprehensive guides created
+- ⚠️ **Extensions**: Geocode + Validate extensions need UNINSTALL (user action)
+- ⚠️ **Testing**: PC works, phone needs HTTPS
+- 🚀 **Next**: Deploy to Cloudflare Pages for HTTPS (mobile location requires it)
 
 ## Recent Changes (This Session)
+
+### Phase 7: Stay Signed In Forever (Current)
+**User Requirement**: "I want users to stay signed in at all times, these apps can not time out"
+
+**Implementation** (`lib/firebase.ts`):
+```typescript
+import { setPersistence, browserLocalPersistence } from "firebase/auth";
+
+setPersistence(auth, browserLocalPersistence)
+  .then(() => {
+    console.log("Auth persistence set to LOCAL - users stay signed in forever");
+  });
+```
+
+**Result**:
+- ✅ Users stay signed in **forever**
+- ✅ No timeouts or session expiration
+- ✅ Sign-in persists across browser restarts
+- ✅ Only explicit "Sign Out" logs users out
+
+### Phase 8: Color Standardization
+**User Requirement**: "Every color i want to be standardized across the entire site. And make sure we put this in the docs."
+
+**Created** `lib/colors.ts`:
+- Defined ALL standard colors in one place
+- Red: `#FF3B30` (hover: `#FF2D1F`)
+- Green: `#34C759` (hover: `#2FB04D`)
+- Orange: `#FF9500` (hover: `#FF8800`)
+- Blue: `#007AFF` (hover: `#0051D5`)
+
+**Created** `docs/COLOR_STANDARDS.md`:
+- Official color palette documentation
+- Usage guidelines for developers
+- Component-specific color mapping
+- Testing checklist
+
+**Updates**:
+- Preferences toggles: Changed to orange (`#FF9500`)
+- Chat page emergency buttons: Already correct red
+- Bottom nav heart: Red when active
+- All colors now standardized
+
+### Phase 9: Better Location Error Messages
+**Problem**: Phone showing empty error `{}`
+
+**Implementation** (`hooks/use-location-distance.ts`):
+- Decode error codes (1=denied, 2=unavailable, 3=timeout)
+- Detect HTTPS requirement on mobile browsers
+- Show helpful error messages
+- Log detailed debugging information
+
+**Created** `docs/MOBILE_LOCATION_FIX.md`:
+- Explains why HTTPS is required for mobile location
+- Step-by-step Cloudflare deployment guide
+- Troubleshooting for location permission issues
+
+### Phase 10: Real-Time Updates Documentation
+**User Requirement**: "The alerts have to auto populate in real time also, so when a new alert comes in it has to show immediately"
+
+**Status**: Already implemented! ✅
+
+**Created** `docs/AUTH_AND_REALTIME.md`:
+- Documents Firebase `onSnapshot` listeners
+- Explains how real-time updates work
+- Lists all real-time features
+- Testing procedures for multi-device updates
+
+**All Features with Real-Time**:
+- New alerts
+- Alert updates
+- Favorites
+- Bookmarks
+- Notes
+- User profile
+- Live locations
+- Messages
+
+---
+
+## Previous Session Changes
 
 ### Phase 1: Distance Calculation Architecture
 **Problem**: How to show "15.3 mi away" for each incident?
