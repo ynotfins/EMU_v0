@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Heart, Bookmark, Bell, BellOff } from "lucide-react";
+import { Heart, Bookmark, Bell, BellOff, EyeOff } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,7 @@ interface IncidentListItemProps {
   onToggleFavorite: (id: string) => void;
   onToggleBookmark: (id: string) => void;
   onToggleSilence?: (id: string) => void;
+  onHide?: (id: string) => void;
 }
 
 export function IncidentListItem({
@@ -23,6 +24,7 @@ export function IncidentListItem({
   onToggleFavorite,
   onToggleBookmark,
   onToggleSilence,
+  onHide,
 }: IncidentListItemProps) {
   const { l1, l2, l3 } = formatListLines(incident);
   const updateCount = incident.updates?.length || 0;
@@ -134,9 +136,22 @@ export function IncidentListItem({
             {silenced ? (
               <BellOff className="h-5 w-5 text-[#FF3B30]" />
             ) : (
-              <Bell className="h-5 w-5 text-[#FF9500]" />
+              <Bell className="h-5 w-5 text-[#34C759]" />
             )}
           </button>
+          {onHide && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onHide(incident.id);
+              }}
+              className="p-1 rounded transition-colors hover:bg-gray-100"
+              aria-label="Hide alert"
+              title="Hide this alert"
+            >
+              <EyeOff className="h-5 w-5 text-[#34C759]" />
+            </button>
+          )}
         </div>
       </div>
     </Card>

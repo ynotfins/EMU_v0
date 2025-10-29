@@ -3,6 +3,23 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Flashing animation for risky sort by distance button */
+@keyframes flash-red-white {
+  0%, 100% { 
+    background-color: #FF3B30;
+    color: white;
+  }
+  50% { 
+    background-color: white;
+    color: #FF3B30;
+    border-color: #FF3B30;
+  }
+}
+
+.animate-flash-red-white {
+  animation: flash-red-white 1s ease-in-out infinite;
+}
+
 /* Updated color tokens to match EMU Alerts theme */
 :root {
   --emu-blue: #007aff;

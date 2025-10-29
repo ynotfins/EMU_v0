@@ -151,7 +151,7 @@ export default function SupeIncidentsPage() {
               variant="outline"
               size="sm"
               onClick={() => setSortByDistance(!sortByDistance)}
-              className={`gap-2 ${sortByDistance ? 'bg-[#007AFF] text-white hover:bg-[#0051D5] border-[#007AFF]' : ''}`}
+              className={`gap-2 ${sortByDistance ? 'animate-flash-red-white border-2' : ''}`}
             >
               <ArrowUpDown className="h-4 w-4" />
               {sortByDistance ? 'Sort by Time' : 'Sort by Distance'}

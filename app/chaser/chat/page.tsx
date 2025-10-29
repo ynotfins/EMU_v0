@@ -38,7 +38,8 @@ export default function ChaserChatPage() {
           {/* Emergency Communication Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
             <Button
-              className="flex-1 bg-[#FF3B30] hover:bg-[#FF2D1F] text-white py-8 text-lg font-semibold rounded-xl shadow-lg"
+              variant="destructive"
+              className="flex-1 py-8 text-lg font-semibold rounded-xl"
               onClick={() => {
                 // In production, this would trigger the emergency call
                 window.location.href = "tel:911";
@@ -48,7 +49,8 @@ export default function ChaserChatPage() {
               Emergency Call
             </Button>
             <Button
-              className="flex-1 bg-[#FF3B30] hover:bg-[#FF2D1F] text-white py-8 text-lg font-semibold rounded-xl shadow-lg"
+              variant="destructive"
+              className="flex-1 py-8 text-lg font-semibold rounded-xl"
               onClick={() => {
                 // In production, this would open push-to-talk
                 console.log("Push to Talk activated");
