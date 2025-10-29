@@ -49,9 +49,16 @@ export function useIncidentsWithDistance(filters?: Partial<IncidentFilters>) {
     setEnrichedIncidents(incidents);
 
     let isMounted = true;
+    let hasRun = false; // Prevent multiple runs
     setCalculatingDistance(true);
 
     async function enrichWithDistances() {
+      if (hasRun) {
+        console.log('[useIncidentsWithDistance] ⏭️ Already running, skipping...');
+        return;
+      }
+      hasRun = true;
+      
       // OPTIMIZATION: Only process visible incidents (8 visible + 4 preload = 12 total)
       const VISIBLE_COUNT = 8;  // Max visible on screen
       const PRELOAD_COUNT = 4;  // Preload next 4 for smooth scrolling
@@ -114,7 +121,7 @@ export function useIncidentsWithDistance(filters?: Partial<IncidentFilters>) {
     return () => {
       isMounted = false;
     };
-  }, [incidents, userLocation, getIncidentDistance]);
+  }, [incidents, userLocation]); // REMOVED getIncidentDistance from dependencies!
 
   return {
     data: enrichedIncidents,
