@@ -54,10 +54,18 @@ export default function Client({ id }: { id: string }) {
         {/* Tabs */}
         <Tabs defaultValue="details" className="flex-1 flex flex-col">
           <TabsList className="w-full justify-start rounded-none border-b bg-white">
-            <TabsTrigger value="details" className="flex-1">Details</TabsTrigger>
-            <TabsTrigger value="homeowner" className="flex-1">Homeowner</TabsTrigger>
-            <TabsTrigger value="docs" className="flex-1">Docs</TabsTrigger>
-            <TabsTrigger value="sign" className="flex-1">Sign</TabsTrigger>
+            <TabsTrigger value="details" className="flex-1">
+              Details
+            </TabsTrigger>
+            <TabsTrigger value="homeowner" className="flex-1">
+              Homeowner
+            </TabsTrigger>
+            <TabsTrigger value="docs" className="flex-1">
+              Docs
+            </TabsTrigger>
+            <TabsTrigger value="sign" className="flex-1">
+              Sign
+            </TabsTrigger>
           </TabsList>
 
           <div className="flex-1 overflow-y-auto">
@@ -78,8 +86,12 @@ export default function Client({ id }: { id: string }) {
                   <Heart className="h-6 w-6 text-gray-400" />
                 </div>
                 <p className="font-semibold text-lg mb-1">{incident.address}</p>
-                <p className="text-gray-600 text-sm">{incident.city}, {incident.county}, {incident.state}</p>
-                <p className="text-gray-500 text-xs mt-2">Alert ID: #NFA-{incident.incidentNumber}</p>
+                <p className="text-gray-600 text-sm">
+                  {incident.city}, {incident.county}, {incident.state}
+                </p>
+                <p className="text-gray-500 text-xs mt-2">
+                  Alert ID: #NFA-{incident.incidentNumber}
+                </p>
               </div>
 
               {/* Respond Button */}
@@ -92,7 +104,9 @@ export default function Client({ id }: { id: string }) {
               {/* Updates Section */}
               {incident.updates && incident.updates.length > 0 && (
                 <div className="px-4 py-3 border-t">
-                  <h3 className="font-semibold text-base mb-3">Updates ({incident.updates.length})</h3>
+                  <h3 className="font-semibold text-base mb-3">
+                    Updates ({incident.updates.length})
+                  </h3>
                   <div className="space-y-3">
                     {incident.updates.map((update, index) => (
                       <div key={index} className="text-sm">
@@ -115,7 +129,7 @@ export default function Client({ id }: { id: string }) {
                   onChange={(e) => setNoteText(e.target.value)}
                   className="min-h-32 mb-3"
                 />
-                <Button 
+                <Button
                   onClick={() => {
                     if (noteText.trim()) {
                       addNote(incident.id, noteText);
@@ -126,7 +140,7 @@ export default function Client({ id }: { id: string }) {
                 >
                   Save Notes
                 </Button>
-                
+
                 {/* Display existing notes */}
                 {incident.notes && incident.notes.length > 0 && (
                   <div className="mt-4 space-y-2">
@@ -145,7 +159,9 @@ export default function Client({ id }: { id: string }) {
               {/* Files */}
               {files && files.length > 0 && (
                 <div className="px-4 py-3 border-t">
-                  <h3 className="font-semibold text-base mb-3">Files ({files.length})</h3>
+                  <h3 className="font-semibold text-base mb-3">
+                    Files ({files.length})
+                  </h3>
                   <div className="space-y-2">
                     {files.map((file) => (
                       <div key={file.id} className="p-3 border rounded">
@@ -158,7 +174,9 @@ export default function Client({ id }: { id: string }) {
             </TabsContent>
 
             <TabsContent value="homeowner" className="p-4">
-              <p className="text-gray-500">Homeowner information will be displayed here</p>
+              <p className="text-gray-500">
+                Homeowner information will be displayed here
+              </p>
             </TabsContent>
 
             <TabsContent value="docs" className="p-4">
@@ -166,7 +184,9 @@ export default function Client({ id }: { id: string }) {
             </TabsContent>
 
             <TabsContent value="sign" className="p-4">
-              <p className="text-gray-500">E-signature interface will be displayed here</p>
+              <p className="text-gray-500">
+                E-signature interface will be displayed here
+              </p>
             </TabsContent>
           </div>
         </Tabs>

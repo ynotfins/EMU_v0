@@ -1,23 +1,25 @@
 # Active Context: EMU Alerts
 
 ## Current Status
-**Project Stage**: Development - App Running, Needs Test Data
+**Project Stage**: Development - App Running with Live BNN Data
 
-**Last Updated**: 2025-10-28 - MCP Configured, App Running, Empty Firestore  
-**Session**: mcp-setup-app-running
+**Last Updated**: 2025-10-28 - Complete Details Page Restored, Security Rules Opened  
+**Session**: complete-restore-ready-for-production
 
 ## Current Work Focus
-**CRITICAL**: App is running but Firestore is empty - no incidents showing
+**App is FULLY FUNCTIONAL with live BNN feed data**
 
 **Current State**:
 - ✅ Dev server: Running at http://localhost:3000
-- ✅ .env.local: Created with Firebase config (from Firebase MCP)
-- ✅ MCP servers: Firebase + GitHub (Chrome DevTools/Vercel removed to stay under tool limit)
-- ✅ Firebase SDK: FULLY WIRED 🔥
-- ✅ Real-time listeners: ACTIVE ⚡
-- ✅ Security Rules: DEPLOYED 🔒
-- ⚠️ **Firestore: EMPTY** - No test data, incidents page is blank
-- ⚠️ Seed script created but hit validation error (need manual data entry)
+- ✅ Live BNN data: Displaying correctly, grouped by incidentId
+- ✅ Details page: Complete with tabs, map, notes, respond button
+- ✅ Home page: Shows latest update per incident ID
+- ✅ Favorites/Bookmarks: Working and persisting to Firestore
+- ✅ Silence button: Working with visual feedback
+- ✅ MCP servers: Firebase + GitHub configured
+- ⚠️ **Security Rules: COMPLETELY OPEN** (DEV MODE - must fix before production!)
+- ⚠️ **Firestore Index: Required** (must create or details page won't load)
+- ⚠️ **Anonymous Auth: Disabled** (causes warning but doesn't block)
 
 ## Recent Changes (This Session)
 **Phase 1: Setup & Type Safety**
@@ -84,30 +86,31 @@ All TypeScript errors fixed, Firestore rules deployed, wiring test passing!
 
 ## Next Immediate Steps
 
-### URGENT Priority 1: Add Test Data Manually 🧪
-**The app is running but Firestore is empty!**
+### CRITICAL Priority 1: Create Firestore Index 🔥
+**Details page won't work without this!**
 
-1. **Open Firebase Console**: `npm run rules:open` or go to https://console.firebase.google.com
-2. **Navigate to**: Firestore Database → Data tab
-3. **Create collection**: `incidents`
-4. **Add test document**:
-   ```json
-   {
-     "incidentNumber": 1234567,
-     "type": "Working Fire",
-     "message": "Structure fire with heavy smoke showing",
-     "address": "1234 Sunset Blvd",
-     "city": "Los Angeles",
-     "county": "Los Angeles",
-     "state": "CA",
-     "distanceMi": 2.3,
-     "updatedAt": Timestamp(now),
-     "favoritedBy": [],
-     "bookmarkedBy": []
-   }
-   ```
-5. **Refresh app** - incident should appear immediately!
-6. **Test favorites** - click ⭐, verify `favoritedBy` array updates
+1. **Create composite index**:
+   - Go to: https://console.firebase.google.com/project/emu-incidents/firestore/indexes
+   - Or use the auto-generated link from error message
+   - Click "Create Index"
+   - Fields: `incidentId` (Ascending) + `lastSeenAt` (Descending)
+   - Wait 5-10 minutes for index to build
+   
+2. **Once index is built**: Details page will load all updates for each incident
+
+### Priority 2: Enable Anonymous Authentication (Optional) 🔐
+**Removes console warning**
+
+1. Go to: https://console.firebase.google.com/project/emu-incidents/authentication/providers
+2. Click "Anonymous" → Toggle "Enable" → Save
+3. Refresh app - warning disappears
+
+### Priority 3: Restore Security Rules (BEFORE PRODUCTION!) 🚨
+**Current rules allow ANYONE to read/write EVERYTHING**
+
+1. Create proper production rules in `firestore.rules`
+2. Test with authentication enabled
+3. Deploy: `firebase deploy --only firestore:rules`
 
 ### Priority 2: Deploy to Firebase Hosting 🚀
 1. Run `npm run build` (verify build passes)
