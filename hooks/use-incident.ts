@@ -15,6 +15,15 @@ import { logError } from "@/lib/logger";
 import type { Incident } from "@/types/domain";
 import { getUid } from "@/lib/dev";
 
+// NYC Borough to County mapping
+const BOROUGH_TO_COUNTY: Record<string, string> = {
+  Manhattan: "New York",
+  Brooklyn: "Kings",
+  Queens: "Queens",
+  Bronx: "Bronx",
+  "Staten Island": "Richmond",
+};
+
 export function useIncident(incidentId: string) {
   const [data, setData] = useState<Incident | undefined>();
   const [updates, setUpdates] = useState<any[]>([]);
@@ -74,6 +83,10 @@ export function useIncident(incidentId: string) {
         const isFavorited = favoritedBy.includes(userId);
         const isBookmarked = bookmarkedBy.includes(userId);
 
+        // Map NYC boroughs to official county names
+        const rawCounty = latestData.county || "";
+        const county = BOROUGH_TO_COUNTY[rawCounty] || rawCounty;
+
         setError(undefined);
         setData({
           id: incidentId,
@@ -82,7 +95,7 @@ export function useIncident(incidentId: string) {
           message: latestData.lastMessage || latestData.message || "",
           address: latestData.address || "",
           city: latestData.city || "",
-          county: latestData.county || "",
+          county,
           state: latestData.state || "",
           updatedAt:
             latestData.lastTs?.toDate?.()?.toISOString() ||

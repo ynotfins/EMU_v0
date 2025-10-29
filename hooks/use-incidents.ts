@@ -18,6 +18,15 @@ import { getUid } from "@/lib/dev";
 import type { IncidentLite } from "@/types/domain";
 import { useFavoritesContext } from "@/lib/context/favorites-context";
 
+// NYC Borough to County mapping
+const BOROUGH_TO_COUNTY: Record<string, string> = {
+  Manhattan: "New York",
+  Brooklyn: "Kings",
+  Queens: "Queens",
+  Bronx: "Bronx",
+  "Staten Island": "Richmond",
+};
+
 // Normalize inconsistent Firestore data into IncidentLite type
 function normalize(docId: string, data: any): IncidentLite {
   // Handle timestamp variations - try multiple fields and handle Firestore Timestamp objects
@@ -33,7 +42,9 @@ function normalize(docId: string, data: any): IncidentLite {
   }
 
   const state = data.state || "";
-  const county = data.county || "";
+  const rawCounty = data.county || "";
+  // Map NYC boroughs to official county names
+  const county = BOROUGH_TO_COUNTY[rawCounty] || rawCounty;
   const city = data.city || "";
   const address = data.address || data.addr || data.street || "";
   const type = data.type || data.lastType || data.alertType || "Unknown";

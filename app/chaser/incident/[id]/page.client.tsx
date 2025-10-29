@@ -102,7 +102,7 @@ export default function Client({ id }: { id: string }) {
                 </div>
                 <p className="font-semibold text-lg mb-1">{incident.address}</p>
                 <p className="text-gray-600 text-sm">
-                  {incident.city}, {incident.county}, {incident.state}
+                  {incident.state}, {incident.county}, {incident.city}
                 </p>
                 <p className="text-gray-500 text-xs mt-2">
                   Alert ID: #NFA-{incident.incidentNumber}
@@ -116,8 +116,8 @@ export default function Client({ id }: { id: string }) {
                 </Button>
               </div>
 
-              {/* Updates Section - No line limit on details page */}
-              {updates && updates.length > 0 && (
+              {/* Updates Section - Show initial message if no updates */}
+              {updates && updates.length > 0 ? (
                 <div className="px-4 py-3 border-t">
                   <h3 className="font-semibold text-base mb-3">
                     Updates ({updates.length})
@@ -148,6 +148,26 @@ export default function Client({ id }: { id: string }) {
                       </div>
                     ))}
                   </div>
+                </div>
+              ) : (
+                <div className="px-4 py-3 border-t">
+                  <h3 className="font-semibold text-base mb-3">
+                    Initial Alert
+                  </h3>
+                  <div className="text-sm bg-gray-50 p-3 rounded-lg">
+                    <p className="text-xs text-gray-500 mb-1 font-medium">
+                      {new Date(incident.updatedAt).toLocaleString()}
+                    </p>
+                    <p className="text-sm font-semibold text-gray-900 mb-1">
+                      {incident.type}
+                    </p>
+                    <p className="text-gray-800 whitespace-pre-wrap break-words">
+                      {incident.message || incident.address}
+                    </p>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2 italic">
+                    No updates yet for this incident
+                  </p>
                 </div>
               )}
 
