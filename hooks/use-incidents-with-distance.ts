@@ -48,19 +48,40 @@ export function useIncidentsWithDistance(filters?: Partial<IncidentFilters>) {
     setCalculatingDistance(true);
 
     async function enrichWithDistances() {
+      // OPTIMIZATION: Only geocode first 20 incidents (visible on screen)
+      // Rest will use cached lat/lng if available, or show undefined distance
+      const BATCH_SIZE = 20;
+      
       console.log(
-        `[useIncidentsWithDistance] 📏 Calculating distances for ${incidents.length} incidents`
+        `[useIncidentsWithDistance] 📏 Calculating distances (first ${Math.min(BATCH_SIZE, incidents.length)} will geocode if needed)`
       );
 
       const enriched = await Promise.all(
-        incidents.map(async (incident) => {
-          // Calculate distance (uses cached lat/lng or geocodes address)
-          const distance = await getIncidentDistance(
-            incident.id,
-            `${incident.address}, ${incident.city}, ${incident.state}`,
-            incident.lat,
-            incident.lng
-          );
+        incidents.map(async (incident, index) => {
+          // Only geocode first batch (visible incidents)
+          const shouldGeocode = index < BATCH_SIZE;
+          
+          let distance: number | undefined;
+          
+          // If we have cached lat/lng, always calculate distance
+          if (incident.lat !== null && incident.lat !== undefined && 
+              incident.lng !== null && incident.lng !== undefined) {
+            distance = await getIncidentDistance(
+              incident.id,
+              `${incident.address}, ${incident.city}, ${incident.state}`,
+              incident.lat,
+              incident.lng
+            );
+          } else if (shouldGeocode) {
+            // Only geocode if in first batch
+            distance = await getIncidentDistance(
+              incident.id,
+              `${incident.address}, ${incident.city}, ${incident.state}`,
+              undefined,
+              undefined
+            );
+          }
+          // Else: distance remains undefined (not visible, not cached)
 
           return {
             ...incident,
@@ -70,8 +91,9 @@ export function useIncidentsWithDistance(filters?: Partial<IncidentFilters>) {
       );
 
       if (isMounted) {
+        const withDistance = enriched.filter(i => i.distanceMi !== undefined).length;
         console.log(
-          `[useIncidentsWithDistance] ✅ Distances calculated for ${enriched.length} incidents`
+          `[useIncidentsWithDistance] ✅ Distances calculated for ${withDistance}/${enriched.length} incidents`
         );
         setEnrichedIncidents(enriched);
         setCalculatingDistance(false);
