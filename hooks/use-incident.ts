@@ -8,6 +8,8 @@ import {
   where,
   onSnapshot,
   orderBy,
+  doc,
+  getDoc,
 } from "firebase/firestore";
 import { logError } from "@/lib/logger";
 import type { Incident } from "@/types/domain";
@@ -32,6 +34,21 @@ export function useIncident(incidentId: string) {
     // Query ALL documents with this incidentId
     const incidentsRef = collection(db, "incidents");
 
+    // DIAGNOSTIC: First, try to get the document by ID directly
+    console.log(`[useIncident] 🔍 DIAGNOSTIC: Trying to get document by ID: "${incidentId}"`);
+    const directDocRef = doc(db, "incidents", incidentId);
+    getDoc(directDocRef).then((docSnap) => {
+      if (docSnap.exists()) {
+        console.log(`[useIncident] 🎯 FOUND DOCUMENT BY ID! Fields:`, {
+          docId: docSnap.id,
+          allFieldNames: Object.keys(docSnap.data()),
+          fullData: docSnap.data(),
+        });
+      } else {
+        console.log(`[useIncident] ❌ Document with ID "${incidentId}" does not exist`);
+      }
+    });
+
     // Keep as STRING - Firebase stores incidentId as string
     console.log(`[useIncident] Querying with string: "${incidentId}"`);
 
@@ -47,9 +64,10 @@ export function useIncident(incidentId: string) {
         console.log(
           `[useIncident] Query returned ${snapshot.docs.length} documents for incidentId: "${incidentId}"`
         );
-        
+
         // DEBUG: Show what fields exist in ALL documents
-        console.log(`[useIncident] 🔍 SAMPLE DOCUMENT FIELDS (first 3 docs):`, 
+        console.log(
+          `[useIncident] 🔍 SAMPLE DOCUMENT FIELDS (first 3 docs):`,
           snapshot.docs.slice(0, 3).map((doc, i) => ({
             docIndex: i,
             docId: doc.id,

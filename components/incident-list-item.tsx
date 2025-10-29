@@ -45,13 +45,14 @@ export function IncidentListItem({
         silenced && "opacity-50 bg-gray-50"
       )}
       onClick={() => {
-        const idToPass = (incident as any).incidentId || incident.incidentNumber.toString();
+        const idToPass =
+          (incident as any).incidentId || incident.incidentNumber.toString();
         console.log(`[IncidentListItem] 🔍 ROUTING with:`, {
-          'incident.id': incident.id,
-          'incident.incidentNumber': incident.incidentNumber,
-          '(incident as any).incidentId': (incident as any).incidentId,
-          'idToPass': idToPass,
-          'typeof idToPass': typeof idToPass,
+          "incident.id": incident.id,
+          "incident.incidentNumber": incident.incidentNumber,
+          "(incident as any).incidentId": (incident as any).incidentId,
+          idToPass: idToPass,
+          "typeof idToPass": typeof idToPass,
         });
         onOpen(idToPass);
       }}

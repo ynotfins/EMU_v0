@@ -62,19 +62,18 @@ function normalize(docId: string, data: any): IncidentLite {
     // CRITICAL: Store the actual incidentId field for routing/querying
     incidentId: data.incidentId,
   } as any;
-  
+
   // DEBUG: Log what we're storing for routing
-  if (docId === "6xE4cVQPSqpjn88vC4kE" || Math.random() < 0.01) {
-    console.log(`[normalize] 🔍 Document ${docId} fields:`, {
+  if (docId === "6xE4cVQPSqpjn88vC4kE" || docId === "1834007" || Math.random() < 0.02) {
+    console.log(`[normalize] 🔍 Document ${docId} ALL FIELDS:`, {
       docId,
-      'data.incidentId': data.incidentId,
-      'data.incidentNumber': data.incidentNumber,
-      'normalized.incidentId': normalized.incidentId,
-      'normalized.incidentNumber': normalized.incidentNumber,
-      'typeof data.incidentId': typeof data.incidentId,
+      "data.incidentId": data.incidentId,
+      "data.incidentNumber": data.incidentNumber,
+      "ALL_FIELD_NAMES": Object.keys(data),
+      "FULL_DATA": data,
     });
   }
-  
+
   return normalized;
 }
 
