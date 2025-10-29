@@ -2,16 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { 
-  signInWithPopup, 
+import {
+  signInWithPopup,
   signInWithEmailAndPassword,
-  GoogleAuthProvider, 
-  onAuthStateChanged 
+  GoogleAuthProvider,
+  onAuthStateChanged,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -40,12 +46,12 @@ export default function LoginPage() {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      
+
       console.log("[Login] ✅ Google sign-in successful:", result.user.email);
       router.push("/chaser/incidents");
     } catch (err: any) {
       console.error("[Login] ❌ Google sign-in error:", err);
-      
+
       if (err.code === "auth/popup-closed-by-user") {
         setError("Sign-in cancelled. Please try again.");
       } else if (err.code === "auth/popup-blocked") {
@@ -75,7 +81,7 @@ export default function LoginPage() {
       router.push("/chaser/incidents");
     } catch (err: any) {
       console.error("[Login] ❌ Email sign-in error:", err);
-      
+
       if (err.code === "auth/user-not-found") {
         setError("No account found with this email.");
       } else if (err.code === "auth/wrong-password") {
@@ -119,14 +125,14 @@ export default function LoginPage() {
             Sign in to access emergency alerts and incident management
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent className="space-y-6">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
               {error}
             </div>
           )}
-          
+
           {!showEmailLogin ? (
             <>
               {/* Google Sign-In Button */}
@@ -253,4 +259,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

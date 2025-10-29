@@ -3,19 +3,22 @@
 ## ✅ **COMPLETED:**
 
 ### 🔐 Authentication
+
 - ✅ Email/Password login implemented
-- ✅ Google Sign-In implemented  
+- ✅ Google Sign-In implemented
 - ✅ Removed anonymous auth fallback
 - ✅ Removed dev UID shortcuts
 - ✅ Login page supports both methods
 
 ### 🔒 Security
+
 - ✅ Firestore rules deployed (production-ready)
 - ✅ Storage rules created (ready to deploy)
 - ✅ Route protection (all pages require auth)
 - ✅ Real authentication required (no dev shortcuts)
 
 ### 🔌 Extensions Installed
+
 - ✅ Delete User Data (GDPR compliance)
 - ✅ Resize Images (photo compression)
 - ✅ **Geocode Address** (auto lat/lng) - **YOU INSTALLED THIS** 🎉
@@ -30,6 +33,7 @@
 **Why:** Production apps shouldn't allow anonymous access.
 
 **How:**
+
 1. Go to: https://console.firebase.google.com/project/emu-incidents/authentication/providers
 2. Click **"Anonymous"**
 3. Toggle **"Enable"** to **OFF**
@@ -44,6 +48,7 @@
 **Why:** Storage rules control who can upload/download files.
 
 **How:**
+
 1. Go to: https://console.firebase.google.com/project/emu-incidents/storage
 2. Click **"Get Started"**
 3. Choose **"Start in production mode"**
@@ -51,6 +56,7 @@
 5. Click **"Done"**
 
 **Then deploy rules:**
+
 ```bash
 cd D:\github\EMU_v0
 firebase deploy --only storage
@@ -65,6 +71,7 @@ firebase deploy --only storage
 **Why:** Your login page now supports email/password sign-in.
 
 **How:**
+
 1. Go to: https://console.firebase.google.com/project/emu-incidents/authentication/providers
 2. Click **"Email/Password"**
 3. Toggle **"Enable"** to **ON**
@@ -80,6 +87,7 @@ firebase deploy --only storage
 **Why:** You need an account to test with!
 
 **Option A: Via Firebase Console (Recommended for testing)**
+
 1. Go to: https://console.firebase.google.com/project/emu-incidents/authentication/users
 2. Click **"Add user"**
 3. **Email:** your.email@example.com
@@ -89,6 +97,7 @@ firebase deploy --only storage
 Repeat for your wife's account.
 
 **Option B: Via App (Production method)**
+
 1. Build a signup page (not included yet)
 2. Users self-register
 
@@ -99,12 +108,14 @@ For now, **use Option A** to create test accounts.
 ### Step 5: Test Login (5 minutes)
 
 **Start dev server:**
+
 ```bash
 cd D:\github\EMU_v0
 npm run dev
 ```
 
 **Test Email/Password:**
+
 1. Go to: http://localhost:3000
 2. Click **"Sign in with Email"**
 3. Enter your email + password
@@ -112,6 +123,7 @@ npm run dev
 5. **✅ Success!**
 
 **Test Google Sign-In:**
+
 1. Sign out (Profile → Sign Out)
 2. Click **"Sign in with Google"**
 3. Select Google account
@@ -123,6 +135,7 @@ npm run dev
 ### Step 6: Build for Production (2 minutes)
 
 **Build the app:**
+
 ```bash
 cd D:\github\EMU_v0
 npm run build
@@ -135,16 +148,19 @@ npm run build
 ### Step 7: Deploy to Firebase Hosting (3 minutes)
 
 **Deploy:**
+
 ```bash
 firebase deploy --only hosting
 ```
 
 **You'll get a URL like:**
+
 ```
 Hosting URL: https://emu-incidents.web.app
 ```
 
 **Test live site:**
+
 1. Open the hosting URL
 2. Sign in with email/password
 3. **✅ Your app is LIVE!**
@@ -156,10 +172,12 @@ Hosting URL: https://emu-incidents.web.app
 **Why:** Use your own domain instead of `.web.app`.
 
 **Prerequisites:**
+
 - Own a domain (e.g., `emualer ts.com`)
 - Have access to domain DNS settings
 
 **Steps:**
+
 1. Go to: https://console.firebase.google.com/project/emu-incidents/hosting/sites
 2. Click **"Add custom domain"**
 3. Enter your domain: `emutalerts.com`
@@ -171,6 +189,7 @@ Hosting URL: https://emu-incidents.web.app
 7. Wait for SSL certificate (auto-generated)
 
 **DNS Records (example):**
+
 ```
 Type    Name    Value
 TXT     @       firebase=emu-incidents
@@ -185,9 +204,11 @@ A       @       151.101.65.195
 ## 📊 **Firebase Extensions - What You Have:**
 
 ### 1. Delete User Data ✅
+
 **What it does:** Auto-deletes user data when account is deleted.
 
 **Config:**
+
 - Firestore paths: `users/{UID}`
 - Storage paths: `users/{UID}`
 
@@ -196,9 +217,11 @@ A       @       151.101.65.195
 ---
 
 ### 2. Resize Images ✅
+
 **What it does:** Auto-resizes uploaded images.
 
 **Config:**
+
 - Storage bucket: `emu-incidents.firebasestorage.app`
 - Sizes: `200x200,800x800`
 
@@ -207,14 +230,17 @@ A       @       151.101.65.195
 ---
 
 ### 3. Geocode Address in Firestore ✅ **NEW!**
+
 **What it does:** Converts addresses to lat/lng automatically.
 
 **Config:**
+
 - Collection: `incidents`
 - Address field: `address`
 - Lat/Lng fields: `lat`, `lng`
 
 **Use case:**
+
 - Auto-geocode all new incidents
 - Show map pins on details page
 - Calculate distance from user
@@ -222,6 +248,7 @@ A       @       151.101.65.195
 **Cost:** ~$5 per 1,000 geocodes (first $200 free with Google Cloud)
 
 **How it works:**
+
 1. New incident created with `address` field
 2. Extension automatically calls Google Geocoding API
 3. Adds `lat` and `lng` fields to document
@@ -230,14 +257,17 @@ A       @       151.101.65.195
 ---
 
 ### 4. Validate Address in Firestore ✅ **NEW!**
+
 **What it does:** Validates and standardizes addresses.
 
 **Config:**
+
 - Collection: `incidents`
 - Address field: `address`
 - Uses Google Maps Address Validation API
 
 **Use case:**
+
 - Prevent typos in addresses
 - Standardize address formats
 - Ensure addresses are deliverable
@@ -246,6 +276,7 @@ A       @       151.101.65.195
 **Cost:** ~$5 per 1,000 validations
 
 **How it works:**
+
 1. Address is written to Firestore
 2. Extension validates with Google Maps API
 3. Returns validation status
@@ -255,17 +286,17 @@ A       @       151.101.65.195
 
 ## 💰 **Monthly Cost Estimate:**
 
-| Service | Usage (estimated) | Cost |
-|---------|-------------------|------|
-| **Firestore** | 10,000 reads, 1,000 writes | $0.50 |
-| **Storage** | 1GB files, 5GB bandwidth | $0.30 |
-| **Hosting** | 10GB bandwidth | Free |
-| **Authentication** | 1,000 users | Free |
-| **Delete User Data** | 10 deletions | Free |
-| **Resize Images** | 100 resizes | $0.05 |
-| **Geocode Address** | 500 geocodes | $2.50 |
-| **Validate Address** | 500 validations | $2.50 |
-| **TOTAL** | - | **~$5.85/month** |
+| Service              | Usage (estimated)          | Cost             |
+| -------------------- | -------------------------- | ---------------- |
+| **Firestore**        | 10,000 reads, 1,000 writes | $0.50            |
+| **Storage**          | 1GB files, 5GB bandwidth   | $0.30            |
+| **Hosting**          | 10GB bandwidth             | Free             |
+| **Authentication**   | 1,000 users                | Free             |
+| **Delete User Data** | 10 deletions               | Free             |
+| **Resize Images**    | 100 resizes                | $0.05            |
+| **Geocode Address**  | 500 geocodes               | $2.50            |
+| **Validate Address** | 500 validations            | $2.50            |
+| **TOTAL**            | -                          | **~$5.85/month** |
 
 **With free tier:** ~$0 for first 3 months (Google Cloud $300 credit)
 
@@ -274,6 +305,7 @@ A       @       151.101.65.195
 ## 🎯 **LAUNCH CHECKLIST:**
 
 ### Pre-Launch (Do Today):
+
 - [ ] Disable anonymous auth
 - [ ] Initialize Firebase Storage
 - [ ] Deploy storage rules
@@ -286,6 +318,7 @@ A       @       151.101.65.195
 - [ ] Test live site
 
 ### Post-Launch (This Week):
+
 - [ ] Add custom domain
 - [ ] Test on mobile devices
 - [ ] Invite beta testers
@@ -295,6 +328,7 @@ A       @       151.101.65.195
 - [ ] Test address validation
 
 ### Week 2:
+
 - [ ] Add more users (chasers + supes)
 - [ ] Monitor costs (should be ~$0 with free tier)
 - [ ] Gather feedback
@@ -306,6 +340,7 @@ A       @       151.101.65.195
 ## 🚨 **CRITICAL - BEFORE LAUNCH:**
 
 ### Security Checklist:
+
 - ✅ Anonymous auth **MUST** be disabled
 - ✅ Firestore rules **deployed** (authenticated users only)
 - ✅ Storage rules **deployed** (10MB limit, authenticated only)
@@ -313,12 +348,14 @@ A       @       151.101.65.195
 - ✅ All functions require real auth
 
 ### Performance Checklist:
+
 - ✅ Build succeeds without errors
 - ✅ No console errors on login
 - ✅ Pages load in < 2 seconds
 - ✅ Mobile-responsive design
 
 ### Data Checklist:
+
 - ✅ Incidents collection has live data
 - ✅ Geocoding extension is active
 - ✅ Address validation is active
@@ -330,6 +367,7 @@ A       @       151.101.65.195
 ## 📞 **SUPPORT & MONITORING:**
 
 ### Firebase Console:
+
 - **Authentication:** https://console.firebase.google.com/project/emu-incidents/authentication
 - **Firestore:** https://console.firebase.google.com/project/emu-incidents/firestore
 - **Storage:** https://console.firebase.google.com/project/emu-incidents/storage
@@ -338,6 +376,7 @@ A       @       151.101.65.195
 - **Functions:** https://console.firebase.google.com/project/emu-incidents/functions
 
 ### Monitoring:
+
 - **Extension logs:** Functions → Logs tab
 - **Geocoding activity:** Extensions → Geocode Address → View logs
 - **User activity:** Authentication → Users tab
@@ -348,6 +387,7 @@ A       @       151.101.65.195
 ## 🎉 **YOU'RE PRODUCTION READY!**
 
 **Current Status:**
+
 - ✅ Authentication: Email/Password + Google
 - ✅ Security: Fully secured
 - ✅ Extensions: 4 installed
@@ -356,12 +396,14 @@ A       @       151.101.65.195
 - ✅ Docs: Complete
 
 **Next Command:**
+
 ```bash
 cd D:\github\EMU_v0
 npm run dev
 ```
 
 **Test, then deploy:**
+
 ```bash
 npm run build
 firebase deploy --only hosting
@@ -374,7 +416,6 @@ firebase deploy --only hosting
 **Last Updated:** October 29, 2025  
 **Status:** PRODUCTION READY 🎉  
 **Time to launch:** ~30 minutes  
-**Monthly cost:** ~$5.85 (free with credits)  
+**Monthly cost:** ~$5.85 (free with credits)
 
 **LET'S LAUNCH!** 💪
-

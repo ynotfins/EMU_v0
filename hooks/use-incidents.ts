@@ -145,7 +145,7 @@ function withUserFlags(incident: IncidentLite): IncidentLite {
       isBookmarked: false,
     };
   }
-  
+
   const favoritedBy = incident.favoritedBy ?? [];
   const bookmarkedBy = incident.bookmarkedBy ?? [];
   const isFavorited = favoritedBy.includes(uid);
@@ -298,7 +298,7 @@ export async function toggleFavorite(incidentId: string): Promise<void> {
     console.error("[toggleFavorite] ❌ No authenticated user");
     return;
   }
-  
+
   console.log("============================================");
   console.log(
     "[toggleFavorite] Starting - userId:",
@@ -376,7 +376,7 @@ export async function toggleBookmark(incidentId: string): Promise<void> {
     console.error("[toggleBookmark] ❌ No authenticated user");
     return;
   }
-  
+
   console.log("============================================");
   console.log(
     "[toggleBookmark] Starting - userId:",
