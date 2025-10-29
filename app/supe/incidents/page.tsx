@@ -53,6 +53,14 @@ export default function SupeIncidentsPage() {
     setHiddenIncidents(prev => new Set(prev).add(id))
   }
 
+  const handleUnhideIncident = (id: string) => {
+    setHiddenIncidents(prev => {
+      const next = new Set(prev)
+      next.delete(id)
+      return next
+    })
+  }
+
   if (!profile) {
     return (
       <RoleLayout role="supe">
@@ -164,6 +172,21 @@ export default function SupeIncidentsPage() {
               <ArrowUpDown className="h-4 w-4" />
               {sortByDistance ? 'Sort by Time' : 'Sort by Distance'}
             </Button>
+          </div>
+        )}
+
+        {/* Hidden Incidents Banner */}
+        {hiddenIncidents.size > 0 && (
+          <div className="bg-[#FF9500] text-white px-4 py-2 flex items-center justify-between">
+            <span className="text-sm font-medium">
+              {hiddenIncidents.size} alert{hiddenIncidents.size > 1 ? 's' : ''} hidden
+            </span>
+            <button
+              onClick={() => setHiddenIncidents(new Set())}
+              className="text-sm underline hover:no-underline"
+            >
+              Show All
+            </button>
           </div>
         )}
 

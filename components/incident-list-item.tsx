@@ -149,7 +149,7 @@ export function IncidentListItem({
               aria-label="Hide alert"
               title="Hide this alert"
             >
-              <EyeOff className="h-5 w-5 text-[#34C759]" />
+              <EyeOff className="h-5 w-5 text-[#FF9500]" />
             </button>
           )}
         </div>
