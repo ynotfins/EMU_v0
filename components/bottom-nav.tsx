@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Star, MessageSquare, User } from "lucide-react"
+import { Home, Heart, MessageSquare, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface BottomNavProps {
@@ -21,7 +21,7 @@ export function BottomNav({ role }: BottomNavProps) {
     },
     {
       label: "Favorites",
-      icon: Star,
+      icon: Heart,
       href: `/${role}/favorites`,
       active: pathname.includes("/favorites"),
     },
@@ -53,7 +53,11 @@ export function BottomNav({ role }: BottomNavProps) {
                 item.active ? "text-[#007AFF]" : "text-[#6B7280]",
               )}
             >
-              <Icon className="h-6 w-6" />
+              {item.label === "Favorites" ? (
+                <Icon className={cn("h-6 w-6", item.active ? "fill-[#FF3B30] text-[#FF3B30]" : "")} />
+              ) : (
+                <Icon className="h-6 w-6" />
+              )}
               <span className="text-xs font-medium">{item.label}</span>
             </Link>
           )

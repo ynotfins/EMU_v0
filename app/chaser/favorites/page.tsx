@@ -23,16 +23,22 @@ function EmptyState({
   message,
   actionLabel,
   onAction,
+  iconColor,
 }: {
   icon: LucideIcon;
   title: string;
   message: string;
   actionLabel?: string;
   onAction?: () => void;
+  iconColor?: string;
 }) {
   return (
     <div className="flex flex-col items-center justify-center h-full text-center px-6 py-20">
-      <Icon className="h-32 w-32 text-gray-300 mb-6" strokeWidth={1} />
+      <Icon 
+        className={`h-32 w-32 mb-6 ${iconColor || "text-gray-300"}`}
+        strokeWidth={1}
+        fill={iconColor ? "currentColor" : "none"}
+      />
       <h2 className="text-2xl font-bold text-gray-900 mb-3">{title}</h2>
       <p className="text-gray-500 mb-8 max-w-xs">{message}</p>
       {actionLabel && onAction && (
@@ -123,6 +129,7 @@ export default function ChaserFavoritesPage() {
                 message="Tap the heart icon on any NFA Alert to add it to your favorites"
                 actionLabel="Browse NFA Alerts"
                 onAction={() => router.push("/chaser/incidents")}
+                iconColor="text-[#FF3B30]"
               />
             ) : (
               <div className="p-4 space-y-3">

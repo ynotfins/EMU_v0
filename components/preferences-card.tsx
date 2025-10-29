@@ -28,14 +28,24 @@ export function PreferencesCard({
             <span className="text-lg">🔔</span>
             Push Notifications
           </Label>
-          <Switch id="push-notifications" checked={pushEnabled} onCheckedChange={onPushChange} />
+          <Switch 
+            id="push-notifications" 
+            checked={pushEnabled} 
+            onCheckedChange={onPushChange}
+            className="data-[state=checked]:bg-[#34C759]"
+          />
         </div>
         <div className="flex items-center justify-between">
           <Label htmlFor="location-tracking" className="text-sm font-medium flex items-center gap-2">
             <span className="text-lg">📍</span>
             Location Tracking
           </Label>
-          <Switch id="location-tracking" checked={trackingEnabled} onCheckedChange={onTrackingChange} />
+          <Switch 
+            id="location-tracking" 
+            checked={trackingEnabled} 
+            onCheckedChange={onTrackingChange}
+            className="data-[state=checked]:bg-[#34C759]"
+          />
         </div>
       </CardContent>
     </Card>
