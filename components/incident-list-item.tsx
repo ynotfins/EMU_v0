@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Heart, Bookmark, BellOff } from "lucide-react";
+import { Heart, Bookmark, Bell, BellOff } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -44,7 +44,7 @@ export function IncidentListItem({
         "relative p-4 cursor-pointer hover:shadow-md transition-shadow",
         silenced && "opacity-50 bg-gray-50"
       )}
-      onClick={() => onOpen(incident.id)}
+      onClick={() => onOpen(incident.incidentNumber.toString())}
     >
       {barHeightPercent > 0 && (
         <div
@@ -125,12 +125,11 @@ export function IncidentListItem({
             aria-label={silenced ? "Unsilence" : "Silence"}
             title={silenced ? "Click to unsilence" : "Click to silence"}
           >
-            <BellOff
-              className={cn(
-                "h-5 w-5",
-                silenced ? "text-white" : "text-[#6B7280]"
-              )}
-            />
+            {silenced ? (
+              <BellOff className="h-5 w-5 text-white" />
+            ) : (
+              <Bell className="h-5 w-5 text-[#6B7280]" />
+            )}
           </button>
         </div>
       </div>
