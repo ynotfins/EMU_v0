@@ -73,7 +73,7 @@ export default function ChaserProfilePage() {
           />
 
           <Button onClick={handleSignOut} variant="destructive" className="w-full">
-            <LogOut className="h-4 w-4 mr-2" />
+            <span className="text-lg mr-2">🚪</span>
             Sign Out
           </Button>
         </div>

@@ -28,7 +28,10 @@ export function EmergencyPaymentCard({ verified, cashappHandle, venmoHandle, onS
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CardHeader>
           <CollapsibleTrigger className="flex items-center justify-between w-full">
-            <CardTitle className="text-lg">Emergency Payment Info</CardTitle>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <span className="text-xl">💳</span>
+              Emergency Payment Info
+            </CardTitle>
             {isOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
           </CollapsibleTrigger>
         </CardHeader>

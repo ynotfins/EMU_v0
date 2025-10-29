@@ -24,13 +24,15 @@ export function PreferencesCard({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
-          <Label htmlFor="push-notifications" className="text-sm font-medium">
+          <Label htmlFor="push-notifications" className="text-sm font-medium flex items-center gap-2">
+            <span className="text-lg">🔔</span>
             Push Notifications
           </Label>
           <Switch id="push-notifications" checked={pushEnabled} onCheckedChange={onPushChange} />
         </div>
         <div className="flex items-center justify-between">
-          <Label htmlFor="location-tracking" className="text-sm font-medium">
+          <Label htmlFor="location-tracking" className="text-sm font-medium flex items-center gap-2">
+            <span className="text-lg">📍</span>
             Location Tracking
           </Label>
           <Switch id="location-tracking" checked={trackingEnabled} onCheckedChange={onTrackingChange} />

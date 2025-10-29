@@ -17,11 +17,11 @@ export function HelpLegalCard({ onHelpSupport, onTermsPrivacy }: HelpLegalCardPr
       </CardHeader>
       <CardContent className="space-y-2">
         <Button variant="outline" onClick={onHelpSupport} className="w-full justify-start bg-transparent">
-          <HelpCircle className="h-4 w-4 mr-2" />
+          <span className="text-lg mr-2">ℹ️</span>
           Help & Support
         </Button>
         <Button variant="outline" onClick={onTermsPrivacy} className="w-full justify-start bg-transparent">
-          <FileText className="h-4 w-4 mr-2" />
+          <span className="text-lg mr-2">📄</span>
           Terms & Privacy
         </Button>
       </CardContent>
