@@ -14,7 +14,6 @@ import {
   arrayRemove,
 } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
-import { getUid } from "@/lib/dev";
 import type { IncidentLite } from "@/types/domain";
 import { useFavoritesContext } from "@/lib/context/favorites-context";
 
@@ -137,7 +136,16 @@ export function formatListLines(incident: IncidentLite) {
  * This is the single source of truth for computing user-specific flags
  */
 function withUserFlags(incident: IncidentLite): IncidentLite {
-  const uid = getUid(auth.currentUser?.uid); // Use getUid() to handle dev fallback
+  const uid = auth.currentUser?.uid;
+  if (!uid) {
+    // Not authenticated - no user flags
+    return {
+      ...incident,
+      isFavorited: false,
+      isBookmarked: false,
+    };
+  }
+  
   const favoritedBy = incident.favoritedBy ?? [];
   const bookmarkedBy = incident.bookmarkedBy ?? [];
   const isFavorited = favoritedBy.includes(uid);
@@ -285,7 +293,12 @@ export function useIncidents(filters?: Partial<IncidentFilters>) {
 
 // Firestore actions for favorites and bookmarks
 export async function toggleFavorite(incidentId: string): Promise<void> {
-  const userId = getUid(auth.currentUser?.uid);
+  const userId = auth.currentUser?.uid;
+  if (!userId) {
+    console.error("[toggleFavorite] ❌ No authenticated user");
+    return;
+  }
+  
   console.log("============================================");
   console.log(
     "[toggleFavorite] Starting - userId:",
@@ -293,11 +306,6 @@ export async function toggleFavorite(incidentId: string): Promise<void> {
     "incidentId:",
     incidentId
   );
-
-  if (!userId) {
-    console.warn("[toggleFavorite] No user logged in");
-    return;
-  }
 
   try {
     const incidentRef = doc(db, "incidents", incidentId);
@@ -346,9 +354,9 @@ export async function toggleFavorite(incidentId: string): Promise<void> {
 }
 
 export async function unfavorite(incidentId: string): Promise<void> {
-  const userId = getUid(auth.currentUser?.uid);
+  const userId = auth.currentUser?.uid;
   if (!userId) {
-    console.warn("[unfavorite] No user logged in");
+    console.error("[unfavorite] ❌ No authenticated user");
     return;
   }
 
@@ -363,7 +371,12 @@ export async function unfavorite(incidentId: string): Promise<void> {
 }
 
 export async function toggleBookmark(incidentId: string): Promise<void> {
-  const userId = getUid(auth.currentUser?.uid);
+  const userId = auth.currentUser?.uid;
+  if (!userId) {
+    console.error("[toggleBookmark] ❌ No authenticated user");
+    return;
+  }
+  
   console.log("============================================");
   console.log(
     "[toggleBookmark] Starting - userId:",
@@ -371,11 +384,6 @@ export async function toggleBookmark(incidentId: string): Promise<void> {
     "incidentId:",
     incidentId
   );
-
-  if (!userId) {
-    console.warn("[toggleBookmark] No user logged in");
-    return;
-  }
 
   try {
     const incidentRef = doc(db, "incidents", incidentId);
@@ -424,9 +432,9 @@ export async function toggleBookmark(incidentId: string): Promise<void> {
 }
 
 export async function unbookmark(incidentId: string): Promise<void> {
-  const userId = getUid(auth.currentUser?.uid);
+  const userId = auth.currentUser?.uid;
   if (!userId) {
-    console.warn("[unbookmark] No user logged in");
+    console.error("[unbookmark] ❌ No authenticated user");
     return;
   }
 

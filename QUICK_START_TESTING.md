@@ -47,6 +47,7 @@ Follow these 3 steps to start testing your app right now.
 ## Step 3: Start Testing (1 minute)
 
 1. **In terminal, run**:
+
    ```bash
    cd D:\github\EMU_v0
    npm run dev
@@ -65,6 +66,7 @@ Follow these 3 steps to start testing your app right now.
 ## ✅ **What to Test:**
 
 ### Must Test:
+
 - [ ] Sign in with Google
 - [ ] See live alerts
 - [ ] Click alert → details page loads
@@ -74,6 +76,7 @@ Follow these 3 steps to start testing your app right now.
 - [ ] Profile → Click Sign Out → redirects to login
 
 ### Nice to Test:
+
 - [ ] Sign in with your wife's account (different browser)
 - [ ] Both see same alerts
 - [ ] Favorites are separate
@@ -86,12 +89,15 @@ Follow these 3 steps to start testing your app right now.
 ## 🐛 **If Something Breaks:**
 
 ### "Missing permissions" error?
+
 → Make sure you're signed in with Google
 
 ### "Popup blocked"?
+
 → Allow popups for localhost
 
 ### Can't see alerts?
+
 → Check browser console (F12) for errors
 
 ---
@@ -99,10 +105,12 @@ Follow these 3 steps to start testing your app right now.
 ## 📞 **After Testing:**
 
 ### Worked perfectly? ✅
+
 1. **Disable anonymous auth** in Firebase Console (Authentication → Anonymous → Disable)
 2. **You're production-ready!**
 
 ### Found bugs? 🐛
+
 1. **Note what went wrong**
 2. **Check browser console (F12)**
 3. **Continue testing other features**
@@ -126,4 +134,3 @@ Find any bugs, test all features, make sure everything works.
 ---
 
 See `TESTING_GUIDE.md` for detailed testing checklist and troubleshooting.
-

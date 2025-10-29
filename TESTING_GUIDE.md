@@ -198,6 +198,7 @@ Open: http://localhost:3000
 **Cause**: User not authenticated.
 
 **Fix**:
+
 1. Sign out
 2. Sign in again
 3. Clear browser cache
@@ -217,6 +218,7 @@ Open: http://localhost:3000
 **Cause**: localhost not authorized in Firebase.
 
 **Fix**:
+
 1. Firebase Console → Authentication → Settings
 2. Authorized domains → Add `localhost`
 
@@ -278,6 +280,7 @@ Open: http://localhost:3000
 As you test, note any issues:
 
 ### Bug Report Format:
+
 ```
 **Page**: (e.g., Details page)
 **Action**: (e.g., Clicked favorite button)
@@ -349,4 +352,3 @@ If you encounter issues during testing:
 **Last Updated**: October 29, 2025  
 **Status**: Ready for testing! 🎉  
 **Security**: ✅ Fully secured with Google Auth
-
