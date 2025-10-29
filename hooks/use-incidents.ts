@@ -42,7 +42,7 @@ function normalize(docId: string, data: any): IncidentLite {
   const normalized = {
     id: docId,
     incidentNumber:
-      data.incidentNumber || data.incidentId || parseInt(docId) || 0,
+      data.incidentNumber || data.incidentId || data.firestoreDocId || parseInt(docId) || 0,
     updatedAt,
     state,
     county,
@@ -59,18 +59,22 @@ function normalize(docId: string, data: any): IncidentLite {
     // Store raw arrays for favorite/bookmark logic
     favoritedBy: data.favoritedBy || [],
     bookmarkedBy: data.bookmarkedBy || [],
-    // CRITICAL: Store the actual incidentId field for routing/querying
-    incidentId: data.incidentId,
+    // CRITICAL: Store the actual firestoreDocId field for routing/querying
+    incidentId: data.firestoreDocId || data.incidentId,
   } as any;
 
   // DEBUG: Log what we're storing for routing
-  if (docId === "6xE4cVQPSqpjn88vC4kE" || docId === "1834007" || Math.random() < 0.02) {
+  if (
+    docId === "6xE4cVQPSqpjn88vC4kE" ||
+    docId === "1834007" ||
+    Math.random() < 0.02
+  ) {
     console.log(`[normalize] 🔍 Document ${docId} ALL FIELDS:`, {
       docId,
       "data.incidentId": data.incidentId,
       "data.incidentNumber": data.incidentNumber,
-      "ALL_FIELD_NAMES": Object.keys(data),
-      "FULL_DATA": data,
+      ALL_FIELD_NAMES: Object.keys(data),
+      FULL_DATA: data,
     });
   }
 

@@ -35,7 +35,9 @@ export function useIncident(incidentId: string) {
     const incidentsRef = collection(db, "incidents");
 
     // DIAGNOSTIC: First, try to get the document by ID directly
-    console.log(`[useIncident] 🔍 DIAGNOSTIC: Trying to get document by ID: "${incidentId}"`);
+    console.log(
+      `[useIncident] 🔍 DIAGNOSTIC: Trying to get document by ID: "${incidentId}"`
+    );
     const directDocRef = doc(db, "incidents", incidentId);
     getDoc(directDocRef).then((docSnap) => {
       if (docSnap.exists()) {
@@ -45,16 +47,18 @@ export function useIncident(incidentId: string) {
           fullData: docSnap.data(),
         });
       } else {
-        console.log(`[useIncident] ❌ Document with ID "${incidentId}" does not exist`);
+        console.log(
+          `[useIncident] ❌ Document with ID "${incidentId}" does not exist`
+        );
       }
     });
 
-    // Keep as STRING - Firebase stores incidentId as string
-    console.log(`[useIncident] Querying with string: "${incidentId}"`);
+    // Query by firestoreDocId field (not incidentId!)
+    console.log(`[useIncident] Querying by firestoreDocId: "${incidentId}"`);
 
     const q = query(
       incidentsRef,
-      where("incidentId", "==", incidentId),
+      where("firestoreDocId", "==", incidentId),
       orderBy("lastSeenAt", "desc")
     );
 
@@ -90,7 +94,7 @@ export function useIncident(incidentId: string) {
           const incidentIdNum = parseInt(incidentId, 10);
           const qNum = query(
             incidentsRef,
-            where("incidentId", "==", incidentIdNum),
+            where("firestoreDocId", "==", incidentIdNum),
             orderBy("lastSeenAt", "desc")
           );
 
