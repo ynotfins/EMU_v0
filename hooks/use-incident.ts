@@ -27,21 +27,30 @@ export function useIncident(incidentId: string) {
       return;
     }
 
-    console.log(`[useIncident] Loading incident and updates subcollection: "${incidentId}"`);
+    console.log(
+      `[useIncident] Loading incident and updates subcollection: "${incidentId}"`
+    );
 
     // Load the incident document
     const incidentDocRef = doc(db, "incidents", incidentId);
-    
+
     // Load updates from subcollection (Cloud Function stores updates here!)
-    const updatesCollectionRef = collection(db, "incidents", incidentId, "updates");
+    const updatesCollectionRef = collection(
+      db,
+      "incidents",
+      incidentId,
+      "updates"
+    );
     const updatesQuery = query(updatesCollectionRef, orderBy("ts", "desc"));
-    
+
     // Subscribe to incident document
     const unsubIncident = onSnapshot(
       incidentDocRef,
       (docSnap) => {
         if (!docSnap.exists()) {
-          console.error(`[useIncident] ❌ Document "${incidentId}" does not exist`);
+          console.error(
+            `[useIncident] ❌ Document "${incidentId}" does not exist`
+          );
           setError("not-found");
           setData(undefined);
           setIsLoading(false);
@@ -75,7 +84,7 @@ export function useIncident(incidentId: string) {
           updateCount: latestData.updateCount || 0,
           notes: latestData.notes || [],
         } as any);
-        
+
         setIsLoading(false);
       },
       (e) => {
@@ -83,26 +92,29 @@ export function useIncident(incidentId: string) {
         setError(logError(e, "incident-snapshot", { incidentId }).code);
       }
     );
-    
+
     // Subscribe to updates subcollection
     const unsubUpdates = onSnapshot(
       updatesQuery,
       (snapshot) => {
-        console.log(`[useIncident] ✅ Loaded ${snapshot.docs.length} updates from subcollection`);
-        
+        console.log(
+          `[useIncident] ✅ Loaded ${snapshot.docs.length} updates from subcollection`
+        );
+
         const updatesData = snapshot.docs.map((doc) => ({
           id: doc.id,
           message: doc.data().message || "",
           title: doc.data().title || "",
           address: doc.data().address || "",
           stage: doc.data().stage || "update",
-          ts: doc.data().ts?.toDate?.()?.toISOString() ||
-              doc.data().reportedAt?.toDate?.()?.toISOString() ||
-              new Date().toISOString(),
+          ts:
+            doc.data().ts?.toDate?.()?.toISOString() ||
+            doc.data().reportedAt?.toDate?.()?.toISOString() ||
+            new Date().toISOString(),
           lat: doc.data().lat,
           lng: doc.data().lng,
         }));
-        
+
         setUpdates(updatesData);
       },
       (e) => {
