@@ -14,7 +14,7 @@ interface HomeownerFormProps {
 
 export function HomeownerForm({ value, onChange, onSave }: HomeownerFormProps) {
   return (
-    <div className="space-y-4 pb-6">
+    <div className="space-y-4 pb-6 px-4">
       <div className="space-y-4">
         <h3 className="text-base font-semibold text-foreground">Contact Information</h3>
 
@@ -195,7 +195,7 @@ export function HomeownerForm({ value, onChange, onSave }: HomeownerFormProps) {
         </div>
       </div>
 
-      <Button onClick={onSave} className="w-full bg-[#007AFF] hover:bg-[#0051D5] sticky bottom-4">
+      <Button onClick={onSave} className="w-full bg-[#007AFF] hover:bg-[#0051D5]">
         <Save className="h-4 w-4 mr-2" />
         Save Homeowner Info
       </Button>
