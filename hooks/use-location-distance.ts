@@ -150,7 +150,30 @@ export function useLocationDistance() {
       },
       (err) => {
         console.error('[useLocationDistance] ❌ Location error:', err);
-        setError(err.message);
+        
+        // Provide helpful error messages
+        let errorMessage = err.message;
+        if (err.code === 1) {
+          errorMessage = "Location permission denied. Please enable location access in your browser settings.";
+        } else if (err.code === 2) {
+          errorMessage = "Location unavailable. Please check your device's location settings.";
+        } else if (err.code === 3) {
+          errorMessage = "Location request timed out. This may be due to poor GPS signal or browser restrictions.";
+        }
+        
+        // Mobile browsers often require HTTPS for geolocation
+        if (typeof window !== "undefined" && window.location.protocol === "http:" && !window.location.hostname.includes("localhost")) {
+          errorMessage += " Note: Location access requires HTTPS on most mobile browsers.";
+        }
+        
+        console.error('[useLocationDistance] 📱 Error details:', {
+          code: err.code,
+          message: err.message,
+          protocol: typeof window !== "undefined" ? window.location.protocol : "unknown",
+          hostname: typeof window !== "undefined" ? window.location.hostname : "unknown",
+        });
+        
+        setError(errorMessage);
         setPermissionGranted(false);
       },
       {

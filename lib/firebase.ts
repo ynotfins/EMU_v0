@@ -1,5 +1,5 @@
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
-import { getAuth, type Auth } from "firebase/auth";
+import { getAuth, type Auth, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getMessaging, type Messaging } from "firebase/messaging";
@@ -26,6 +26,17 @@ if (!getApps().length) {
 export const auth: Auth = getAuth(app);
 export const db: Firestore = getFirestore(app);
 export const storage = getStorage(app);
+
+// Set auth persistence to LOCAL (never expires until explicit sign out)
+if (typeof window !== "undefined") {
+  setPersistence(auth, browserLocalPersistence)
+    .then(() => {
+      console.log("[Firebase] ✅ Auth persistence set to LOCAL - users stay signed in forever");
+    })
+    .catch((error) => {
+      console.error("[Firebase] ❌ Failed to set persistence:", error);
+    });
+}
 
 // Messaging only available in browser context AND if browser supports it
 export const messaging: Messaging | null = (() => {
