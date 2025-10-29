@@ -52,22 +52,24 @@ export function useIncidentsWithDistance(filters?: Partial<IncidentFilters>) {
     setCalculatingDistance(true);
 
     async function enrichWithDistances() {
-      // OPTIMIZATION: Only geocode first 10 incidents (visible on screen)
-      // Reduced from 20 to 10 for even faster loading
-      const BATCH_SIZE = 10;
+      // OPTIMIZATION: Only process visible incidents (8 visible + 4 preload = 12 total)
+      const VISIBLE_COUNT = 8;  // Max visible on screen
+      const PRELOAD_COUNT = 4;  // Preload next 4 for smooth scrolling
+      const BATCH_SIZE = VISIBLE_COUNT + PRELOAD_COUNT; // Total: 12
       
       console.log(
-        `[useIncidentsWithDistance] 📏 Calculating distances in background (first ${Math.min(BATCH_SIZE, incidents.length)} will geocode if needed)`
+        `[useIncidentsWithDistance] 📏 Processing ONLY first ${BATCH_SIZE} incidents (${VISIBLE_COUNT} visible + ${PRELOAD_COUNT} preload)`
       );
 
-      // Process incidents one by one to avoid blocking
-      for (let i = 0; i < incidents.length && isMounted; i++) {
-        const incident = incidents[i];
-        const shouldGeocode = i < BATCH_SIZE;
+      // CRITICAL FIX: Only loop through BATCH_SIZE, not all incidents!
+      const incidentsToProcess = incidents.slice(0, BATCH_SIZE);
+      
+      for (let i = 0; i < incidentsToProcess.length && isMounted; i++) {
+        const incident = incidentsToProcess[i];
         
         let distance: number | undefined;
         
-        // If we have cached lat/lng, always calculate distance
+        // If we have cached lat/lng, calculate distance (fast!)
         if (incident.lat !== null && incident.lat !== undefined && 
             incident.lng !== null && incident.lng !== undefined) {
           distance = await getIncidentDistance(
@@ -76,8 +78,8 @@ export function useIncidentsWithDistance(filters?: Partial<IncidentFilters>) {
             incident.lat,
             incident.lng
           );
-        } else if (shouldGeocode) {
-          // Only geocode if in first batch
+        } else {
+          // No cached lat/lng, need to geocode (slower)
           distance = await getIncidentDistance(
             incident.id,
             `${incident.address}, ${incident.city}, ${incident.state}`,
@@ -100,7 +102,7 @@ export function useIncidentsWithDistance(filters?: Partial<IncidentFilters>) {
 
       if (isMounted) {
         console.log(
-          `[useIncidentsWithDistance] ✅ Distance calculation complete (background process)`
+          `[useIncidentsWithDistance] ✅ Distance calculation complete - processed ${incidentsToProcess.length} incidents`
         );
         setCalculatingDistance(false);
       }
