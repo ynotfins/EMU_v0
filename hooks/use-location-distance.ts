@@ -315,12 +315,55 @@ export function useLocationDistance() {
     );
   }
 
+  /**
+   * Force refresh location (for desktop "Reset Location" button)
+   */
+  async function refreshLocation(): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        console.error('[refreshLocation] ❌ Geolocation not supported');
+        resolve(false);
+        return;
+      }
+
+      console.log('[refreshLocation] 🔄 Forcing location refresh...');
+      
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const newLat = position.coords.latitude;
+          const newLng = position.coords.longitude;
+          const accuracy = position.coords.accuracy;
+          
+          // Force refresh (bypass movement detection)
+          userLocationCache.forceRefresh(newLat, newLng, accuracy, 'gps');
+          
+          setUserLocation({ lat: newLat, lng: newLng });
+          setPermissionGranted(true);
+          setError(null);
+          
+          console.log('[refreshLocation] ✅ Location refreshed successfully');
+          resolve(true);
+        },
+        (err) => {
+          console.error('[refreshLocation] ❌ Failed to refresh:', err);
+          resolve(false);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0, // Force fresh location
+        }
+      );
+    });
+  }
+
   return {
     userLocation,
     permissionGranted,
     error,
     getIncidentDistance,
     calculateDistanceToPoint,
+    refreshLocation, // For desktop "Reset Location" button
   };
 }
 

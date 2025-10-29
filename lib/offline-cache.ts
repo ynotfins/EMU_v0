@@ -15,18 +15,18 @@ const DEVICE_TYPE_KEY = 'emu-device-type';
 
 // Device-specific thresholds
 const SIGNIFICANT_MOVE_THRESHOLD = {
-  desktop: 0.1,    // 10km - desktop PCs rarely move
-  laptop: 0.05,    // 5km - laptops can move but less frequently
-  tablet: 0.01,    // 1km - tablets move like phones
-  phone: 0.01,     // 1km - phones move frequently
+  desktop: Infinity,  // Desktop NEVER auto-updates (manual only via reset button)
+  laptop: 0.05,       // 5km - laptops can move but less frequently
+  tablet: 0.01,       // 1km - tablets move like phones
+  phone: 0.01,        // 1km - phones move frequently
 };
 
 // Cache duration (when to consider stale)
 const CACHE_DURATION = {
-  desktop: 10 * 60 * 60 * 1000,   // 10 hours - desktops don't move
-  laptop: 5 * 60 * 60 * 1000,      // 5 hours - laptops move occasionally
-  tablet: 2 * 60 * 60 * 1000,      // 2 hours - tablets move regularly
-  phone: 2 * 60 * 60 * 1000,       // 2 hours - phones move frequently
+  desktop: Infinity,                // Desktop NEVER expires (manual reset only)
+  laptop: 5 * 60 * 60 * 1000,       // 5 hours - laptops move occasionally
+  tablet: 2 * 60 * 60 * 1000,       // 2 hours - tablets move regularly
+  phone: 2 * 60 * 60 * 1000,        // 2 hours - phones move frequently
 };
 
 // Types
@@ -353,6 +353,27 @@ export class UserLocationCache {
     }
     
     return isStale;
+  }
+
+  /**
+   * Force refresh location (for desktop "Reset Location" button)
+   */
+  forceRefresh(lat: number, lng: number, accuracy: number, source: 'gps' | 'network' = 'gps'): void {
+    const deviceType = detectDeviceType();
+    const deviceId = getDeviceFingerprint();
+
+    this.cachedLocation = {
+      lat,
+      lng,
+      accuracy,
+      timestamp: Date.now(),
+      source,
+      deviceType,
+      deviceId,
+    };
+
+    this.saveToStorage();
+    console.log(`[UserLocationCache] 🔄 FORCE REFRESH: ${deviceType.toUpperCase()} location updated: (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
   }
 
   /**
