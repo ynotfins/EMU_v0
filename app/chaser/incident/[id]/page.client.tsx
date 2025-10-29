@@ -7,7 +7,6 @@ import { useState } from "react"
 import { RoleLayout } from "@/components/role-layout"
 import { MapCard } from "@/components/map-card"
 import { NotesEditor } from "@/components/notes-editor"
-import { UpdatesList } from "@/components/updates-list"
 import { Badge } from "@/components/ui/badge"
 
 export default function Client({ id }: { id: string }) {
@@ -79,7 +78,14 @@ export default function Client({ id }: { id: string }) {
             {incident.updates && incident.updates.length > 0 && (
               <div className="bg-white rounded-lg p-4 shadow-sm">
                 <h2 className="font-semibold mb-3 text-lg">Updates ({incident.updates.length})</h2>
-                <UpdatesList updates={incident.updates} />
+                <div className="space-y-3">
+                  {incident.updates.map((update, index) => (
+                    <div key={index} className="border-l-2 border-[#007AFF] pl-4 py-2">
+                      <p className="text-xs text-[#6B7280] mb-1">{new Date(update.ts).toLocaleString()}</p>
+                      <p className="text-sm">{update.message}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -87,12 +93,27 @@ export default function Client({ id }: { id: string }) {
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <h2 className="font-semibold mb-3 text-lg">Notes</h2>
               <NotesEditor
-                notes={incident.notes || []}
-                onAddNote={(text) => {
-                  addNote(incident.id, text)
-                  setNoteText("")
+                value={noteText}
+                onChange={setNoteText}
+                onSave={() => {
+                  if (noteText.trim()) {
+                    addNote(incident.id, noteText)
+                    setNoteText("")
+                  }
                 }}
               />
+              {incident.notes && incident.notes.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {incident.notes.map((note: any, index: number) => (
+                    <div key={index} className="p-3 bg-gray-50 rounded text-sm">
+                      <p className="text-xs text-gray-500 mb-1">
+                        {note.uid} - {new Date(note.ts).toLocaleString()}
+                      </p>
+                      <p>{note.text}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Files */}
