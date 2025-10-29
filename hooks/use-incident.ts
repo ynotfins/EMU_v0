@@ -10,6 +10,7 @@ import {
   orderBy,
   doc,
   getDoc,
+  updateDoc,
 } from "firebase/firestore";
 import { logError } from "@/lib/logger";
 import type { Incident } from "@/types/domain";
@@ -121,23 +122,45 @@ export function useIncident(incidentId: string) {
       updatesQuery,
       (snapshot) => {
         console.log(
-          `[useIncident] ✅ Loaded ${snapshot.docs.length} updates from subcollection`
+          `[useIncident] 🔍 UPDATES DEBUG for ${incidentId}:`,
+          `Found ${snapshot.docs.length} update docs`
         );
 
-        const updatesData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          message: doc.data().message || "",
-          title: doc.data().title || "",
-          address: doc.data().address || "",
-          stage: doc.data().stage || "update",
-          ts:
-            doc.data().ts?.toDate?.()?.toISOString() ||
-            doc.data().reportedAt?.toDate?.()?.toISOString() ||
-            new Date().toISOString(),
-          lat: doc.data().lat,
-          lng: doc.data().lng,
-        }));
+        const updatesData = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          console.log(`[useIncident] 📄 Update doc ${doc.id}:`, {
+            id: doc.id,
+            hasMessage: !!data.message,
+            message: data.message,
+            hasTitle: !!data.title,
+            title: data.title,
+            hasAddress: !!data.address,
+            address: data.address,
+            stage: data.stage,
+            ts: data.ts,
+            allFields: Object.keys(data),
+            fullData: data,
+          });
 
+          return {
+            id: doc.id,
+            message: data.message || "",
+            title: data.title || "",
+            address: data.address || "",
+            stage: data.stage || "update",
+            ts:
+              data.ts?.toDate?.()?.toISOString() ||
+              data.reportedAt?.toDate?.()?.toISOString() ||
+              new Date().toISOString(),
+            lat: data.lat,
+            lng: data.lng,
+          };
+        });
+
+        console.log(
+          `[useIncident] ✅ Processed updates:`,
+          updatesData.map((u) => ({ id: u.id, messageLength: u.message.length }))
+        );
         setUpdates(updatesData);
       },
       (e) => {
@@ -156,10 +179,34 @@ export function useIncident(incidentId: string) {
   return { data, updates, isLoading, error };
 }
 
-// Action stubs - ready for Firebase implementation
-export function addNote(incidentId: string, note: string): void {
-  console.debug("[useIncident] addNote:", { incidentId, note });
-  // TODO: Update Firestore: incidents/{incidentId} append to notes field
+// Save note to Firestore
+export async function addNote(incidentId: string, note: string): Promise<void> {
+  console.log("[useIncident] 💾 Saving note:", { incidentId, note });
+  
+  try {
+    const incidentRef = doc(db, "incidents", incidentId);
+    const incidentSnap = await getDoc(incidentRef);
+    
+    if (!incidentSnap.exists()) {
+      console.error("[useIncident] ❌ Incident not found:", incidentId);
+      return;
+    }
+    
+    const currentNotes = incidentSnap.data().notes || [];
+    const newNote = {
+      text: note,
+      createdAt: new Date().toISOString(),
+      createdBy: auth.currentUser?.uid || "anonymous",
+    };
+    
+    await updateDoc(incidentRef, {
+      notes: [...currentNotes, newNote],
+    });
+    
+    console.log("[useIncident] ✅ Note saved successfully");
+  } catch (error) {
+    console.error("[useIncident] ❌ Error saving note:", error);
+  }
 }
 
 export function updateStatus(incidentId: string, status: string): void {

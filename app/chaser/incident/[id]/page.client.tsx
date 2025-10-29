@@ -2,7 +2,7 @@
 
 import { useIncident, addNote } from "@/hooks/use-incident";
 import { useFiles } from "@/hooks/use-files";
-import { useFavoritesContext } from "@/lib/context/favorites-context";
+import { toggleFavorite, toggleBookmark } from "@/hooks/use-incidents";
 import { useState } from "react";
 import { RoleLayout } from "@/components/role-layout";
 import { MapCard } from "@/components/map-card";
@@ -15,7 +15,6 @@ import { Heart } from "lucide-react";
 export default function Client({ id }: { id: string }) {
   const { data: incident, updates, error } = useIncident(id);
   const { data: files } = useFiles(id);
-  const { toggleFavorite, toggleBookmark } = useFavoritesContext();
   const [noteText, setNoteText] = useState("");
 
   if (error) {
@@ -85,11 +84,20 @@ export default function Client({ id }: { id: string }) {
                   <h2 className="text-xl font-bold">{incident.type}</h2>
                   <button
                     onClick={() => {
-                      console.log('[Details] Toggling favorite for ID:', id, 'incident.id:', incident.id);
+                      console.log(
+                        "[Details] Toggling favorite for ID:",
+                        id,
+                        "incident.id:",
+                        incident.id
+                      );
                       toggleFavorite(id);
                     }}
                     className="transition-colors"
-                    aria-label={incident.isFavorited ? "Remove from favorites" : "Add to favorites"}
+                    aria-label={
+                      incident.isFavorited
+                        ? "Remove from favorites"
+                        : "Add to favorites"
+                    }
                   >
                     <Heart
                       className={`h-6 w-6 transition-colors ${
@@ -174,17 +182,19 @@ export default function Client({ id }: { id: string }) {
               {/* Employee Notes - Auto-saves on blur */}
               <div className="px-4 py-3 border-t">
                 <h3 className="font-semibold text-base mb-3">
-                  Employee Notes <span className="text-xs text-gray-500">(auto-saves)</span>
+                  Employee Notes{" "}
+                  <span className="text-xs text-gray-500">(auto-saves)</span>
                 </h3>
                 <Textarea
                   placeholder="Add your notes about this alert... (saves automatically when you leave this field)"
                   value={noteText}
                   onChange={(e) => setNoteText(e.target.value)}
-                  onBlur={() => {
+                  onBlur={async () => {
                     // Auto-save when user leaves the textarea
                     if (noteText.trim()) {
-                      console.log('[Notes] Auto-saving note:', noteText);
-                      addNote(incident.id, noteText);
+                      console.log("[Notes] Auto-saving note:", noteText);
+                      await addNote(incident.id, noteText);
+                      // Only clear after successful save
                       setNoteText("");
                     }
                   }}
