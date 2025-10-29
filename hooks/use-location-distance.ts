@@ -155,7 +155,7 @@ export function useLocationDistance() {
       },
       {
         enableHighAccuracy: false, // Use network location (faster, less battery)
-        timeout: 10000,
+        timeout: 30000, // Increased from 10s to 30s
         maximumAge: 60000, // Cache location for 1 minute
       }
     );
