@@ -103,16 +103,25 @@ export function formatListLines(incident: IncidentLite) {
  */
 function withUserFlags(incident: IncidentLite): IncidentLite {
   const uid = getUid(auth.currentUser?.uid); // Use getUid() to handle dev fallback
-  console.log(`[withUserFlags] Checking incident ${incident.id} for uid: ${uid}`, {
-    favoritedBy: incident.favoritedBy,
-    bookmarkedBy: incident.bookmarkedBy,
-    isFavorited: (incident.favoritedBy ?? []).includes(uid),
-    isBookmarked: (incident.bookmarkedBy ?? []).includes(uid)
-  });
+  const favoritedBy = incident.favoritedBy ?? [];
+  const bookmarkedBy = incident.bookmarkedBy ?? [];
+  const isFavorited = favoritedBy.includes(uid);
+  const isBookmarked = bookmarkedBy.includes(uid);
+  
+  // Only log if it's favorited or bookmarked (reduce noise)
+  if (isFavorited || isBookmarked) {
+    console.log(`[withUserFlags] ⭐ Incident ${incident.incidentNumber} for uid ${uid}:`, {
+      isFavorited,
+      isBookmarked,
+      favoritedBy: favoritedBy.length > 0 ? favoritedBy : '(empty)',
+      bookmarkedBy: bookmarkedBy.length > 0 ? bookmarkedBy : '(empty)'
+    });
+  }
+  
   return {
     ...incident,
-    isFavorited: (incident.favoritedBy ?? []).includes(uid),
-    isBookmarked: (incident.bookmarkedBy ?? []).includes(uid),
+    isFavorited,
+    isBookmarked,
   };
 }
 
@@ -239,12 +248,8 @@ export function useIncidents(filters?: Partial<IncidentFilters>) {
 // Firestore actions for favorites and bookmarks
 export async function toggleFavorite(incidentId: string): Promise<void> {
   const userId = getUid(auth.currentUser?.uid);
-  console.log(
-    "[toggleFavorite] Starting - userId:",
-    userId,
-    "incidentId:",
-    incidentId
-  );
+  console.log("============================================");
+  console.log("[toggleFavorite] Starting - userId:", userId, "incidentId:", incidentId);
 
   if (!userId) {
     console.warn("[toggleFavorite] No user logged in");
@@ -253,11 +258,41 @@ export async function toggleFavorite(incidentId: string): Promise<void> {
 
   try {
     const incidentRef = doc(db, "incidents", incidentId);
-    console.log("[toggleFavorite] Updating Firestore...");
-    await updateDoc(incidentRef, {
-      favoritedBy: arrayUnion(userId),
-    });
-    console.log("[toggleFavorite] ✅ Success! Added", userId, "to favoritedBy");
+    
+    // Read current state to determine action
+    const snap = await getDoc(incidentRef);
+    if (!snap.exists()) {
+      console.error("[toggleFavorite] ❌ Document not found:", incidentId);
+      return;
+    }
+    
+    const data = snap.data();
+    const favoritedBy = data.favoritedBy || [];
+    const isFavorited = favoritedBy.includes(userId);
+    
+    console.log("[toggleFavorite] Current state:");
+    console.log("  - favoritedBy:", favoritedBy);
+    console.log("  - isFavorited:", isFavorited);
+    console.log("  - Action:", isFavorited ? "REMOVE" : "ADD");
+    
+    if (isFavorited) {
+      // Remove from favorites
+      await updateDoc(incidentRef, {
+        favoritedBy: arrayRemove(userId),
+      });
+      console.log("[toggleFavorite] ✅ REMOVED", userId, "from favoritedBy");
+    } else {
+      // Add to favorites
+      await updateDoc(incidentRef, {
+        favoritedBy: arrayUnion(userId),
+      });
+      console.log("[toggleFavorite] ✅ ADDED", userId, "to favoritedBy");
+    }
+    
+    // Verify
+    const verifySnap = await getDoc(incidentRef);
+    console.log("[toggleFavorite] 🔍 VERIFICATION - favoritedBy after:", verifySnap.data()?.favoritedBy);
+    console.log("============================================");
   } catch (error) {
     console.error("[toggleFavorite] ❌ Error:", error);
     throw error;
@@ -283,12 +318,8 @@ export async function unfavorite(incidentId: string): Promise<void> {
 
 export async function toggleBookmark(incidentId: string): Promise<void> {
   const userId = getUid(auth.currentUser?.uid);
-  console.log(
-    "[toggleBookmark] Starting - userId:",
-    userId,
-    "incidentId:",
-    incidentId
-  );
+  console.log("============================================");
+  console.log("[toggleBookmark] Starting - userId:", userId, "incidentId:", incidentId);
 
   if (!userId) {
     console.warn("[toggleBookmark] No user logged in");
@@ -297,15 +328,41 @@ export async function toggleBookmark(incidentId: string): Promise<void> {
 
   try {
     const incidentRef = doc(db, "incidents", incidentId);
-    console.log("[toggleBookmark] Updating Firestore...");
-    await updateDoc(incidentRef, {
-      bookmarkedBy: arrayUnion(userId),
-    });
-    console.log(
-      "[toggleBookmark] ✅ Success! Added",
-      userId,
-      "to bookmarkedBy"
-    );
+    
+    // Read current state to determine action
+    const snap = await getDoc(incidentRef);
+    if (!snap.exists()) {
+      console.error("[toggleBookmark] ❌ Document not found:", incidentId);
+      return;
+    }
+    
+    const data = snap.data();
+    const bookmarkedBy = data.bookmarkedBy || [];
+    const isBookmarked = bookmarkedBy.includes(userId);
+    
+    console.log("[toggleBookmark] Current state:");
+    console.log("  - bookmarkedBy:", bookmarkedBy);
+    console.log("  - isBookmarked:", isBookmarked);
+    console.log("  - Action:", isBookmarked ? "REMOVE" : "ADD");
+    
+    if (isBookmarked) {
+      // Remove from bookmarks
+      await updateDoc(incidentRef, {
+        bookmarkedBy: arrayRemove(userId),
+      });
+      console.log("[toggleBookmark] ✅ REMOVED", userId, "from bookmarkedBy");
+    } else {
+      // Add to bookmarks
+      await updateDoc(incidentRef, {
+        bookmarkedBy: arrayUnion(userId),
+      });
+      console.log("[toggleBookmark] ✅ ADDED", userId, "to bookmarkedBy");
+    }
+    
+    // Verify
+    const verifySnap = await getDoc(incidentRef);
+    console.log("[toggleBookmark] 🔍 VERIFICATION - bookmarkedBy after:", verifySnap.data()?.bookmarkedBy);
+    console.log("============================================");
   } catch (error) {
     console.error("[toggleBookmark] ❌ Error:", error);
     throw error;
