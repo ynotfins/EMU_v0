@@ -16,6 +16,7 @@
 import { useState, useEffect } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { geocodeCache, userLocationCache } from '@/lib/offline-cache';
 
 interface Location {
   lat: number;
@@ -54,9 +55,18 @@ function toRad(degrees: number): number {
 /**
  * Geocode address using Google Maps Geocoding API
  * Falls back to a free service if API key not configured
+ * 
+ * NOW WITH OFFLINE CACHE: Checks localStorage first!
  */
 async function geocodeAddress(address: string): Promise<Location | null> {
   console.log('[geocodeAddress] 🗺️ Geocoding:', address);
+
+  // OFFLINE FIRST: Check localStorage cache
+  const cached = geocodeCache.get(address);
+  if (cached) {
+    console.log('[geocodeAddress] ✅ Using offline cache:', { lat: cached.lat, lng: cached.lng });
+    return { lat: cached.lat, lng: cached.lng };
+  }
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
@@ -73,6 +83,10 @@ async function geocodeAddress(address: string): Promise<Location | null> {
       if (data.status === 'OK' && data.results && data.results.length > 0) {
         const { lat, lng } = data.results[0].geometry.location;
         console.log('[geocodeAddress] ✅ Google Maps result:', { lat, lng });
+        
+        // SAVE TO OFFLINE CACHE
+        geocodeCache.set(address, lat, lng);
+        
         return { lat, lng };
       }
 
@@ -101,6 +115,10 @@ async function geocodeAddress(address: string): Promise<Location | null> {
       const lat = parseFloat(data[0].lat);
       const lng = parseFloat(data[0].lon);
       console.log('[geocodeAddress] ✅ OSM Nominatim result:', { lat, lng });
+      
+      // SAVE TO OFFLINE CACHE
+      geocodeCache.set(address, lat, lng);
+      
       return { lat, lng };
     }
 
@@ -131,20 +149,33 @@ export function useLocationDistance() {
     }
 
     console.log('[useLocationDistance] 📍 Requesting location permission...');
+    
+    // Try to use cached location first
+    const cachedLoc = userLocationCache.get();
+    if (cachedLoc && !userLocationCache.isStale()) {
+      console.log('[useLocationDistance] 📦 Using cached location (fresh)');
+      setUserLocation({ lat: cachedLoc.lat, lng: cachedLoc.lng });
+      setPermissionGranted(true);
+      setError(null);
+    }
 
-    // Watch position for real-time updates
+    // Watch position for real-time updates (hardware GPS)
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
-        console.log('[useLocationDistance] ✅ Location updated:', {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-        });
-
-        setUserLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        });
+        const newLat = position.coords.latitude;
+        const newLng = position.coords.longitude;
+        const accuracy = position.coords.accuracy;
+        
+        // Only update if user has moved significantly (saves battery & re-renders)
+        const didUpdate = userLocationCache.update(newLat, newLng, accuracy, 'gps');
+        
+        if (didUpdate) {
+          console.log('[useLocationDistance] ✅ Location updated (user moved)');
+          setUserLocation({ lat: newLat, lng: newLng });
+        } else {
+          console.log('[useLocationDistance] ⏸️ Location unchanged (using cached)');
+        }
+        
         setPermissionGranted(true);
         setError(null);
       },
