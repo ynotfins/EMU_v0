@@ -6,16 +6,21 @@ import { toggleFavorite, toggleBookmark } from "@/hooks/use-incidents";
 import { useState } from "react";
 import { RoleLayout } from "@/components/role-layout";
 import { MapCard } from "@/components/map-card";
+import { HomeownerForm } from "@/components/homeowner-form";
+import { DocsManager } from "@/components/docs-manager";
+import { ESignManager } from "@/components/esign-manager";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heart } from "lucide-react";
+import type { HomeownerForm as HomeownerFormType } from "@/types/domain";
 
 export default function Client({ id }: { id: string }) {
   const { data: incident, updates, error } = useIncident(id);
   const { data: files } = useFiles(id);
   const [noteText, setNoteText] = useState("");
+  const [homeownerData, setHomeownerData] = useState<HomeownerFormType>({});
 
   if (error) {
     return (
@@ -244,20 +249,44 @@ export default function Client({ id }: { id: string }) {
               )}
             </TabsContent>
 
-            <TabsContent value="homeowner" className="p-4">
-              <p className="text-gray-500">
-                Homeowner information will be displayed here
-              </p>
+            <TabsContent value="homeowner" className="m-0">
+              <HomeownerForm
+                value={homeownerData}
+                onChange={(partial) => setHomeownerData({ ...homeownerData, ...partial })}
+                onSave={async () => {
+                  console.log("[Homeowner] Saving:", homeownerData);
+                  // TODO: Implement save to Firestore
+                }}
+              />
             </TabsContent>
 
-            <TabsContent value="docs" className="p-4">
-              <p className="text-gray-500">Documents will be displayed here</p>
+            <TabsContent value="docs" className="m-0">
+              <DocsManager
+                files={files || []}
+                onPickFile={(file) => {
+                  console.log("[Docs] File picked:", file.name);
+                  // TODO: Implement file upload
+                }}
+                onDeleteFile={(fileId) => {
+                  console.log("[Docs] Delete file:", fileId);
+                  // TODO: Implement file deletion
+                }}
+                canDelete={true}
+              />
             </TabsContent>
 
-            <TabsContent value="sign" className="p-4">
-              <p className="text-gray-500">
-                E-signature interface will be displayed here
-              </p>
+            <TabsContent value="sign" className="m-0">
+              <ESignManager
+                files={files || []}
+                onSendForESign={(docIds, email) => {
+                  console.log("[ESign] Send for signature:", { docIds, email });
+                  // TODO: Implement e-signature sending
+                }}
+                onLiveSign={(signatureDataUrl) => {
+                  console.log("[ESign] Live signature captured");
+                  // TODO: Implement live signature save
+                }}
+              />
             </TabsContent>
           </div>
         </Tabs>

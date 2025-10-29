@@ -31,13 +31,6 @@ const mockSignatureHistory = [
     status: "pending" as const,
     sentAt: "2024-01-16T09:15:00Z",
   },
-  {
-    id: "sig-3",
-    documentName: "Release Form.pdf",
-    recipient: "bob.wilson@email.com",
-    status: "declined" as const,
-    sentAt: "2024-01-14T16:45:00Z",
-  },
 ]
 
 export function ESignManager({ files, onSendForESign, onLiveSign }: ESignManagerProps) {
@@ -62,7 +55,6 @@ export function ESignManager({ files, onSendForESign, onLiveSign }: ESignManager
   }
 
   const handleLiveSign = () => {
-    // Stub: would capture canvas signature
     const mockSignature = "data:image/png;base64,..."
     onLiveSign(mockSignature)
     setShowSignModal(false)
@@ -95,7 +87,7 @@ export function ESignManager({ files, onSendForESign, onLiveSign }: ESignManager
   }
 
   return (
-    <div className="space-y-6 pb-6">
+    <div className="space-y-6 pb-6 px-4">
       {/* Document Selection */}
       <div className="space-y-3">
         <h3 className="text-base font-semibold text-foreground">Select Documents to Sign</h3>

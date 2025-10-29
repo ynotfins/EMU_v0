@@ -126,8 +126,8 @@ export function useIncident(incidentId: string) {
           `Found ${snapshot.docs.length} update docs`
         );
 
-        // Map and deduplicate updates
-        const seenTimestamps = new Set();
+        // Map and deduplicate updates by timestamp + message
+        const seenKeys = new Set();
         const updatesData = snapshot.docs
           .map((doc) => {
             const data = doc.data();
@@ -135,20 +135,6 @@ export function useIncident(incidentId: string) {
               data.reportedAt?.toDate?.()?.toISOString() ||
               new Date().toISOString();
             
-            console.log(`[useIncident] 📄 Update doc ${doc.id}:`, {
-              id: doc.id,
-              hasMessage: !!data.message,
-              message: data.message,
-              hasTitle: !!data.title,
-              title: data.title,
-              hasAddress: !!data.address,
-              address: data.address,
-              stage: data.stage,
-              ts: timestamp,
-              allFields: Object.keys(data),
-              fullData: data,
-            });
-
             return {
               id: doc.id,
               message: data.message || "",
@@ -161,12 +147,14 @@ export function useIncident(incidentId: string) {
             };
           })
           .filter((update) => {
-            // Deduplicate by timestamp (keep first occurrence)
-            if (seenTimestamps.has(update.ts)) {
-              console.log(`[useIncident] ⚠️ Skipping duplicate timestamp: ${update.ts}`);
+            // Create unique key from timestamp + message to catch true duplicates
+            const uniqueKey = `${update.ts}|${update.message}|${update.stage}`;
+            
+            if (seenKeys.has(uniqueKey)) {
+              console.log(`[useIncident] ⚠️ Skipping duplicate: ${update.ts} - ${update.message}`);
               return false;
             }
-            seenTimestamps.add(update.ts);
+            seenKeys.add(uniqueKey);
             return true;
           });
 

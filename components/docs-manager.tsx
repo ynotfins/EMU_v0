@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Camera, Upload, FileText, ImageIcon, Trash2 } from "lucide-react"
 import { Card } from "@/components/ui/card"
@@ -39,7 +38,7 @@ export function DocsManager({ files, onPickFile, onDeleteFile, canDelete }: Docs
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 px-4 pb-6">
       {/* Upload Tiles */}
       <div className="grid grid-cols-2 gap-3">
         <label htmlFor="camera-input">
