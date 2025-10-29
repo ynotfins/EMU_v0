@@ -128,19 +128,33 @@ export function useIncidents(filters?: Partial<IncidentFilters>) {
   // Real-time Firestore listener
   useEffect(() => {
     const incidentsRef = collection(db, "incidents");
-    const q = query(incidentsRef, orderBy("updatedAt", "desc"), limit(100));
+    const q = query(incidentsRef, orderBy("updatedAt", "desc"), limit(500));
 
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        // Normalize Firestore data and apply per-user flags
-        const data = snapshot.docs
-          .map((doc) => withUserFlags(normalize(doc.id, doc.data())))
+        // Group by incidentId and keep only the most recent for each
+        const groupedMap = new Map<string, any>();
+        
+        snapshot.docs.forEach((doc) => {
+          const data = doc.data();
+          const incidentId = data.incidentId || doc.id;
+          const existing = groupedMap.get(incidentId);
+          
+          if (!existing || (data.lastSeenAt?.seconds || 0) > (existing.lastSeenAt?.seconds || 0)) {
+            groupedMap.set(incidentId, { ...data, firestoreDocId: doc.id });
+          }
+        });
+
+        // Convert to array, normalize, and sort by most recent
+        const data = Array.from(groupedMap.values())
+          .map((docData) => withUserFlags(normalize(docData.firestoreDocId, docData)))
           .sort(
             (a, b) =>
               new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
           );
 
+        console.log("[useIncidents] Loaded", data.length, "unique incidents from", snapshot.docs.length, "documents");
         setIncidents(data);
         setIsLoading(false);
         setError(null);
@@ -207,8 +221,13 @@ export function useIncidents(filters?: Partial<IncidentFilters>) {
 // Firestore actions for favorites and bookmarks
 export async function toggleFavorite(incidentId: string): Promise<void> {
   const userId = getUid(auth.currentUser?.uid);
-  console.log("[toggleFavorite] Starting - userId:", userId, "incidentId:", incidentId);
-  
+  console.log(
+    "[toggleFavorite] Starting - userId:",
+    userId,
+    "incidentId:",
+    incidentId
+  );
+
   if (!userId) {
     console.warn("[toggleFavorite] No user logged in");
     return;
@@ -246,8 +265,13 @@ export async function unfavorite(incidentId: string): Promise<void> {
 
 export async function toggleBookmark(incidentId: string): Promise<void> {
   const userId = getUid(auth.currentUser?.uid);
-  console.log("[toggleBookmark] Starting - userId:", userId, "incidentId:", incidentId);
-  
+  console.log(
+    "[toggleBookmark] Starting - userId:",
+    userId,
+    "incidentId:",
+    incidentId
+  );
+
   if (!userId) {
     console.warn("[toggleBookmark] No user logged in");
     return;
@@ -259,7 +283,11 @@ export async function toggleBookmark(incidentId: string): Promise<void> {
     await updateDoc(incidentRef, {
       bookmarkedBy: arrayUnion(userId),
     });
-    console.log("[toggleBookmark] ✅ Success! Added", userId, "to bookmarkedBy");
+    console.log(
+      "[toggleBookmark] ✅ Success! Added",
+      userId,
+      "to bookmarkedBy"
+    );
   } catch (error) {
     console.error("[toggleBookmark] ❌ Error:", error);
     throw error;
