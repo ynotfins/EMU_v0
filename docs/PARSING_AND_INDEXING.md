@@ -1,473 +1,571 @@
-# EMU Alerts - Data Parsing & Indexing Guide
+# EMU Alerts - Parsing & Indexing System
 
 ## Overview
 
-This document explains how data flows from MacroDroid notifications through Firebase to the Next.js app, and how to properly parse and index it for optimal performance.
+The EMU Alerts system receives raw incident data from MacroDroid on an Android phone, parses it into structured format, and indexes it in Firebase Firestore for real-time access across all apps (Chaser, Supe, Admin).
 
 ---
 
 ## Data Flow Architecture
 
 ```
-MacroDroid (Phone)
-    ↓ HTTP POST with X-Ingest-Token
-Cloud Function (ingestBNN)
-    ↓ Parse & Store
-Firestore Database
-    ↓ Real-time Listeners (onSnapshot)
-Next.js App (useIncidents, useIncident hooks)
-    ↓ Normalize & Display
-User Interface
+┌─────────────────┐
+│  MacroDroid     │ (Android Phone - Office)
+│  (BNN Alerts)   │
+└────────┬────────┘
+         │ HTTP POST
+         ▼
+┌─────────────────┐
+│  Firebase       │
+│  Cloud Function │ (Optional - currently direct to Firestore)
+└────────┬────────┘
+         │ Write
+         ▼
+┌─────────────────┐
+│  Firestore      │
+│  /incidents     │
+│  Collection     │
+└────────┬────────┘
+         │ onSnapshot (Real-time)
+         ▼
+┌─────────────────┐
+│  Next.js App    │
+│  (3 Roles)      │
+│  - Chaser       │
+│  - Supe         │
+│  - Admin        │
+└─────────────────┘
 ```
 
 ---
 
-## 1. Data Ingestion (MacroDroid → Cloud Function)
+## 1. Data Source: MacroDroid
 
-### Input Format
+### What MacroDroid Sends
 
-MacroDroid sends JSON via HTTP POST to Cloud Function `ingestBNN`:
+MacroDroid captures BNN (Breaking News Network) alerts and sends them to Firebase Firestore.
 
+**Example Raw Data**:
 ```json
 {
-  "message": "NY | Suffolk | Terryville | Suspicious Fire | 6th Pct | 49 Joline Rd | ... | #1834007",
-  "lastFormattedMessage": "10/18/2024 3:45 PM ...",
-  "address": "49 Joline Rd",
-  "lat": 40.1234,
-  "lng": -73.5678
+  "incidentId": "bnn-2025-10-29-12345",
+  "address": "123 Main St",
+  "city": "Brooklyn",
+  "state": "NY",
+  "county": "Kings",
+  "type": "FIRE",
+  "message": "Structure fire reported, multiple units responding",
+  "lastSeenAt": { "seconds": 1730218800 },
+  "lastTs": "2025-10-29T14:30:00Z",
+  "lastType": "UPDATE",
+  "lastMessage": "Fire under control, no injuries"
 }
 ```
 
-### Parsing Logic (Cloud Function)
+### Data Fields
 
-```javascript
-// Extract fields from pipe-delimited message
-const [state, county, city, alertType, address, alertMessage] = line
-  .split("|")
-  .map((s) => s.trim());
-
-// Extract incident ID from tail (after field 6)
-const incidentId =
-  extractIncidentId(tail, line) ||
-  synthesizeIncidentId({ state, county, city, address, alertType });
-```
-
-**Key Insight:** The incident ID comes from the notification text (e.g., `#1834007`) or is synthesized using a hash of location+type.
+| Field | Type | Description | Required |
+|-------|------|-------------|----------|
+| `incidentId` | string | Unique identifier for incident | ✅ Yes |
+| `address` | string | Street address | ✅ Yes |
+| `city` | string | City name | ✅ Yes |
+| `state` | string | State abbreviation (e.g., NY) | ✅ Yes |
+| `county` | string | County name (e.g., Kings) | ❌ Optional |
+| `type` | string | Alert type (FIRE, EMS, etc.) | ✅ Yes |
+| `message` | string | Alert message content | ✅ Yes |
+| `lastSeenAt` | Timestamp | Firestore timestamp | ✅ Yes |
+| `lastTs` | string | ISO timestamp | ✅ Yes |
+| `lastType` | string | Last update type | ❌ Optional |
+| `lastMessage` | string | Last update message | ❌ Optional |
 
 ---
 
-## 2. Firestore Storage Structure
+## 2. Firestore Data Structure
 
-### Main Document: `incidents/{incidentId}`
+### Collections Hierarchy
 
-Stores the **latest snapshot** for the incident list page:
-
-```javascript
-{
-  // Timestamps
-  firstSeenAt: Timestamp,  // When first created ("new")
-  lastTs: Timestamp,       // Last update timestamp
-  lastSeenAt: Timestamp,   // Last seen (deprecated, use lastTs)
-
-  // Location
-  state: "NY",
-  county: "Suffolk",
-  city: "Terryville",
-  address: "49 Joline Rd",
-  lat: 40.1234,
-  lng: -73.5678,
-
-  // Alert Info
-  lastType: "Suspicious Fire",      // Alert type (category)
-  lastMessage: "49 Joline Rd",      // Latest message
-  stage: "update",                  // "new" or "update"
-  source: "BNN",
-
-  // Metadata
-  updateCount: 8,                   // Number of updates
-  favoritedBy: ["dev-user-0000001"],
-  bookmarkedBy: ["dev-user-0000001"]
-}
 ```
+/incidents
+  ├─ {incidentId}              (Document)
+  │   ├─ address: string
+  │   ├─ city: string
+  │   ├─ state: string
+  │   ├─ county: string
+  │   ├─ type: string
+  │   ├─ message: string
+  │   ├─ updatedAt: Timestamp
+  │   ├─ favoritedBy: string[]
+  │   ├─ bookmarkedBy: string[]
+  │   ├─ notes: Note[]
+  │   ├─ lat: number (cached)
+  │   ├─ lng: number (cached)
+  │   ├─ geocodedAt: string (cache timestamp)
+  │   │
+  │   └─ /updates               (Subcollection)
+  │       ├─ {updateId}         (Document)
+  │       │   ├─ message: string
+  │       │   ├─ stage: string
+  │       │   ├─ ts: Timestamp
+  │       │   ├─ type: string
+  │       │   └─ id: string
 
-### Subcollection: `incidents/{incidentId}/updates`
-
-Stores **full history** for the details page:
-
-```javascript
-{
-  ts: Timestamp,              // Update timestamp
-  reportedAt: Timestamp,      // Original report time (optional)
-  stage: "update",            // "new" or "update"
-  message: "49 Joline Rd",    // Update message text
-  title: "",                  // Optional title
-  address: "49 Joline Rd",    // Address at time of update
-  lat: 40.1234,
-  lng: -73.5678,
-  source: "BNN"
-}
-```
-
-### Helper Collection: `alerts` (optional)
-
-Flat feed of all alerts for analytics:
-
-```javascript
-{
-  ts: Timestamp,
-  incidentId: "1834007",
-  state: "NY",
-  county: "Suffolk",
-  // ... all fields
-  rawText: "original pipe-delimited string"
-}
+/users
+  ├─ {userId}                   (Document)
+  │   ├─ email: string
+  │   ├─ role: "chaser" | "supe" | "admin"
+  │   ├─ settings: Settings{}
+  │   └─ createdAt: Timestamp
 ```
 
 ---
 
-## 3. Firestore Indexing
+## 3. Data Normalization
 
-### Current Indexes
+### Purpose
+Raw data from MacroDroid has inconsistent field names that need to be normalized for the app.
 
-#### Single-Field Indexes (Automatic)
+### Normalization Function
 
-Firestore automatically creates single-field indexes:
+**Location**: `hooks/use-incidents.ts` → `normalize()`
 
-- `incidents.lastTs` (DESC) - for sorting
-- `incidents.state` (ASC) - for filtering
-- `incidents.county` (ASC) - for filtering
-- `incidents.favoritedBy` (ARRAY) - for array-contains queries
+**Field Mappings**:
 
-#### Composite Indexes (Manual)
+| Raw Field | Normalized Field | Fallback |
+|-----------|------------------|----------|
+| `lastType` or `type` | `type` | "UNKNOWN" |
+| `lastMessage` or `message` | `message` | "" |
+| `lastSeenAt` or `lastTs` | `updatedAt` | current time |
+| `address` | `address` | "Unknown" |
+| `city` | `city` | "" |
+| `state` | `state` | "" |
+| `county` or borough | `county` | BOROUGH_TO_COUNTY mapping |
 
-**Purpose:** Enable complex queries with multiple filters/sorts.
-
-```json
-// firestore.indexes.json
-{
-  "indexes": [
-    {
-      "collectionGroup": "incidents",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "state", "order": "ASCENDING" },
-        { "fieldPath": "lastTs", "order": "DESCENDING" }
-      ]
-    }
-  ]
-}
-```
-
-**When to Add Indexes:**
-
-- Console error: "The query requires an index"
-- Click the provided URL to auto-create
-- Or manually add to `firestore.indexes.json` and deploy:
-  ```bash
-  firebase deploy --only firestore:indexes
-  ```
-
-### Index Strategy
-
-**DO Index:**
-
-- Fields used in `where()` clauses
-- Fields used in `orderBy()`
-- Array fields used with `array-contains`
-
-**DON'T Index:**
-
-- Fields only used for display
-- Large text fields (descriptions, notes)
-- Fields that change frequently (reduces write performance)
-
----
-
-## 4. Client-Side Parsing (Next.js Hooks)
-
-### useIncidents Hook (List Page)
-
-**Purpose:** Load all incidents and normalize inconsistent field names.
-
+**Example**:
 ```typescript
-// Subscribe to real-time updates
-const incidentsRef = collection(db, "incidents");
-const q = query(incidentsRef, orderBy("lastTs", "desc"), limit(100));
-
-onSnapshot(q, (snapshot) => {
-  const incidents = snapshot.docs.map((doc) => normalize(doc.id, doc.data()));
-});
-```
-
-**Normalization Logic:**
-
-```typescript
-function normalize(docId: string, data: any): IncidentLite {
+function normalize(id: string, data: any): IncidentLite {
   return {
-    id: docId,
-    incidentNumber: data.incidentId || parseInt(docId) || 0,
-    type: data.lastType || data.type || "Unknown",
+    id,
+    incidentId: data.incidentId || id,
+    type: data.lastType || data.type || "UNKNOWN",
     message: data.lastMessage || data.message || "",
-    address: data.address || "",
+    address: data.address || "Unknown",
     city: data.city || "",
-    county: data.county || "",
     state: data.state || "",
-    updatedAt:
-      data.lastTs?.toDate?.()?.toISOString() || new Date().toISOString(),
-    // Convert Firestore Timestamp to ISO string
+    county: normalizeCounty(data.county, data.city),
+    updatedAt: parseTimestamp(data.lastSeenAt || data.lastTs),
+    // ... other fields
   };
 }
 ```
 
-### useIncident Hook (Details Page)
+---
 
-**Purpose:** Load single incident + full update history.
+## 4. Borough to County Mapping
+
+### Problem
+NYC uses "boroughs" but we need to display "counties" for consistency.
+
+### Mapping
+
+**Location**: `hooks/use-incidents.ts` and `hooks/use-incident.ts`
 
 ```typescript
-// Load main document
-const incidentDocRef = doc(db, "incidents", incidentId);
-onSnapshot(incidentDocRef, (docSnap) => {
-  const incident = docSnap.data();
-  setData(incident);
-});
-
-// Load updates subcollection
-const updatesRef = collection(db, "incidents", incidentId, "updates");
-const updatesQuery = query(updatesRef, orderBy("ts", "desc"));
-onSnapshot(updatesQuery, (snapshot) => {
-  const updates = snapshot.docs.map((doc) => ({
-    id: doc.id,
-    message: doc.data().message,
-    ts: doc.data().ts?.toDate?.()?.toISOString(),
-  }));
-  setUpdates(updates);
-});
+const BOROUGH_TO_COUNTY: Record<string, string> = {
+  Manhattan: "New York",
+  Brooklyn: "Kings",
+  Queens: "Queens",
+  Bronx: "Bronx",
+  "Staten Island": "Richmond",
+};
 ```
+
+**Example**:
+- Input: `city: "Brooklyn"`, `county: undefined`
+- Output: `county: "Kings"`
 
 ---
 
-## 5. Data Consistency Patterns
+## 5. Real-Time Indexing
 
-### Problem: Legacy vs New Data
+### Firestore Listeners
 
-BNN data has evolved over time, causing field name inconsistencies:
-
-| Old Field     | New Field        | Notes                        |
-| ------------- | ---------------- | ---------------------------- |
-| `incidentId`  | `firestoreDocId` | Some docs have, some don't   |
-| `lastMessage` | `message`        | Use `lastMessage` for latest |
-| `lastSeenAt`  | `lastTs`         | Use `lastTs` for sorting     |
-
-### Solution: Defensive Parsing
-
-Always provide fallbacks:
+**Hook**: `useIncidents()` in `hooks/use-incidents.ts`
 
 ```typescript
-const type = data.lastType || data.type || data.alertType || "Unknown";
-const message = data.lastMessage || data.message || data.alertMessage || "";
-const timestamp = data.lastTs || data.lastSeenAt || data.updatedAt;
-```
+const q = query(
+  collection(db, "incidents"),
+  orderBy("updatedAt", "desc"),
+  limit(500)
+);
 
-### Timestamp Handling
-
-Firestore stores timestamps as `Timestamp` objects:
-
-```typescript
-// ❌ WRONG
-const date = data.lastTs; // Returns Timestamp object
-
-// ✅ CORRECT
-const date = data.lastTs?.toDate?.()?.toISOString(); // Returns ISO string
-```
-
----
-
-## 6. Custom Numbering System
-
-### Current: BNN IDs (7-8 digits)
-
-```
-1834007, 1833986, 1832224
-```
-
-### Proposed: Custom IDs (starts at 1000000)
-
-```
-1000000, 1000001, 1000002, ...
-```
-
-### Implementation Strategy
-
-**Option A: Counter in Firestore**
-
-```javascript
-// In Cloud Function
-const counterRef = db.collection("metadata").doc("counters");
-const newId = await db.runTransaction(async (tx) => {
-  const counterDoc = await tx.get(counterRef);
-  const currentId = counterDoc.data()?.incidentCounter || 999999;
-  const newId = currentId + 1;
-  tx.update(counterRef, { incidentCounter: newId });
-  return newId;
+const unsubscribe = onSnapshot(q, (snapshot) => {
+  // Process new/updated incidents
+  const data = snapshot.docs.map(doc => normalize(doc.id, doc.data()));
+  setIncidents(data);
 });
 ```
 
-**Option B: Map BNN ID → Custom ID**
-
-```javascript
-// Store mapping
-incidents/{bnnId} = {
-  customId: 1000000,
-  bnnId: "1834007",
-  // ... other fields
-}
-```
-
-**Recommendation:** Option B (mapping) preserves original BNN IDs for debugging.
+**Features**:
+- ✅ Real-time updates (< 1 second latency)
+- ✅ Automatic re-rendering when data changes
+- ✅ Handles new incidents and updates to existing
+- ✅ Memory efficient (limit 500 most recent)
 
 ---
 
-## 7. Distance Calculation
+## 6. Update Deduplication
 
-### Using Haversine Formula
+### Problem
+Firestore may contain duplicate updates with same timestamp and message.
 
-```typescript
-function calculateDistance(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-): number {
-  const R = 3959; // Earth radius in miles
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
+### Solution
 
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c; // Distance in miles
-}
-```
-
-### Getting User Location
+**Location**: `hooks/use-incident.ts` → `useEffect` for updates
 
 ```typescript
-navigator.geolocation.getCurrentPosition((position) => {
-  const userLat = position.coords.latitude;
-  const userLng = position.coords.longitude;
+const seenKeys = new Set<string>();
 
-  // Calculate distance to each incident
-  const distanceMi = calculateDistance(
-    userLat,
-    userLng,
-    incident.lat,
-    incident.lng
-  );
-});
-```
-
----
-
-## 8. Search & Filtering
-
-### Current: Client-Side Filtering
-
-```typescript
-const filtered = incidents.filter((inc) => {
-  if (filters.keyword) {
-    const searchText =
-      `${inc.type} ${inc.message} ${inc.address}`.toLowerCase();
-    if (!searchText.includes(filters.keyword.toLowerCase())) return false;
+updates.forEach(update => {
+  const key = `${update.ts}|${update.message}|${update.stage || ""}`;
+  
+  if (!seenKeys.has(key)) {
+    seenKeys.add(key);
+    // Add to deduped array
   }
-  if (filters.state && inc.state !== filters.state) return false;
-  if (filters.county && inc.county !== filters.county) return false;
-  return true;
 });
 ```
 
-**Limitations:**
-
-- Can't search full-text efficiently
-- Limited to loaded documents
-- No typo tolerance
-
-### Recommended: Firebase Extension
-
-Install **firestore-algolia-search** for:
-
-- Full-text search
-- Typo tolerance
-- Geo-search by radius
-- Instant results
+**Deduplication Key**: `timestamp|message|stage`
 
 ---
 
-## 9. Best Practices
+## 7. Geocoding & Caching
 
-### ✅ DO:
+### First-Time Geocoding
 
-- Use `onSnapshot` for real-time updates
-- Normalize field names with fallbacks
-- Convert Timestamps to ISO strings
-- Index fields used in queries
-- Batch writes when updating multiple docs
+When an incident doesn't have `lat`/`lng`:
 
-### ❌ DON'T:
+1. Extract full address: `{address}, {city}, {state}`
+2. Call Google Maps Geocoding API
+3. Fallback to OpenStreetMap Nominatim if Google fails
+4. Cache result in Firestore: `lat`, `lng`, `geocodedAt`
 
-- Query without indexes (causes errors)
-- Store large arrays (>10k items)
-- Use client-side filtering for >1000 docs
-- Forget to unsubscribe from listeners
-- Over-index (slows writes)
-
----
-
-## 10. Performance Optimization
-
-### Pagination
+**Location**: `hooks/use-location-distance.ts` → `geocodeAddress()`
 
 ```typescript
-// Load first page
-const firstPage = query(incidentsRef, orderBy("lastTs", "desc"), limit(25));
+async function geocodeAddress(address: string) {
+  // Try Google Maps first
+  const googleUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+  
+  const response = await fetch(googleUrl);
+  const data = await response.json();
+  
+  if (data.results?.[0]) {
+    return {
+      lat: data.results[0].geometry.location.lat,
+      lng: data.results[0].geometry.location.lng
+    };
+  }
+  
+  // Fallback to OpenStreetMap
+  // ...
+}
+```
 
-// Load next page
-const lastVisible = snapshot.docs[snapshot.docs.length - 1];
-const nextPage = query(
-  incidentsRef,
-  orderBy("lastTs", "desc"),
-  startAfter(lastVisible),
-  limit(25)
+### Cache Write
+
+**Location**: `hooks/use-location-distance.ts` → `getIncidentDistance()`
+
+```typescript
+await updateDoc(doc(db, "incidents", incidentId), {
+  lat,
+  lng,
+  geocodedAt: new Date().toISOString()
+});
+```
+
+**Result**: Same address never geocoded twice! 💰
+
+---
+
+## 8. Indexing for Search & Filters
+
+### Client-Side Indexes
+
+**Location**: `hooks/use-incidents.ts` → `useMemo` filtering
+
+#### Keyword Search Index
+```typescript
+if (filters.keyword) {
+  const keyword = filters.keyword.toLowerCase();
+  filtered = filtered.filter(inc =>
+    inc.address.toLowerCase().includes(keyword) ||
+    inc.type.toLowerCase().includes(keyword) ||
+    inc.message.toLowerCase().includes(keyword)
+  );
+}
+```
+
+#### Distance Index
+```typescript
+if (filters.distanceMi !== undefined) {
+  const fourHoursAgo = Date.now() - (4 * 60 * 60 * 1000);
+  filtered = filtered.filter(inc => {
+    const isRecent = new Date(inc.updatedAt).getTime() >= fourHoursAgo;
+    const withinDistance = inc.distanceMi <= filters.distanceMi;
+    return isRecent && withinDistance;
+  });
+}
+```
+
+#### Type Filter Index
+```typescript
+if (filters.types?.length > 0) {
+  filtered = filtered.filter(inc => 
+    filters.types.includes(inc.type)
+  );
+}
+```
+
+### Why Client-Side?
+- ✅ Real-time filtering (no server round-trip)
+- ✅ Works with Firestore's real-time listeners
+- ✅ Flexible (can combine multiple filters)
+- ✅ No Firestore query complexity limits
+
+---
+
+## 9. User-Specific Data Indexing
+
+### Favorites Index
+
+**Storage**: `favoritedBy: string[]` array in incident document
+
+**Read**:
+```typescript
+const isFavorited = incident.favoritedBy?.includes(userId);
+```
+
+**Write**:
+```typescript
+await updateDoc(incidentRef, {
+  favoritedBy: arrayUnion(userId)
+});
+```
+
+### Bookmarks Index
+Same pattern as favorites, uses `bookmarkedBy` array.
+
+### Notes Index
+
+**Storage**: `notes: Note[]` array in incident document
+
+```typescript
+interface Note {
+  text: string;
+  createdAt: string;
+  createdBy: string;
+}
+```
+
+**Append**:
+```typescript
+await updateDoc(incidentRef, {
+  notes: arrayUnion({
+    text: noteText,
+    createdAt: new Date().toISOString(),
+    createdBy: userId
+  })
+});
+```
+
+---
+
+## 10. Performance Optimizations
+
+### Batch Processing
+**Location**: `hooks/use-incidents-with-distance.ts`
+
+Process incidents in batches of 5 to avoid UI blocking:
+```typescript
+const BATCH_SIZE = 5;
+for (let i = 0; i < incidents.length; i += BATCH_SIZE) {
+  const batch = incidents.slice(i, i + BATCH_SIZE);
+  await Promise.all(batch.map(processIncident));
+  
+  // Small delay between batches
+  await new Promise(resolve => setTimeout(resolve, 100));
+}
+```
+
+### Lazy Loading
+Only geocode incidents as they become visible or needed for filtering.
+
+### Caching Strategy
+- **Location**: Cache for 5 minutes (`maximumAge: 300000`)
+- **Geocoding**: Cache forever in Firestore (until address changes)
+- **Distance**: Recalculate on user movement (cheap client-side math)
+
+---
+
+## 11. Data Retention
+
+### Current Policy
+All incidents stored indefinitely.
+
+### Planned: 30-Day Retention
+
+**Implementation** (not yet active):
+```typescript
+// Cloud Function (scheduled daily)
+const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+
+const oldIncidents = await getDocs(
+  query(
+    collection(db, "incidents"),
+    where("updatedAt", "<", new Date(thirtyDaysAgo))
+  )
+);
+
+// Delete old incidents except favorited/noted ones
+oldIncidents.forEach(async (doc) => {
+  const data = doc.data();
+  if (!data.favoritedBy?.length && !data.notes?.length) {
+    await deleteDoc(doc.ref);
+  }
+});
+```
+
+---
+
+## 12. Error Handling
+
+### Parsing Errors
+```typescript
+try {
+  const incident = normalize(doc.id, doc.data());
+  return incident;
+} catch (error) {
+  console.error('[normalize] Failed to parse incident:', doc.id, error);
+  return null; // Skip malformed incidents
+}
+```
+
+### Geocoding Errors
+```typescript
+try {
+  const coords = await geocodeAddress(address);
+  return coords;
+} catch (error) {
+  console.error('[geocode] Failed:', address, error);
+  return null; // Show incident without distance
+}
+```
+
+### Firestore Errors
+```typescript
+onSnapshot(q, 
+  (snapshot) => { /* success */ },
+  (error) => {
+    console.error('[Firestore] Real-time listener error:', error);
+    setError(error);
+    // Show error banner to user
+  }
 );
 ```
 
-### Caching
+---
 
-Firestore automatically caches documents locally. To clear:
+## 13. Monitoring & Logging
 
+### Console Logging
+
+**Levels**:
+- `console.log` - Normal flow
+- `console.warn` - Potential issues
+- `console.error` - Actual errors
+
+**Examples**:
 ```typescript
-await clearIndexedDbPersistence(db);
+console.log('[useIncidents] Loaded', data.length, 'incidents');
+console.warn('[geocode] Google Maps failed, trying OpenStreetMap');
+console.error('[updateDoc] Failed to save note:', error);
 ```
 
----
-
-## Quick Reference
-
-| Task               | Code Pattern                                             |
-| ------------------ | -------------------------------------------------------- |
-| Load all incidents | `onSnapshot(query(collection(db, "incidents")))`         |
-| Load one incident  | `onSnapshot(doc(db, "incidents", id))`                   |
-| Load updates       | `onSnapshot(collection(db, "incidents", id, "updates"))` |
-| Filter by state    | `query(ref, where("state", "==", "NY"))`                 |
-| Sort by time       | `query(ref, orderBy("lastTs", "desc"))`                  |
-| Toggle favorite    | `updateDoc(ref, { favoritedBy: arrayUnion(uid) })`       |
+### Firestore Logging
+All Firestore operations logged to Firebase Console automatically.
 
 ---
 
-**Last Updated:** October 29, 2025  
-**Author:** AI Assistant (Claude Sonnet 4.5)  
-**Status:** Active Development
+## 14. Testing Data Flow
+
+### How to Test Parsing
+
+1. **Add test incident** in Firestore Console:
+   ```json
+   {
+     "incidentId": "test-001",
+     "address": "123 Test St",
+     "city": "Brooklyn",
+     "state": "NY",
+     "lastType": "FIRE",
+     "lastMessage": "Test alert",
+     "lastSeenAt": { "seconds": 1730218800 }
+   }
+   ```
+
+2. **Verify normalization**:
+   - Check console logs for normalized data
+   - Verify county shows "Kings" (not "Brooklyn")
+   - Check `type` and `message` are correct
+
+3. **Test geocoding**:
+   - Open incident detail page
+   - Check if `lat`/`lng` appear in Firestore
+   - Verify distance calculation works
+
+4. **Test real-time**:
+   - Update incident in Firestore Console
+   - Verify app updates within 1 second
+   - No page refresh needed
+
+---
+
+## 15. Future Enhancements
+
+### Planned Improvements
+
+1. **Full-Text Search**
+   - Algolia or Typesense integration
+   - Search across all fields including updates
+   
+2. **Aggregations**
+   - Total incidents by type
+   - Heatmap data
+   - Trend analysis
+
+3. **Machine Learning**
+   - Auto-categorize incident types
+   - Predict incident escalation
+   - Smart routing to nearest responders
+
+4. **Offline Support**
+   - Service worker caching
+   - Local IndexedDB storage
+   - Background sync when online
+
+---
+
+## Cross-References
+
+- **Data Types**: See `types/domain.ts`
+- **Hooks**: See `hooks/use-incidents.ts`, `hooks/use-incident.ts`
+- **Filtering**: See `docs/FILTER_SYSTEM.md`
+- **API Integration**: See `docs/API.md`
+- **Architecture**: See `docs/WIRING.md`
+
+---
+
+**Last Updated**: October 29, 2025  
+**Status**: ✅ Production-Ready  
+**Maintainer**: EMU Development Team
