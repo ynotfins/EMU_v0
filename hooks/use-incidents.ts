@@ -68,7 +68,10 @@ function normalize(docId: string, data: any): IncidentLite {
     isFavorited: false, // Will be computed by withUserFlags()
     isBookmarked: false, // Will be computed by withUserFlags()
     isSilenced: data.isSilenced || false,
-    distanceMi: data.distanceMi,
+    distanceMi: data.distanceMi, // Legacy field, will be replaced by real-time calculation
+    lat: data.lat, // Cached from geocoding
+    lng: data.lng, // Cached from geocoding
+    geocodedAt: data.geocodedAt, // When was this address geocoded
     updates: data.updates || [],
     // Store raw arrays for favorite/bookmark logic
     favoritedBy: data.favoritedBy || [],

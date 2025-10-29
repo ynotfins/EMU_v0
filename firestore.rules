@@ -18,9 +18,12 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       
       // Only system/cloud functions can create/update incidents
-      // For now, allow authenticated users to update favorites/bookmarks
+      // Allow authenticated users to update:
+      // - favorites/bookmarks: User interaction
+      // - notes: User-created content
+      // - lat/lng/geocodedAt: Client-side geocoding cache
       allow update: if isAuthenticated() && 
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['favoritedBy', 'bookmarkedBy', 'notes']);
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['favoritedBy', 'bookmarkedBy', 'notes', 'lat', 'lng', 'geocodedAt']);
       
       // Updates subcollection - authenticated users can read
       match /updates/{updateId} {

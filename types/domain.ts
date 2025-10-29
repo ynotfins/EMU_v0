@@ -9,7 +9,10 @@ export interface IncidentLite {
   id: string
   incidentNumber: number
   updatedAt: string
-  distanceMi?: number
+  distanceMi?: number // Legacy field, calculated client-side now
+  lat?: number // Latitude from geocoding (cached in Firestore)
+  lng?: number // Longitude from geocoding (cached in Firestore)
+  geocodedAt?: string // When the address was geocoded
   state: string
   county: string
   city: string

@@ -4,17 +4,22 @@ import { useRouter } from "next/navigation"
 import { RoleLayout } from "@/components/role-layout"
 import { FilterBar } from "@/components/filter-bar"
 import { IncidentListItem } from "@/components/incident-list-item"
-import { useIncidents, toggleFavorite, unfavorite, toggleBookmark, unbookmark } from "@/hooks/use-incidents"
+import { toggleFavorite, unfavorite, toggleBookmark, unbookmark } from "@/hooks/use-incidents"
+import { useIncidentsWithDistance } from "@/hooks/use-incidents-with-distance"
 import { useFilters } from "@/hooks/use-filters"
 import { useProfile } from "@/hooks/use-profile"
 import { useFavoritesContext } from "@/lib/context/favorites-context"
 import { Button } from "@/components/ui/button"
-import { Map } from "lucide-react"
+import { Map, MapPin, AlertCircle } from "lucide-react"
 
 export default function SupeIncidentsPage() {
   const router = useRouter()
   const { filters, setDistance, setTypes, setKeyword, setHighAlertOnly, setMinUpdates } = useFilters()
-  const { data: incidents } = useIncidents(filters)
+  const { 
+    data: incidents, 
+    locationPermissionGranted, 
+    userLocation 
+  } = useIncidentsWithDistance(filters)
   const { data: profile, updateSettings } = useProfile()
   const { toggleSilence } = useFavoritesContext()
 
@@ -67,6 +72,28 @@ export default function SupeIncidentsPage() {
             Live Map
           </Button>
         </div>
+
+        {/* Location Permission Banner */}
+        {locationPermissionGranted === false && (
+          <div className="bg-[#FF3B30] text-white p-3 flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-semibold text-sm">Location Permission Required</p>
+              <p className="text-xs mt-1 opacity-90">
+                Enable location to see distances to incidents. Check your browser settings.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {locationPermissionGranted === true && userLocation && (
+          <div className="bg-[#34C759] text-white p-2 flex items-center justify-center gap-2">
+            <MapPin className="h-4 w-4" />
+            <p className="text-sm font-medium">
+              Location enabled • {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
+            </p>
+          </div>
+        )}
 
         {/* Filters */}
         <FilterBar
