@@ -83,7 +83,18 @@ export default function Client({ id }: { id: string }) {
               <div className="p-4 border-b">
                 <div className="flex items-start justify-between mb-2">
                   <h2 className="text-xl font-bold">{incident.type}</h2>
-                  <Heart className="h-6 w-6 text-gray-400" />
+                  <button
+                    onClick={() => toggleFavorite(id)}
+                    className="transition-colors"
+                  >
+                    <Heart
+                      className={`h-6 w-6 ${
+                        incident.isFavorited
+                          ? "fill-red-500 text-red-500"
+                          : "text-gray-400"
+                      }`}
+                    />
+                  </button>
                 </div>
                 <p className="font-semibold text-lg mb-1">{incident.address}</p>
                 <p className="text-gray-600 text-sm">
@@ -102,18 +113,26 @@ export default function Client({ id }: { id: string }) {
               </div>
 
               {/* Updates Section */}
-              {incident.updates && incident.updates.length > 0 && (
+              {updates && updates.length > 0 && (
                 <div className="px-4 py-3 border-t">
                   <h3 className="font-semibold text-base mb-3">
-                    Updates ({incident.updates.length})
+                    Updates ({updates.length})
                   </h3>
                   <div className="space-y-3">
-                    {incident.updates.map((update, index) => (
-                      <div key={index} className="text-sm">
-                        <p className="text-xs text-gray-500 mb-1">
+                    {updates.map((update, index) => (
+                      <div key={index} className="text-sm bg-gray-50 p-3 rounded-lg">
+                        <p className="text-xs text-gray-500 mb-1 font-medium">
                           {new Date(update.ts).toLocaleString()}
                         </p>
+                        {update.title && (
+                          <p className="text-sm font-semibold text-gray-900 mb-1">
+                            {update.title}
+                          </p>
+                        )}
                         <p className="text-gray-800">{update.message}</p>
+                        {update.address && update.address !== incident.address && (
+                          <p className="text-xs text-gray-600 mt-1">📍 {update.address}</p>
+                        )}
                       </div>
                     ))}
                   </div>

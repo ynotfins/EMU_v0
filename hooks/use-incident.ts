@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
 import {
   collection,
   query,
@@ -13,6 +13,7 @@ import {
 } from "firebase/firestore";
 import { logError } from "@/lib/logger";
 import type { Incident } from "@/types/domain";
+import { getUid } from "@/lib/dev";
 
 export function useIncident(incidentId: string) {
   const [data, setData] = useState<Incident | undefined>();
@@ -66,6 +67,13 @@ export function useIncident(incidentId: string) {
           stage: latestData.stage,
         });
 
+        // Compute user flags
+        const userId = getUid(auth.currentUser?.uid);
+        const favoritedBy = latestData.favoritedBy || [];
+        const bookmarkedBy = latestData.bookmarkedBy || [];
+        const isFavorited = favoritedBy.includes(userId);
+        const isBookmarked = bookmarkedBy.includes(userId);
+
         setError(undefined);
         setData({
           id: incidentId,
@@ -83,6 +91,8 @@ export function useIncident(incidentId: string) {
           updates: [], // Will be populated by updates subscription
           updateCount: latestData.updateCount || 0,
           notes: latestData.notes || [],
+          isFavorited,
+          isBookmarked,
         } as any);
 
         setIsLoading(false);
