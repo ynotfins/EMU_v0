@@ -1,6 +1,8 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import { signOut } from "firebase/auth"
+import { auth } from "@/lib/firebase"
 import { RoleLayout } from "@/components/role-layout"
 import { ProfileHeader } from "@/components/profile-header"
 import { StatsCards } from "@/components/stats-cards"
@@ -16,9 +18,15 @@ export default function ChaserProfilePage() {
   const router = useRouter()
   const { data: profile, updateSettings, updatePayout } = useProfile()
 
-  const handleSignOut = () => {
-    console.log("[v0] Sign out")
-    router.push("/login")
+  const handleSignOut = async () => {
+    try {
+      console.log("[Profile] Signing out...")
+      await signOut(auth)
+      console.log("[Profile] ✅ Signed out successfully")
+      router.push("/login")
+    } catch (error) {
+      console.error("[Profile] ❌ Sign out error:", error)
+    }
   }
 
   if (!profile) {

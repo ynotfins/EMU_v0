@@ -1,0 +1,54 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to get user ID
+    function getUserId() {
+      return request.auth.uid;
+    }
+    
+    // Helper function to validate file size (max 10MB)
+    function isValidSize() {
+      return request.resource.size < 10 * 1024 * 1024;
+    }
+    
+    // Helper function to validate image type
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    // User profile photos - only owner can write, all authenticated users can read
+    match /users/{userId}/profile-pic.png {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && getUserId() == userId && isValidSize() && isImage();
+    }
+    
+    // User documents - only owner can read/write
+    match /users/{userId}/docs/{fileName} {
+      allow read, write: if isAuthenticated() && getUserId() == userId && isValidSize();
+    }
+    
+    // Incident photos - all authenticated users can read, any authenticated user can write
+    match /incidents/{incidentId}/photos/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isValidSize() && isImage();
+    }
+    
+    // Incident documents - all authenticated users can read, any authenticated user can write
+    match /incidents/{incidentId}/docs/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isValidSize();
+    }
+    
+    // Deny all other paths by default
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

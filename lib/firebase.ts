@@ -1,5 +1,5 @@
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
-import { getAuth, signInAnonymously, type Auth } from "firebase/auth";
+import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getMessaging, type Messaging } from "firebase/messaging";
@@ -31,16 +31,13 @@ export const storage = getStorage(app);
 export const messaging: Messaging | null =
   typeof window !== "undefined" ? getMessaging(app) : null;
 
-// Dev bootstrap: attempt anonymous sign-in (requires Anonymous Auth enabled in Console)
+// Log authentication state changes (for debugging)
 if (typeof window !== "undefined") {
   auth.onAuthStateChanged((user) => {
-    if (!user) {
-      signInAnonymously(auth).catch((e) => {
-        console.warn(
-          "[Firebase] Anonymous sign-in failed - enable in Firebase Console:",
-          e.message
-        );
-      });
+    if (user) {
+      console.log("[Firebase] ✅ User authenticated:", user.email || user.uid);
+    } else {
+      console.log("[Firebase] ⚠️  No user authenticated - redirecting to login");
     }
   });
 }
