@@ -131,28 +131,36 @@ export default function Client({ id }: { id: string }) {
                     Updates ({updates.length})
                   </h3>
                   <div className="space-y-3">
-                    {updates.map((update) => (
+                    {updates.map((update, idx) => (
                       <div
                         key={update.id || update.ts}
-                        className="text-sm bg-gray-50 p-3 rounded-lg"
+                        className={`text-sm p-3 rounded-lg ${
+                          update.stage === 'new' 
+                            ? 'bg-blue-50 border-l-4 border-blue-500' 
+                            : 'bg-gray-50 border-l-4 border-gray-300'
+                        }`}
                       >
-                        <p className="text-xs text-gray-500 mb-1 font-medium">
-                          {new Date(update.ts).toLocaleString()}
-                        </p>
-                        {update.title && (
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="text-xs font-semibold text-gray-700 uppercase">
+                            {update.stage === 'new' ? '🆕 Initial Alert' : '📝 Update'} #{updates.length - idx}
+                          </p>
+                          <p className="text-xs text-gray-500 font-medium">
+                            {new Date(update.ts).toLocaleString()}
+                          </p>
+                        </div>
+                        {update.title && update.title !== update.stage && (
                           <p className="text-sm font-semibold text-gray-900 mb-1">
                             {update.title}
                           </p>
                         )}
                         <p className="text-gray-800 whitespace-pre-wrap wrap-break-word">
-                          {update.message}
+                          {update.message || 'No message provided'}
                         </p>
-                        {update.address &&
-                          update.address !== incident.address && (
-                            <p className="text-xs text-gray-600 mt-1">
-                              📍 {update.address}
-                            </p>
-                          )}
+                        {update.address && (
+                          <p className="text-xs text-gray-600 mt-2">
+                            📍 {update.address}
+                          </p>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -204,12 +212,15 @@ export default function Client({ id }: { id: string }) {
                 {/* Display existing notes */}
                 {incident.notes && incident.notes.length > 0 && (
                   <div className="mt-4 space-y-2">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                      Saved Notes ({incident.notes.length})
+                    </h4>
                     {incident.notes.map((note: any, index: number) => (
-                      <div key={index} className="p-3 bg-gray-50 rounded">
-                        <p className="text-xs text-gray-500 mb-1">
-                          {note.uid} - {new Date(note.ts).toLocaleString()}
+                      <div key={index} className="p-3 bg-blue-50 border-l-4 border-blue-500 rounded">
+                        <p className="text-xs text-gray-600 mb-1">
+                          {new Date(note.createdAt || note.ts).toLocaleString()} • {note.createdBy || note.uid || 'User'}
                         </p>
-                        <p className="text-sm">{note.text}</p>
+                        <p className="text-sm text-gray-900 whitespace-pre-wrap">{note.text}</p>
                       </div>
                     ))}
                   </div>

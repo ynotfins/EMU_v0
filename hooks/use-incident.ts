@@ -126,40 +126,53 @@ export function useIncident(incidentId: string) {
           `Found ${snapshot.docs.length} update docs`
         );
 
-        const updatesData = snapshot.docs.map((doc) => {
-          const data = doc.data();
-          console.log(`[useIncident] 📄 Update doc ${doc.id}:`, {
-            id: doc.id,
-            hasMessage: !!data.message,
-            message: data.message,
-            hasTitle: !!data.title,
-            title: data.title,
-            hasAddress: !!data.address,
-            address: data.address,
-            stage: data.stage,
-            ts: data.ts,
-            allFields: Object.keys(data),
-            fullData: data,
+        // Map and deduplicate updates
+        const seenTimestamps = new Set();
+        const updatesData = snapshot.docs
+          .map((doc) => {
+            const data = doc.data();
+            const timestamp = data.ts?.toDate?.()?.toISOString() ||
+              data.reportedAt?.toDate?.()?.toISOString() ||
+              new Date().toISOString();
+            
+            console.log(`[useIncident] 📄 Update doc ${doc.id}:`, {
+              id: doc.id,
+              hasMessage: !!data.message,
+              message: data.message,
+              hasTitle: !!data.title,
+              title: data.title,
+              hasAddress: !!data.address,
+              address: data.address,
+              stage: data.stage,
+              ts: timestamp,
+              allFields: Object.keys(data),
+              fullData: data,
+            });
+
+            return {
+              id: doc.id,
+              message: data.message || "",
+              title: data.title || data.stage || "",
+              address: data.address || "",
+              stage: data.stage || "update",
+              ts: timestamp,
+              lat: data.lat,
+              lng: data.lng,
+            };
+          })
+          .filter((update) => {
+            // Deduplicate by timestamp (keep first occurrence)
+            if (seenTimestamps.has(update.ts)) {
+              console.log(`[useIncident] ⚠️ Skipping duplicate timestamp: ${update.ts}`);
+              return false;
+            }
+            seenTimestamps.add(update.ts);
+            return true;
           });
 
-          return {
-            id: doc.id,
-            message: data.message || "",
-            title: data.title || "",
-            address: data.address || "",
-            stage: data.stage || "update",
-            ts:
-              data.ts?.toDate?.()?.toISOString() ||
-              data.reportedAt?.toDate?.()?.toISOString() ||
-              new Date().toISOString(),
-            lat: data.lat,
-            lng: data.lng,
-          };
-        });
-
         console.log(
-          `[useIncident] ✅ Processed updates:`,
-          updatesData.map((u) => ({ id: u.id, messageLength: u.message.length }))
+          `[useIncident] ✅ Processed ${updatesData.length} unique updates (filtered ${snapshot.docs.length - updatesData.length} duplicates):`,
+          updatesData.map((u) => ({ id: u.id, messageLength: u.message.length, ts: u.ts }))
         );
         setUpdates(updatesData);
       },
