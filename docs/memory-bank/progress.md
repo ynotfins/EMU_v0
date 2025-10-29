@@ -39,6 +39,12 @@
 - **Extensions**: `/docs/EXTENSIONS.md` - Firebase Extensions setup
 - **Test Plan**: `/docs/TESTPLAN.md` - Manual testing checklist
 - **README**: `/docs/README.md` - Project overview
+- **Distance Calculation**: `DISTANCE_CALCULATION_COMPLETE.md` - Complete implementation guide (424 lines)
+- **Google Maps API**: `/docs/GOOGLE_MAPS_API_SETUP.md` - Optional API setup (370 lines)
+- **Mobile Testing**: `/docs/MOBILE_TESTING_GUIDE.md` - Test on phone guide (288 lines)
+- **Browser Testing**: `/docs/BROWSER_TESTING_WITH_AI.md` - AI-assisted testing (300 lines)
+- **Cloudflare Deploy**: `CLOUDFLARE_DEPLOYMENT.md` - Production deployment guide
+- **Production Launch**: `PRODUCTION_LAUNCH.md` - 8-step launch checklist
 
 ## What's In Progress (Partially Implemented)
 
@@ -46,7 +52,9 @@
 | Hook | Status | Notes |
 |------|--------|-------|
 | `useIncidents()` | ✅ **LIVE** | Firestore `onSnapshot`, real-time updates, normalizes data, computes user flags |
-| `useIncident(id)` | ✅ **LIVE** | Firestore doc listener, error handling with `logError()` |
+| `useIncident(id)` | ✅ **LIVE** | Firestore doc listener, error handling with `logError()`, notes saving |
+| `useIncidentsWithDistance()` | ✅ **LIVE** | Real-time distance calculation, geocoding, caching |
+| `useLocationDistance()` | ✅ **LIVE** | User GPS tracking, geocoding (Google + OSM), Haversine distance |
 | `useProfile(uid)` | ⚠️ **Stubbed** | Returns DEV_PROFILE, settings persist to localStorage |
 | `useThreads(uid)` | ⚠️ **Stubbed** | Need Firestore query: `/threads` where member |
 | `useMessages(threadId)` | ⚠️ **Stubbed** | Need Firestore subcollection: `/threads/{id}/messages` |
