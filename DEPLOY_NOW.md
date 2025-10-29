@@ -7,6 +7,7 @@
 **Why:** Unlimited bandwidth, enterprise security, you already have it!
 
 **Steps:**
+
 1. Go to: https://dash.cloudflare.com/
 2. Click "Workers & Pages" → "Create" → "Pages"
 3. Click "Connect to Git" → Select "EMU_v0"
@@ -14,11 +15,13 @@
 5. Click "Deploy"
 
 **Your app will be live at:**
+
 ```
 https://emu-v0-[random].pages.dev
 ```
 
 **Benefits:**
+
 - ✅ **UNLIMITED bandwidth** (Vercel = 100GB limit)
 - ✅ **UNLIMITED requests** (no function limits)
 - ✅ **275+ global locations** (best CDN)
@@ -34,6 +37,7 @@ https://emu-v0-[random].pages.dev
 **Why:** Made for Next.js, auto-deploys, FREE, 5 minutes
 
 **Steps:**
+
 1. Go to: https://vercel.com/signup
 2. Click "Continue with GitHub"
 3. Go to: https://vercel.com/new
@@ -41,11 +45,13 @@ https://emu-v0-[random].pages.dev
 5. Click **"Deploy"** (that's it!)
 
 **Your app will be live at:**
+
 ```
 https://emu-v0-[random].vercel.app
 ```
 
 **Then add environment variables:**
+
 1. Go to Settings → Environment Variables
 2. Copy from your `.env.local`:
    - `NEXT_PUBLIC_FIREBASE_API_KEY`
@@ -58,6 +64,7 @@ https://emu-v0-[random].vercel.app
 3. Redeploy (Deployments → ⋯ → Redeploy)
 
 **Add Vercel domain to Firebase:**
+
 1. Go to: https://console.firebase.google.com/project/emu-incidents/authentication/settings
 2. Scroll to "Authorized domains"
 3. Click "Add domain"
@@ -73,6 +80,7 @@ https://emu-v0-[random].vercel.app
 **Why:** Complicated for Next.js SSR
 
 **Issues:**
+
 - Requires Firebase Cloud Functions
 - Complex setup (30+ minutes)
 - Dynamic routes need special handling
@@ -95,7 +103,7 @@ https://emu-v0-[random].vercel.app
 ✅ **Zero config** - Just works  
 ✅ **Custom domains** - Easy setup (if on Cloudflare)  
 ✅ **Built-in analytics** - Privacy-friendly, no tracking  
-✅ **WAF included** - Web Application Firewall  
+✅ **WAF included** - Web Application Firewall
 
 ---
 
@@ -108,17 +116,17 @@ https://emu-v0-[random].vercel.app
 ✅ **Free SSL** - HTTPS automatically  
 ✅ **Zero config** - Just works  
 ✅ **100GB bandwidth** - Free tier  
-✅ **Custom domains** - Easy setup  
+✅ **Custom domains** - Easy setup
 
 ---
 
 ## 💰 **COST:**
 
-| Platform | Free Tier | Your Usage | Cost |
-|----------|-----------|------------|------|
-| **Vercel** | 100GB/month | ~10GB | **$0** |
-| **Firebase** | Still used | Database, Auth, Storage | **$5.85** |
-| **TOTAL** | - | - | **$5.85/month** |
+| Platform     | Free Tier   | Your Usage              | Cost            |
+| ------------ | ----------- | ----------------------- | --------------- |
+| **Vercel**   | 100GB/month | ~10GB                   | **$0**          |
+| **Firebase** | Still used  | Database, Auth, Storage | **$5.85**       |
+| **TOTAL**    | -           | -                       | **$5.85/month** |
 
 **Vercel is FREE!** You only pay Firebase for backend.
 
@@ -127,6 +135,7 @@ https://emu-v0-[random].vercel.app
 ## 🔥 **AFTER DEPLOYMENT:**
 
 ### 1. Test Your Live Site
+
 ```
 https://your-vercel-url.vercel.app
 ```
@@ -138,7 +147,9 @@ https://your-vercel-url.vercel.app
 - ✅ All features work!
 
 ### 2. Set Up Custom Domain (Optional)
+
 **If you own a domain:**
+
 1. Vercel Settings → Domains
 2. Add your domain
 3. Follow DNS instructions
@@ -146,7 +157,9 @@ https://your-vercel-url.vercel.app
 5. ✅ `https://yourdomain.com` is live!
 
 ### 3. Enable Firebase Auth & Storage
+
 Follow steps in `PRODUCTION_LAUNCH.md`:
+
 - [ ] Disable Anonymous Auth
 - [ ] Enable Email/Password Auth
 - [ ] Create user accounts
@@ -189,11 +202,13 @@ Follow steps in `PRODUCTION_LAUNCH.md`:
 ### After deploying to Vercel:
 
 1. **Add Vercel domain to Firebase Authorized domains**
+
    - Go to Firebase Console → Authentication → Settings
    - Add your Vercel URL
    - **WITHOUT THIS, LOGIN WON'T WORK!**
 
 2. **Add environment variables to Vercel**
+
    - Settings → Environment Variables
    - Add all `NEXT_PUBLIC_*` variables
    - Redeploy after adding
@@ -239,6 +254,7 @@ Just push to GitHub = automatic deployment! 🚀
 ## ✅ **DEPLOYMENT CHECKLIST:**
 
 ### Vercel Deployment:
+
 - [ ] Create Vercel account
 - [ ] Import EMU_v0 from GitHub
 - [ ] Wait for first deployment
@@ -248,6 +264,7 @@ Just push to GitHub = automatic deployment! 🚀
 - [ ] Test live site
 
 ### Firebase Setup:
+
 - [ ] Disable Anonymous Auth
 - [ ] Enable Email/Password Auth
 - [ ] Create user accounts (you + wife)
@@ -255,6 +272,7 @@ Just push to GitHub = automatic deployment! 🚀
 - [ ] Deploy storage rules (`firebase deploy --only storage`)
 
 ### Testing:
+
 - [ ] Sign in with email/password
 - [ ] Sign in with Google
 - [ ] View live alerts
@@ -278,6 +296,7 @@ Just push to GitHub = automatic deployment! 🚀
 ## 💪 **YOU'RE READY!**
 
 **Everything is prepared:**
+
 - ✅ Code is production-ready
 - ✅ Security is locked down
 - ✅ Firebase backend is configured
@@ -294,7 +313,7 @@ Just push to GitHub = automatic deployment! 🚀
 
 **Your app will be live in 2 minutes!** ⚡  
 **Full setup complete in 15 minutes!** ⏱️  
-**Monthly cost: $5.85!** 💰  
+**Monthly cost: $5.85!** 💰
 
 **LET'S GO LIVE!** 🚀💪
 
@@ -304,8 +323,7 @@ Just push to GitHub = automatic deployment! 🚀
 **Status:** READY TO DEPLOY  
 **Complexity:** Easy (5/5)  
 **Time:** 5 minutes  
-**Cost:** $0 (Vercel free tier)  
+**Cost:** $0 (Vercel free tier)
 
 **START HERE:** https://vercel.com/signup  
 **THEN READ:** VERCEL_DEPLOYMENT.md (full guide)
-
