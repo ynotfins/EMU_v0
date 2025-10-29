@@ -32,8 +32,7 @@ export function PreferencesCard({
             id="push-notifications" 
             checked={pushEnabled} 
             onCheckedChange={onPushChange}
-            className="data-[state=checked]:bg-[#34C759]"
-            thumbClassName="data-[state=checked]:bg-[#FF9500]"
+            className="data-[state=unchecked]:bg-[#34C759] data-[state=checked]:bg-[#FF9500]"
           />
         </div>
         <div className="flex items-center justify-between">
@@ -45,8 +44,7 @@ export function PreferencesCard({
             id="location-tracking" 
             checked={trackingEnabled} 
             onCheckedChange={onTrackingChange}
-            className="data-[state=checked]:bg-[#34C759]"
-            thumbClassName="data-[state=checked]:bg-[#FF9500]"
+            className="data-[state=unchecked]:bg-[#34C759] data-[state=checked]:bg-[#FF9500]"
           />
         </div>
       </CardContent>
