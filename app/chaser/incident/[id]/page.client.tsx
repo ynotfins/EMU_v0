@@ -136,7 +136,7 @@ export default function Client({ id }: { id: string }) {
                             {update.title}
                           </p>
                         )}
-                        <p className="text-gray-800 whitespace-pre-wrap break-words">
+                        <p className="text-gray-800 whitespace-pre-wrap wrap-break-word">
                           {update.message}
                         </p>
                         {update.address &&
@@ -161,7 +161,7 @@ export default function Client({ id }: { id: string }) {
                     <p className="text-sm font-semibold text-gray-900 mb-1">
                       {incident.type}
                     </p>
-                    <p className="text-gray-800 whitespace-pre-wrap break-words">
+                    <p className="text-gray-800 whitespace-pre-wrap wrap-break-word">
                       {incident.message || incident.address}
                     </p>
                   </div>
