@@ -1,31 +1,43 @@
 # Active Context: EMU Alerts
 
 ## Current Status
-**Project Stage**: Production-Ready - Final Polish & Deployment
+**Project Stage**: Ready for Production Deployment
 
-**Last Updated**: 2025-10-29 - Stay Signed In Forever + Color Standardization  
-**Session**: production-ready-final-polish
+**Last Updated**: 2025-10-29 - Comprehensive Documentation + UI Fixes + Deployment Ready  
+**Session**: pre-deployment-final-checks
 
 ## Current Work Focus
-**User stays signed in forever + standardized colors + HTTPS deployment for mobile location**
+**Final pre-deployment: Documentation complete, UI polished, ready for Cloudflare HTTPS deployment**
 
 **Current State**:
 - ✅ Dev server: Running at http://localhost:3000
 - ✅ Live BNN data: Displaying correctly from Firestore
-- ✅ Distance calculation: Client-side with geocoding + caching
+- ✅ Distance calculation: Client-side with geocoding + caching ($3-7/month cost)
 - ✅ Location tracking: Real-time user GPS via browser API
 - ✅ Geocoding: Dual providers (Google Maps + OpenStreetMap fallback)
-- ✅ Caching: Smart lat/lng storage in Firestore
-- ✅ UI: Location permission banners on incidents pages
-- ✅ Security: Firestore rules updated and deployed
+- ✅ Caching: Smart lat/lng storage in Firestore (ONE-TIME per address)
+- ✅ UI: All features working on PC
+- ✅ Security: Firestore rules deployed, Storage rules deployed
 - ✅ **Auth Persistence**: Set to LOCAL - users NEVER time out
 - ✅ **Real-time Updates**: All data auto-updates via onSnapshot
-- ✅ **Color Standards**: All colors standardized (docs/COLOR_STANDARDS.md)
-- ✅ **Better Errors**: Location errors now show helpful messages
-- ✅ **Documentation**: Comprehensive guides created
-- ⚠️ **Extensions**: Geocode + Validate extensions need UNINSTALL (user action)
-- ⚠️ **Testing**: PC works, phone needs HTTPS
-- 🚀 **Next**: Deploy to Cloudflare Pages for HTTPS (mobile location requires it)
+- ✅ **Color Standards**: Centralized in lib/colors.ts
+- ✅ **Toggle Switches**: White knob with shadow, green→orange oval ✅ FIXED TODAY
+- ✅ **Sort by Distance**: Flashing red/white warning animation
+- ✅ **Hide Button**: Green eye-off icon on every alert
+- ✅ **Silence Bell**: Green when active, red when silenced
+- ✅ **Distance Filter**: Last 4 hours + X miles
+- ✅ **Search**: Working (address, type, message)
+- ✅ **Location Timeout**: Fixed (60s timeout, 5min cache)
+- ✅ **Comprehensive Docs**: 
+  - PARSING_AND_INDEXING.md (4,500+ words) ✅
+  - FILTER_SYSTEM.md (5,000+ words) ✅
+  - COST_ANALYSIS.md (detailed $3-7/month breakdown) ✅
+  - DEPLOY_TO_CLOUDFLARE_NOW.md ✅
+  - DEPLOY_COMMANDS.md (step-by-step) ✅
+  - COLOR_STANDARDS.md ✅
+- 🚨 **CRITICAL**: Phone distance NOT working - requires HTTPS deployment
+- 🚀 **READY TO DEPLOY**: Cloudflare Pages deployment ready (5 minutes)
+- 📋 **TODO**: WIRING.md, API.md, NAVIGATION.md, HANDOFF.md, Code refactoring
 
 ## Recent Changes (This Session)
 
