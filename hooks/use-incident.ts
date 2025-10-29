@@ -27,45 +27,35 @@ export function useIncident(incidentId: string) {
       return;
     }
 
-    console.log(`[useIncident] Loading document by ID: "${incidentId}"`);
+    console.log(`[useIncident] Loading incident and updates subcollection: "${incidentId}"`);
 
-    // NEW STRATEGY: Just load the single document directly by ID
-    // (BNN data is inconsistent - some docs have firestoreDocId field, some don't)
-    // Each alert is its own document, so we can just fetch it directly
-    const directDocRef = doc(db, "incidents", incidentId);
+    // Load the incident document
+    const incidentDocRef = doc(db, "incidents", incidentId);
     
-    const unsub = onSnapshot(
-      directDocRef,
+    // Load updates from subcollection (Cloud Function stores updates here!)
+    const updatesCollectionRef = collection(db, "incidents", incidentId, "updates");
+    const updatesQuery = query(updatesCollectionRef, orderBy("ts", "desc"));
+    
+    // Subscribe to incident document
+    const unsubIncident = onSnapshot(
+      incidentDocRef,
       (docSnap) => {
         if (!docSnap.exists()) {
           console.error(`[useIncident] ❌ Document "${incidentId}" does not exist`);
           setError("not-found");
           setData(undefined);
-          setUpdates([]);
           setIsLoading(false);
           return;
         }
 
-        setIsLoading(false);
         const latestData = docSnap.data();
-        console.log(`[useIncident] Latest data:`, {
+        console.log(`[useIncident] ✅ Loaded incident:`, {
           incidentId,
           lastType: latestData.lastType,
           lastMessage: latestData.lastMessage,
-          updatesText: latestData.updatesText?.substring(0, 100),
           updateCount: latestData.updateCount,
+          stage: latestData.stage,
         });
-
-        // Parse updatesText to extract individual updates
-        const updatesText = latestData.updatesText || "";
-        const parsedUpdates = updatesText
-          .split("•")
-          .map((u: string) => u.trim())
-          .filter((u: string) => u.length > 0)
-          .map((text: string, index: number) => ({
-            ts: new Date(Date.now() - index * 60000).toISOString(), // Fake timestamps
-            message: text,
-          }));
 
         setError(undefined);
         setData({
@@ -78,23 +68,54 @@ export function useIncident(incidentId: string) {
           county: latestData.county || "",
           state: latestData.state || "",
           updatedAt:
+            latestData.lastTs?.toDate?.()?.toISOString() ||
             latestData.lastSeenAt?.toDate?.()?.toISOString() ||
             new Date().toISOString(),
-          updates: parsedUpdates,
-          updateCount: latestData.updateCount || parsedUpdates.length,
+          updates: [], // Will be populated by updates subscription
+          updateCount: latestData.updateCount || 0,
           notes: latestData.notes || [],
         } as any);
-
-        // Since we're loading a single document, updates come from the parsedUpdates
-        setUpdates(parsedUpdates as any);
+        
+        setIsLoading(false);
       },
       (e) => {
         setIsLoading(false);
         setError(logError(e, "incident-snapshot", { incidentId }).code);
       }
     );
+    
+    // Subscribe to updates subcollection
+    const unsubUpdates = onSnapshot(
+      updatesQuery,
+      (snapshot) => {
+        console.log(`[useIncident] ✅ Loaded ${snapshot.docs.length} updates from subcollection`);
+        
+        const updatesData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          message: doc.data().message || "",
+          title: doc.data().title || "",
+          address: doc.data().address || "",
+          stage: doc.data().stage || "update",
+          ts: doc.data().ts?.toDate?.()?.toISOString() ||
+              doc.data().reportedAt?.toDate?.()?.toISOString() ||
+              new Date().toISOString(),
+          lat: doc.data().lat,
+          lng: doc.data().lng,
+        }));
+        
+        setUpdates(updatesData);
+      },
+      (e) => {
+        console.error(`[useIncident] ❌ Error loading updates:`, e);
+        logError(e, "updates-snapshot", { incidentId });
+      }
+    );
 
-    return () => unsub();
+    // Cleanup both subscriptions
+    return () => {
+      unsubIncident();
+      unsubUpdates();
+    };
   }, [incidentId]);
 
   return { data, updates, isLoading, error };
