@@ -87,8 +87,8 @@ export function IncidentListItem({
           {/* Line 2: Location */}
           <div className="font-medium text-sm">{l2}</div>
 
-          {/* Line 3: Type + Message */}
-          <div className="text-sm text-[#6B7280]">{l3}</div>
+          {/* Line 3: Type + Message - up to 6 lines */}
+          <div className="text-sm text-[#6B7280] line-clamp-6">{l3}</div>
         </div>
 
         {/* Actions */}

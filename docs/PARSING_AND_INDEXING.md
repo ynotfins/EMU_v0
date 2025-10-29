@@ -1,6 +1,7 @@
 # EMU Alerts - Data Parsing & Indexing Guide
 
 ## Overview
+
 This document explains how data flows from MacroDroid notifications through Firebase to the Next.js app, and how to properly parse and index it for optimal performance.
 
 ---
@@ -8,7 +9,7 @@ This document explains how data flows from MacroDroid notifications through Fire
 ## Data Flow Architecture
 
 ```
-MacroDroid (Phone) 
+MacroDroid (Phone)
     ↓ HTTP POST with X-Ingest-Token
 Cloud Function (ingestBNN)
     ↓ Parse & Store
@@ -24,6 +25,7 @@ User Interface
 ## 1. Data Ingestion (MacroDroid → Cloud Function)
 
 ### Input Format
+
 MacroDroid sends JSON via HTTP POST to Cloud Function `ingestBNN`:
 
 ```json
@@ -37,14 +39,17 @@ MacroDroid sends JSON via HTTP POST to Cloud Function `ingestBNN`:
 ```
 
 ### Parsing Logic (Cloud Function)
+
 ```javascript
 // Extract fields from pipe-delimited message
-const [state, county, city, alertType, address, alertMessage] = 
-  line.split('|').map(s => s.trim());
+const [state, county, city, alertType, address, alertMessage] = line
+  .split("|")
+  .map((s) => s.trim());
 
 // Extract incident ID from tail (after field 6)
-const incidentId = extractIncidentId(tail, line) || 
-                   synthesizeIncidentId({state, county, city, address, alertType});
+const incidentId =
+  extractIncidentId(tail, line) ||
+  synthesizeIncidentId({ state, county, city, address, alertType });
 ```
 
 **Key Insight:** The incident ID comes from the notification text (e.g., `#1834007`) or is synthesized using a hash of location+type.
@@ -54,6 +59,7 @@ const incidentId = extractIncidentId(tail, line) ||
 ## 2. Firestore Storage Structure
 
 ### Main Document: `incidents/{incidentId}`
+
 Stores the **latest snapshot** for the incident list page:
 
 ```javascript
@@ -62,7 +68,7 @@ Stores the **latest snapshot** for the incident list page:
   firstSeenAt: Timestamp,  // When first created ("new")
   lastTs: Timestamp,       // Last update timestamp
   lastSeenAt: Timestamp,   // Last seen (deprecated, use lastTs)
-  
+
   // Location
   state: "NY",
   county: "Suffolk",
@@ -70,13 +76,13 @@ Stores the **latest snapshot** for the incident list page:
   address: "49 Joline Rd",
   lat: 40.1234,
   lng: -73.5678,
-  
+
   // Alert Info
   lastType: "Suspicious Fire",      // Alert type (category)
   lastMessage: "49 Joline Rd",      // Latest message
   stage: "update",                  // "new" or "update"
   source: "BNN",
-  
+
   // Metadata
   updateCount: 8,                   // Number of updates
   favoritedBy: ["dev-user-0000001"],
@@ -85,6 +91,7 @@ Stores the **latest snapshot** for the incident list page:
 ```
 
 ### Subcollection: `incidents/{incidentId}/updates`
+
 Stores **full history** for the details page:
 
 ```javascript
@@ -102,6 +109,7 @@ Stores **full history** for the details page:
 ```
 
 ### Helper Collection: `alerts` (optional)
+
 Flat feed of all alerts for analytics:
 
 ```javascript
@@ -122,7 +130,9 @@ Flat feed of all alerts for analytics:
 ### Current Indexes
 
 #### Single-Field Indexes (Automatic)
+
 Firestore automatically creates single-field indexes:
+
 - `incidents.lastTs` (DESC) - for sorting
 - `incidents.state` (ASC) - for filtering
 - `incidents.county` (ASC) - for filtering
@@ -140,8 +150,8 @@ Firestore automatically creates single-field indexes:
       "collectionGroup": "incidents",
       "queryScope": "COLLECTION",
       "fields": [
-        {"fieldPath": "state", "order": "ASCENDING"},
-        {"fieldPath": "lastTs", "order": "DESCENDING"}
+        { "fieldPath": "state", "order": "ASCENDING" },
+        { "fieldPath": "lastTs", "order": "DESCENDING" }
       ]
     }
   ]
@@ -149,6 +159,7 @@ Firestore automatically creates single-field indexes:
 ```
 
 **When to Add Indexes:**
+
 - Console error: "The query requires an index"
 - Click the provided URL to auto-create
 - Or manually add to `firestore.indexes.json` and deploy:
@@ -159,11 +170,13 @@ Firestore automatically creates single-field indexes:
 ### Index Strategy
 
 **DO Index:**
+
 - Fields used in `where()` clauses
-- Fields used in `orderBy()` 
+- Fields used in `orderBy()`
 - Array fields used with `array-contains`
 
 **DON'T Index:**
+
 - Fields only used for display
 - Large text fields (descriptions, notes)
 - Fields that change frequently (reduces write performance)
@@ -179,20 +192,15 @@ Firestore automatically creates single-field indexes:
 ```typescript
 // Subscribe to real-time updates
 const incidentsRef = collection(db, "incidents");
-const q = query(
-  incidentsRef,
-  orderBy("lastTs", "desc"),
-  limit(100)
-);
+const q = query(incidentsRef, orderBy("lastTs", "desc"), limit(100));
 
 onSnapshot(q, (snapshot) => {
-  const incidents = snapshot.docs.map(doc => 
-    normalize(doc.id, doc.data())
-  );
+  const incidents = snapshot.docs.map((doc) => normalize(doc.id, doc.data()));
 });
 ```
 
 **Normalization Logic:**
+
 ```typescript
 function normalize(docId: string, data: any): IncidentLite {
   return {
@@ -204,7 +212,8 @@ function normalize(docId: string, data: any): IncidentLite {
     city: data.city || "",
     county: data.county || "",
     state: data.state || "",
-    updatedAt: data.lastTs?.toDate?.()?.toISOString() || new Date().toISOString(),
+    updatedAt:
+      data.lastTs?.toDate?.()?.toISOString() || new Date().toISOString(),
     // Convert Firestore Timestamp to ISO string
   };
 }
@@ -226,7 +235,7 @@ onSnapshot(incidentDocRef, (docSnap) => {
 const updatesRef = collection(db, "incidents", incidentId, "updates");
 const updatesQuery = query(updatesRef, orderBy("ts", "desc"));
 onSnapshot(updatesQuery, (snapshot) => {
-  const updates = snapshot.docs.map(doc => ({
+  const updates = snapshot.docs.map((doc) => ({
     id: doc.id,
     message: doc.data().message,
     ts: doc.data().ts?.toDate?.()?.toISOString(),
@@ -240,15 +249,17 @@ onSnapshot(updatesQuery, (snapshot) => {
 ## 5. Data Consistency Patterns
 
 ### Problem: Legacy vs New Data
+
 BNN data has evolved over time, causing field name inconsistencies:
 
-| Old Field | New Field | Notes |
-|-----------|-----------|-------|
-| `incidentId` | `firestoreDocId` | Some docs have, some don't |
-| `lastMessage` | `message` | Use `lastMessage` for latest |
-| `lastSeenAt` | `lastTs` | Use `lastTs` for sorting |
+| Old Field     | New Field        | Notes                        |
+| ------------- | ---------------- | ---------------------------- |
+| `incidentId`  | `firestoreDocId` | Some docs have, some don't   |
+| `lastMessage` | `message`        | Use `lastMessage` for latest |
+| `lastSeenAt`  | `lastTs`         | Use `lastTs` for sorting     |
 
 ### Solution: Defensive Parsing
+
 Always provide fallbacks:
 
 ```typescript
@@ -258,6 +269,7 @@ const timestamp = data.lastTs || data.lastSeenAt || data.updatedAt;
 ```
 
 ### Timestamp Handling
+
 Firestore stores timestamps as `Timestamp` objects:
 
 ```typescript
@@ -273,11 +285,13 @@ const date = data.lastTs?.toDate?.()?.toISOString(); // Returns ISO string
 ## 6. Custom Numbering System
 
 ### Current: BNN IDs (7-8 digits)
+
 ```
 1834007, 1833986, 1832224
 ```
 
 ### Proposed: Custom IDs (starts at 1000000)
+
 ```
 1000000, 1000001, 1000002, ...
 ```
@@ -285,9 +299,10 @@ const date = data.lastTs?.toDate?.()?.toISOString(); // Returns ISO string
 ### Implementation Strategy
 
 **Option A: Counter in Firestore**
+
 ```javascript
 // In Cloud Function
-const counterRef = db.collection('metadata').doc('counters');
+const counterRef = db.collection("metadata").doc("counters");
 const newId = await db.runTransaction(async (tx) => {
   const counterDoc = await tx.get(counterRef);
   const currentId = counterDoc.data()?.incidentCounter || 999999;
@@ -298,6 +313,7 @@ const newId = await db.runTransaction(async (tx) => {
 ```
 
 **Option B: Map BNN ID → Custom ID**
+
 ```javascript
 // Store mapping
 incidents/{bnnId} = {
@@ -314,35 +330,43 @@ incidents/{bnnId} = {
 ## 7. Distance Calculation
 
 ### Using Haversine Formula
+
 ```typescript
 function calculateDistance(
-  lat1: number, lon1: number,
-  lat2: number, lon2: number
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
 ): number {
   const R = 3959; // Earth radius in miles
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
-  
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c; // Distance in miles
 }
 ```
 
 ### Getting User Location
+
 ```typescript
 navigator.geolocation.getCurrentPosition((position) => {
   const userLat = position.coords.latitude;
   const userLng = position.coords.longitude;
-  
+
   // Calculate distance to each incident
   const distanceMi = calculateDistance(
-    userLat, userLng,
-    incident.lat, incident.lng
+    userLat,
+    userLng,
+    incident.lat,
+    incident.lng
   );
 });
 ```
@@ -352,10 +376,12 @@ navigator.geolocation.getCurrentPosition((position) => {
 ## 8. Search & Filtering
 
 ### Current: Client-Side Filtering
+
 ```typescript
-const filtered = incidents.filter(inc => {
+const filtered = incidents.filter((inc) => {
   if (filters.keyword) {
-    const searchText = `${inc.type} ${inc.message} ${inc.address}`.toLowerCase();
+    const searchText =
+      `${inc.type} ${inc.message} ${inc.address}`.toLowerCase();
     if (!searchText.includes(filters.keyword.toLowerCase())) return false;
   }
   if (filters.state && inc.state !== filters.state) return false;
@@ -365,12 +391,15 @@ const filtered = incidents.filter(inc => {
 ```
 
 **Limitations:**
+
 - Can't search full-text efficiently
 - Limited to loaded documents
 - No typo tolerance
 
 ### Recommended: Firebase Extension
+
 Install **firestore-algolia-search** for:
+
 - Full-text search
 - Typo tolerance
 - Geo-search by radius
@@ -381,6 +410,7 @@ Install **firestore-algolia-search** for:
 ## 9. Best Practices
 
 ### ✅ DO:
+
 - Use `onSnapshot` for real-time updates
 - Normalize field names with fallbacks
 - Convert Timestamps to ISO strings
@@ -388,6 +418,7 @@ Install **firestore-algolia-search** for:
 - Batch writes when updating multiple docs
 
 ### ❌ DON'T:
+
 - Query without indexes (causes errors)
 - Store large arrays (>10k items)
 - Use client-side filtering for >1000 docs
@@ -399,6 +430,7 @@ Install **firestore-algolia-search** for:
 ## 10. Performance Optimization
 
 ### Pagination
+
 ```typescript
 // Load first page
 const firstPage = query(incidentsRef, orderBy("lastTs", "desc"), limit(25));
@@ -414,7 +446,9 @@ const nextPage = query(
 ```
 
 ### Caching
+
 Firestore automatically caches documents locally. To clear:
+
 ```typescript
 await clearIndexedDbPersistence(db);
 ```
@@ -423,18 +457,17 @@ await clearIndexedDbPersistence(db);
 
 ## Quick Reference
 
-| Task | Code Pattern |
-|------|--------------|
-| Load all incidents | `onSnapshot(query(collection(db, "incidents")))` |
-| Load one incident | `onSnapshot(doc(db, "incidents", id))` |
-| Load updates | `onSnapshot(collection(db, "incidents", id, "updates"))` |
-| Filter by state | `query(ref, where("state", "==", "NY"))` |
-| Sort by time | `query(ref, orderBy("lastTs", "desc"))` |
-| Toggle favorite | `updateDoc(ref, { favoritedBy: arrayUnion(uid) })` |
+| Task               | Code Pattern                                             |
+| ------------------ | -------------------------------------------------------- |
+| Load all incidents | `onSnapshot(query(collection(db, "incidents")))`         |
+| Load one incident  | `onSnapshot(doc(db, "incidents", id))`                   |
+| Load updates       | `onSnapshot(collection(db, "incidents", id, "updates"))` |
+| Filter by state    | `query(ref, where("state", "==", "NY"))`                 |
+| Sort by time       | `query(ref, orderBy("lastTs", "desc"))`                  |
+| Toggle favorite    | `updateDoc(ref, { favoritedBy: arrayUnion(uid) })`       |
 
 ---
 
 **Last Updated:** October 29, 2025  
 **Author:** AI Assistant (Claude Sonnet 4.5)  
 **Status:** Active Development
-

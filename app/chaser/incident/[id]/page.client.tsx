@@ -84,14 +84,18 @@ export default function Client({ id }: { id: string }) {
                 <div className="flex items-start justify-between mb-2">
                   <h2 className="text-xl font-bold">{incident.type}</h2>
                   <button
-                    onClick={() => toggleFavorite(id)}
+                    onClick={() => {
+                      console.log('[Details] Toggling favorite for ID:', id, 'incident.id:', incident.id);
+                      toggleFavorite(id);
+                    }}
                     className="transition-colors"
+                    aria-label={incident.isFavorited ? "Remove from favorites" : "Add to favorites"}
                   >
                     <Heart
-                      className={`h-6 w-6 ${
+                      className={`h-6 w-6 transition-colors ${
                         incident.isFavorited
                           ? "fill-red-500 text-red-500"
-                          : "text-gray-400"
+                          : "text-gray-400 hover:text-red-400"
                       }`}
                     />
                   </button>
@@ -112,15 +116,18 @@ export default function Client({ id }: { id: string }) {
                 </Button>
               </div>
 
-              {/* Updates Section */}
+              {/* Updates Section - No line limit on details page */}
               {updates && updates.length > 0 && (
                 <div className="px-4 py-3 border-t">
                   <h3 className="font-semibold text-base mb-3">
                     Updates ({updates.length})
                   </h3>
                   <div className="space-y-3">
-                    {updates.map((update, index) => (
-                      <div key={index} className="text-sm bg-gray-50 p-3 rounded-lg">
+                    {updates.map((update) => (
+                      <div
+                        key={update.id || update.ts}
+                        className="text-sm bg-gray-50 p-3 rounded-lg"
+                      >
                         <p className="text-xs text-gray-500 mb-1 font-medium">
                           {new Date(update.ts).toLocaleString()}
                         </p>
@@ -129,36 +136,40 @@ export default function Client({ id }: { id: string }) {
                             {update.title}
                           </p>
                         )}
-                        <p className="text-gray-800">{update.message}</p>
-                        {update.address && update.address !== incident.address && (
-                          <p className="text-xs text-gray-600 mt-1">📍 {update.address}</p>
-                        )}
+                        <p className="text-gray-800 whitespace-pre-wrap break-words">
+                          {update.message}
+                        </p>
+                        {update.address &&
+                          update.address !== incident.address && (
+                            <p className="text-xs text-gray-600 mt-1">
+                              📍 {update.address}
+                            </p>
+                          )}
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Employee Notes */}
+              {/* Employee Notes - Auto-saves on blur */}
               <div className="px-4 py-3 border-t">
-                <h3 className="font-semibold text-base mb-3">Employee Notes</h3>
+                <h3 className="font-semibold text-base mb-3">
+                  Employee Notes <span className="text-xs text-gray-500">(auto-saves)</span>
+                </h3>
                 <Textarea
-                  placeholder="Add your notes about this alert..."
+                  placeholder="Add your notes about this alert... (saves automatically when you leave this field)"
                   value={noteText}
                   onChange={(e) => setNoteText(e.target.value)}
-                  className="min-h-32 mb-3"
-                />
-                <Button
-                  onClick={() => {
+                  onBlur={() => {
+                    // Auto-save when user leaves the textarea
                     if (noteText.trim()) {
+                      console.log('[Notes] Auto-saving note:', noteText);
                       addNote(incident.id, noteText);
                       setNoteText("");
                     }
                   }}
-                  className="w-full bg-[#007AFF] hover:bg-[#0051D5] h-12 text-base font-semibold"
-                >
-                  Save Notes
-                </Button>
+                  className="min-h-32"
+                />
 
                 {/* Display existing notes */}
                 {incident.notes && incident.notes.length > 0 && (
