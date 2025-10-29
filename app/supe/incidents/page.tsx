@@ -24,6 +24,7 @@ export default function SupeIncidentsPage() {
   const { data: profile, updateSettings } = useProfile()
   const { toggleSilence } = useFavoritesContext()
   const [sortByDistance, setSortByDistance] = useState(false)
+  const [hiddenIncidents, setHiddenIncidents] = useState<Set<string>>(new Set())
 
   // Handle favorite/bookmark with Firestore toggle logic
   const handleToggleFavorite = async (id: string) => {
@@ -48,6 +49,10 @@ export default function SupeIncidentsPage() {
     router.push(`/supe/incident/${id}`)
   }
 
+  const handleHideIncident = (id: string) => {
+    setHiddenIncidents(prev => new Set(prev).add(id))
+  }
+
   if (!profile) {
     return (
       <RoleLayout role="supe">
@@ -58,17 +63,20 @@ export default function SupeIncidentsPage() {
     )
   }
 
-  // Null guards and sorting logic
+  // Null guards, filtering, and sorting logic
   const safeIncidents = Array.isArray(incidents)
     ? (() => {
         let filtered = [...incidents];
         
-        // If sorting by distance, filter to last 2 hours only
+        // Filter out hidden incidents
+        filtered = filtered.filter(inc => !hiddenIncidents.has(inc.id));
+        
+        // If sorting by distance, filter to last 4 hours only (changed from 2)
         if (sortByDistance) {
-          const twoHoursAgo = Date.now() - (2 * 60 * 60 * 1000);
+          const fourHoursAgo = Date.now() - (4 * 60 * 60 * 1000);
           filtered = filtered.filter(inc => {
             const incidentTime = new Date(inc.updatedAt).getTime();
-            return incidentTime >= twoHoursAgo;
+            return incidentTime >= fourHoursAgo;
           });
           
           // Sort by distance (closest first), undefined distances go to end
@@ -143,7 +151,7 @@ export default function SupeIncidentsPage() {
           <div className="bg-white border-b border-[#E5E7EB] px-4 py-2 flex items-center justify-between">
             <p className="text-sm text-[#6B7280]">
               {sortByDistance 
-                ? `Showing ${safeIncidents.length} alerts from last 2 hours, sorted by distance`
+                ? `Showing ${safeIncidents.length} alerts from last 4 hours, sorted by distance`
                 : `Showing ${safeIncidents.length} alerts, sorted by time`
               }
             </p>
@@ -174,6 +182,7 @@ export default function SupeIncidentsPage() {
                 onToggleFavorite={handleToggleFavorite}
                 onToggleBookmark={handleToggleBookmark}
                 onToggleSilence={toggleSilence}
+                onHide={handleHideIncident}
               />
             ))
           )}

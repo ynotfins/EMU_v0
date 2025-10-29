@@ -258,10 +258,14 @@ export function useIncidents(filters?: Partial<IncidentFilters>) {
     // }
 
     if (filters.distanceMi !== undefined) {
-      filtered = filtered.filter(
-        (inc) =>
-          inc.distanceMi !== undefined && inc.distanceMi <= filters.distanceMi!
-      );
+      // Distance filter: show alerts within X miles from last 4 hours
+      const fourHoursAgo = Date.now() - (4 * 60 * 60 * 1000);
+      filtered = filtered.filter((inc) => {
+        const incidentTime = new Date(inc.updatedAt).getTime();
+        const isRecent = incidentTime >= fourHoursAgo;
+        const withinDistance = inc.distanceMi !== undefined && inc.distanceMi <= filters.distanceMi!;
+        return isRecent && withinDistance;
+      });
     }
 
     if (filters.types && filters.types.length > 0) {

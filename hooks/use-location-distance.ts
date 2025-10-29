@@ -178,8 +178,8 @@ export function useLocationDistance() {
       },
       {
         enableHighAccuracy: false, // Use network location (faster, less battery)
-        timeout: 30000, // Increased from 10s to 30s
-        maximumAge: 60000, // Cache location for 1 minute
+        timeout: 60000, // Increased to 60s to prevent idle timeout errors
+        maximumAge: 300000, // Cache location for 5 minutes (prevents constant re-requests)
       }
     );
 
