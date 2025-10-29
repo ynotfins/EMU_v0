@@ -36,9 +36,11 @@ export function useIncident(incidentId: string) {
     const unsub = onSnapshot(
       q,
       (snapshot) => {
+        console.log(`[useIncident] Query returned ${snapshot.docs.length} documents for incidentId: ${incidentId}`);
         setIsLoading(false);
 
         if (snapshot.empty) {
+          console.error(`[useIncident] No documents found for incidentId: ${incidentId}`);
           setError("not-found");
           setData(undefined);
           setUpdates([]);
@@ -48,6 +50,13 @@ export function useIncident(incidentId: string) {
         // The first document has the most recent info
         const latestDoc = snapshot.docs[0];
         const latestData = latestDoc.data();
+        console.log(`[useIncident] Latest data:`, {
+          incidentId,
+          lastType: latestData.lastType,
+          lastMessage: latestData.lastMessage,
+          updatesText: latestData.updatesText?.substring(0, 100),
+          updateCount: latestData.updateCount
+        });
 
         // Parse updatesText to extract individual updates
         const updatesText = latestData.updatesText || "";

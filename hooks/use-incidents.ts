@@ -102,11 +102,17 @@ export function formatListLines(incident: IncidentLite) {
  * This is the single source of truth for computing user-specific flags
  */
 function withUserFlags(incident: IncidentLite): IncidentLite {
-  const uid = auth.currentUser?.uid;
+  const uid = getUid(auth.currentUser?.uid); // Use getUid() to handle dev fallback
+  console.log(`[withUserFlags] Checking incident ${incident.id} for uid: ${uid}`, {
+    favoritedBy: incident.favoritedBy,
+    bookmarkedBy: incident.bookmarkedBy,
+    isFavorited: (incident.favoritedBy ?? []).includes(uid),
+    isBookmarked: (incident.bookmarkedBy ?? []).includes(uid)
+  });
   return {
     ...incident,
-    isFavorited: uid ? (incident.favoritedBy ?? []).includes(uid) : false,
-    isBookmarked: uid ? (incident.bookmarkedBy ?? []).includes(uid) : false,
+    isFavorited: (incident.favoritedBy ?? []).includes(uid),
+    isBookmarked: (incident.bookmarkedBy ?? []).includes(uid),
   };
 }
 
