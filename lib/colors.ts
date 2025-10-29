@@ -46,6 +46,9 @@ export const COLORS = {
 /**
  * Tailwind CSS class names for colors
  * Use these in className props
+ * 
+ * IMPORTANT: Always use these constants instead of hardcoded colors!
+ * This ensures consistent color interpretation across the app.
  */
 export const COLOR_CLASSES = {
   // Backgrounds
@@ -61,12 +64,17 @@ export const COLOR_CLASSES = {
   bgWarningOrange: "bg-[#FF9500]",
   bgWarningOrangeHover: "hover:bg-[#FF8800]",
   
+  bgGrayLight: "bg-[#F2F2F7]",
+  bgGrayMedium: "bg-[#6B7280]",
+  bgGrayHover: "hover:bg-[#F2F2F7]",
+  
   // Text Colors
   textPrimaryBlue: "text-[#007AFF]",
   textAlertRed: "text-[#FF3B30]",
   textSuccessGreen: "text-[#34C759]",
   textWarningOrange: "text-[#FF9500]",
   textGray: "text-[#6B7280]",
+  textGrayLight: "text-[#9CA3AF]",
   
   // Border Colors
   borderGrayLight: "border-[#E5E7EB]",
@@ -76,6 +84,7 @@ export const COLOR_CLASSES = {
   // Fill Colors (for SVG/icons)
   fillAlertRed: "fill-[#FF3B30]",
   fillSuccessGreen: "fill-[#34C759]",
+  fillPrimaryBlue: "fill-[#007AFF]",
 } as const;
 
 /**
