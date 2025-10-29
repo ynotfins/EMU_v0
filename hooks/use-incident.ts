@@ -25,22 +25,30 @@ export function useIncident(incidentId: string) {
       return;
     }
 
+    console.log(`[useIncident] Querying for incidentId: "${incidentId}" (type: ${typeof incidentId})`);
+
     // Query ALL documents with this incidentId
+    // Try as string first (incidentId might be string or number in Firestore)
     const incidentsRef = collection(db, "incidents");
+    
+    // Parse as number for query (BNN stores incidentId as number)
+    const incidentIdNum = parseInt(incidentId, 10);
+    console.log(`[useIncident] Parsed as number: ${incidentIdNum}`);
+    
     const q = query(
       incidentsRef,
-      where("incidentId", "==", incidentId),
+      where("incidentId", "==", incidentIdNum),
       orderBy("lastSeenAt", "desc")
     );
 
     const unsub = onSnapshot(
       q,
       (snapshot) => {
-        console.log(`[useIncident] Query returned ${snapshot.docs.length} documents for incidentId: ${incidentId}`);
+        console.log(`[useIncident] Query returned ${snapshot.docs.length} documents for incidentId: ${incidentIdNum}`);
         setIsLoading(false);
 
         if (snapshot.empty) {
-          console.error(`[useIncident] No documents found for incidentId: ${incidentId}`);
+          console.error(`[useIncident] ❌ No documents found for incidentId: ${incidentIdNum} (tried as number)`);
           setError("not-found");
           setData(undefined);
           setUpdates([]);
