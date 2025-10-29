@@ -27,89 +27,18 @@ export function useIncident(incidentId: string) {
       return;
     }
 
-    console.log(
-      `[useIncident] Querying for incidentId: "${incidentId}" (type: ${typeof incidentId})`
-    );
+    console.log(`[useIncident] Loading document by ID: "${incidentId}"`);
 
-    // Query ALL documents with this incidentId
-    const incidentsRef = collection(db, "incidents");
-
-    // DIAGNOSTIC: First, try to get the document by ID directly
-    console.log(
-      `[useIncident] 🔍 DIAGNOSTIC: Trying to get document by ID: "${incidentId}"`
-    );
+    // NEW STRATEGY: Just load the single document directly by ID
+    // (BNN data is inconsistent - some docs have firestoreDocId field, some don't)
+    // Each alert is its own document, so we can just fetch it directly
     const directDocRef = doc(db, "incidents", incidentId);
-    getDoc(directDocRef).then((docSnap) => {
-      if (docSnap.exists()) {
-        console.log(`[useIncident] 🎯 FOUND DOCUMENT BY ID! Fields:`, {
-          docId: docSnap.id,
-          allFieldNames: Object.keys(docSnap.data()),
-          fullData: docSnap.data(),
-        });
-      } else {
-        console.log(
-          `[useIncident] ❌ Document with ID "${incidentId}" does not exist`
-        );
-      }
-    });
-
-    // Query by firestoreDocId field (not incidentId!)
-    console.log(`[useIncident] Querying by firestoreDocId: "${incidentId}"`);
-
-    const q = query(
-      incidentsRef,
-      where("firestoreDocId", "==", incidentId),
-      orderBy("lastSeenAt", "desc")
-    );
-
+    
     const unsub = onSnapshot(
-      q,
-      (snapshot) => {
-        console.log(
-          `[useIncident] Query returned ${snapshot.docs.length} documents for incidentId: "${incidentId}"`
-        );
-
-        // DEBUG: Show what fields exist in ALL documents
-        console.log(
-          `[useIncident] 🔍 SAMPLE DOCUMENT FIELDS (first 3 docs):`,
-          snapshot.docs.slice(0, 3).map((doc, i) => ({
-            docIndex: i,
-            docId: doc.id,
-            incidentId: doc.data().incidentId,
-            incidentNumber: doc.data().incidentNumber,
-            typeof_incidentId: typeof doc.data().incidentId,
-            allFieldNames: Object.keys(doc.data()),
-          }))
-        );
-
-        if (snapshot.empty) {
-          console.error(
-            `[useIncident] ❌ No documents found for incidentId: "${incidentId}" (tried as STRING)`
-          );
-          console.error(
-            `[useIncident] 🔍 DEBUG: Let me check if it exists with different type...`
-          );
-
-          // Try as number as fallback
-          const incidentIdNum = parseInt(incidentId, 10);
-          const qNum = query(
-            incidentsRef,
-            where("firestoreDocId", "==", incidentIdNum),
-            orderBy("lastSeenAt", "desc")
-          );
-
-          const unsubNum = onSnapshot(qNum, (snapshotNum) => {
-            console.log(
-              `[useIncident] 🔍 Tried as NUMBER: ${incidentIdNum}, found ${snapshotNum.docs.length} documents`
-            );
-            if (!snapshotNum.empty) {
-              console.error(
-                `[useIncident] ⚠️ FOUND AS NUMBER! Firebase stores incidentId as NUMBER, not STRING!`
-              );
-            }
-            unsubNum();
-          });
-
+      directDocRef,
+      (docSnap) => {
+        if (!docSnap.exists()) {
+          console.error(`[useIncident] ❌ Document "${incidentId}" does not exist`);
           setError("not-found");
           setData(undefined);
           setUpdates([]);
@@ -118,10 +47,7 @@ export function useIncident(incidentId: string) {
         }
 
         setIsLoading(false);
-
-        // The first document has the most recent info
-        const latestDoc = snapshot.docs[0];
-        const latestData = latestDoc.data();
+        const latestData = docSnap.data();
         console.log(`[useIncident] Latest data:`, {
           incidentId,
           lastType: latestData.lastType,
@@ -159,15 +85,8 @@ export function useIncident(incidentId: string) {
           notes: latestData.notes || [],
         } as any);
 
-        setUpdates(
-          snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-            timestamp:
-              doc.data().lastSeenAt?.toDate?.()?.toISOString() ||
-              new Date().toISOString(),
-          }))
-        );
+        // Since we're loading a single document, updates come from the parsedUpdates
+        setUpdates(parsedUpdates as any);
       },
       (e) => {
         setIsLoading(false);

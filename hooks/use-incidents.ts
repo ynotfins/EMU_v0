@@ -42,7 +42,11 @@ function normalize(docId: string, data: any): IncidentLite {
   const normalized = {
     id: docId,
     incidentNumber:
-      data.incidentNumber || data.incidentId || data.firestoreDocId || parseInt(docId) || 0,
+      data.incidentNumber ||
+      data.incidentId ||
+      data.firestoreDocId ||
+      parseInt(docId) ||
+      0,
     updatedAt,
     state,
     county,
