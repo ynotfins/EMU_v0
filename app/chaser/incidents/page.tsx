@@ -171,15 +171,15 @@ export default function ChaserIncidentsPage() {
           </div>
         )}
 
-        {/* Hidden Incidents Banner */}
+        {/* Hidden Incidents Banner - Subtle sliver */}
         {hiddenIncidents.size > 0 && (
-          <div className="bg-[#FF9500] text-white px-4 py-2 flex items-center justify-between">
-            <span className="text-sm font-medium">
+          <div className="bg-[#F9FAFB] text-[#9CA3AF] px-3 py-1 flex items-center justify-between text-xs border-b border-[#E5E7EB]">
+            <span className="font-medium">
               {hiddenIncidents.size} alert{hiddenIncidents.size > 1 ? 's' : ''} hidden
             </span>
             <button
               onClick={() => setHiddenIncidents(new Set())}
-              className="text-sm underline hover:no-underline"
+              className="text-[#6B7280] hover:text-[#111827] hover:underline"
             >
               Show All
             </button>

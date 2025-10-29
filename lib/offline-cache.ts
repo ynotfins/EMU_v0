@@ -11,9 +11,27 @@
 // Constants
 const GEOCODE_CACHE_KEY = 'emu-geocode-cache';
 const USER_LOCATION_KEY = 'emu-user-location';
-const SIGNIFICANT_MOVE_THRESHOLD = 0.01; // ~1km in degrees (roughly 1km)
+const DEVICE_TYPE_KEY = 'emu-device-type';
+
+// Device-specific thresholds
+const SIGNIFICANT_MOVE_THRESHOLD = {
+  desktop: 0.1,    // 10km - desktop PCs rarely move
+  laptop: 0.05,    // 5km - laptops can move but less frequently
+  tablet: 0.01,    // 1km - tablets move like phones
+  phone: 0.01,     // 1km - phones move frequently
+};
+
+// Cache duration (when to consider stale)
+const CACHE_DURATION = {
+  desktop: 10 * 60 * 60 * 1000,   // 10 hours - desktops don't move
+  laptop: 5 * 60 * 60 * 1000,      // 5 hours - laptops move occasionally
+  tablet: 2 * 60 * 60 * 1000,      // 2 hours - tablets move regularly
+  phone: 2 * 60 * 60 * 1000,       // 2 hours - phones move frequently
+};
 
 // Types
+export type DeviceType = 'desktop' | 'laptop' | 'tablet' | 'phone';
+
 export interface GeocodedAddress {
   address: string;
   lat: number;
@@ -27,6 +45,52 @@ export interface CachedUserLocation {
   accuracy: number;
   timestamp: number;
   source: 'gps' | 'network' | 'cached';
+  deviceType: DeviceType;
+  deviceId: string; // Detect if user switched devices
+}
+
+/**
+ * Detect device type based on user agent and screen
+ */
+function detectDeviceType(): DeviceType {
+  if (typeof window === 'undefined') return 'desktop';
+  
+  const ua = navigator.userAgent.toLowerCase();
+  const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const screenWidth = window.screen.width;
+  
+  // Phone: mobile user agent + small screen
+  if (/mobile|android|iphone/.test(ua) && screenWidth < 768) {
+    return 'phone';
+  }
+  
+  // Tablet: touch + medium screen OR explicit tablet UA
+  if ((hasTouch && screenWidth >= 768 && screenWidth < 1024) || /ipad|tablet/.test(ua)) {
+    return 'tablet';
+  }
+  
+  // Laptop: touch capable desktop (hybrid devices) OR medium power
+  if (hasTouch && screenWidth >= 1024) {
+    return 'laptop';
+  }
+  
+  // Desktop: large screen, no touch, high power
+  return 'desktop';
+}
+
+/**
+ * Generate a device fingerprint (detect device switches)
+ */
+function getDeviceFingerprint(): string {
+  if (typeof window === 'undefined') return 'unknown';
+  
+  // Combine screen, UA, and some browser info
+  const screen = `${window.screen.width}x${window.screen.height}`;
+  const ua = navigator.userAgent.slice(0, 50); // First 50 chars
+  const platform = navigator.platform;
+  
+  // Simple hash
+  return btoa(`${screen}:${platform}:${ua}`).slice(0, 20);
 }
 
 /**
@@ -190,14 +254,26 @@ export class UserLocationCache {
   }
 
   /**
-   * Check if we should update location (has user moved significantly?)
+   * Check if we should update location (device-aware movement detection)
    */
-  shouldUpdate(newLat: number, newLng: number): boolean {
+  shouldUpdate(newLat: number, newLng: number, forceIfNewDevice: boolean = true): boolean {
+    const currentDeviceId = getDeviceFingerprint();
+    const currentDeviceType = detectDeviceType();
+    
     if (!this.cachedLocation) {
       console.log('[UserLocationCache] 📍 No cached location, should update');
       return true;
     }
+    
+    // CRITICAL: If user switched devices, ALWAYS update
+    if (forceIfNewDevice && this.cachedLocation.deviceId !== currentDeviceId) {
+      console.log(`[UserLocationCache] 🔄 Device changed (${this.cachedLocation.deviceType} → ${currentDeviceType}), force update`);
+      return true;
+    }
 
+    // Get device-specific movement threshold
+    const threshold = SIGNIFICANT_MOVE_THRESHOLD[currentDeviceType];
+    
     const distance = this.calculateDistance(
       this.cachedLocation.lat,
       this.cachedLocation.lng,
@@ -205,24 +281,27 @@ export class UserLocationCache {
       newLng
     );
 
-    const hasMoved = distance > SIGNIFICANT_MOVE_THRESHOLD;
+    const hasMoved = distance > threshold;
     
     if (hasMoved) {
-      console.log(`[UserLocationCache] 🚶 User moved ${(distance * 111).toFixed(1)}km, updating`);
+      console.log(`[UserLocationCache] 🚶 ${currentDeviceType.toUpperCase()}: User moved ${(distance * 111).toFixed(1)}km (threshold: ${(threshold * 111).toFixed(1)}km), updating`);
     } else {
-      console.log(`[UserLocationCache] ⏸️ User hasn't moved significantly (${(distance * 111).toFixed(1)}km), using cached`);
+      console.log(`[UserLocationCache] ⏸️ ${currentDeviceType.toUpperCase()}: User hasn't moved significantly (${(distance * 111).toFixed(1)}km), using cached`);
     }
 
     return hasMoved;
   }
 
   /**
-   * Update cached location (only if moved significantly)
+   * Update cached location (device-aware, only if moved significantly)
    */
   update(lat: number, lng: number, accuracy: number, source: 'gps' | 'network'): boolean {
     if (!this.shouldUpdate(lat, lng)) {
       return false; // No update needed
     }
+
+    const deviceType = detectDeviceType();
+    const deviceId = getDeviceFingerprint();
 
     this.cachedLocation = {
       lat,
@@ -230,10 +309,12 @@ export class UserLocationCache {
       accuracy,
       timestamp: Date.now(),
       source,
+      deviceType,
+      deviceId,
     };
 
     this.saveToStorage();
-    console.log(`[UserLocationCache] ✅ Location updated: (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
+    console.log(`[UserLocationCache] ✅ ${deviceType.toUpperCase()} location updated: (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
     return true;
   }
 
@@ -256,10 +337,22 @@ export class UserLocationCache {
   }
 
   /**
-   * Check if cached location is stale (> 5 minutes)
+   * Check if cached location is stale (device-aware durations)
    */
   isStale(): boolean {
-    return this.getAge() > 300; // 5 minutes
+    if (!this.cachedLocation) return true;
+    
+    const age = this.getAge();
+    const deviceType = this.cachedLocation.deviceType || 'phone'; // Default to phone for old caches
+    const maxAge = CACHE_DURATION[deviceType] / 1000; // Convert to seconds
+    
+    const isStale = age > maxAge;
+    
+    if (isStale) {
+      console.log(`[UserLocationCache] ⏰ ${deviceType.toUpperCase()} cache is stale (${Math.floor(age/60)}min > ${Math.floor(maxAge/60)}min)`);
+    }
+    
+    return isStale;
   }
 
   /**
