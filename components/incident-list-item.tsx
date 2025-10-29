@@ -44,7 +44,7 @@ export function IncidentListItem({
         "relative p-4 cursor-pointer hover:shadow-md transition-shadow",
         silenced && "opacity-50 bg-gray-50"
       )}
-      onClick={() => onOpen(incident.incidentNumber.toString())}
+      onClick={() => onOpen((incident as any).incidentId || incident.incidentNumber.toString())}
     >
       {barHeightPercent > 0 && (
         <div

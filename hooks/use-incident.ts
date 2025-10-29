@@ -28,32 +28,50 @@ export function useIncident(incidentId: string) {
     console.log(`[useIncident] Querying for incidentId: "${incidentId}" (type: ${typeof incidentId})`);
 
     // Query ALL documents with this incidentId
-    // Try as string first (incidentId might be string or number in Firestore)
     const incidentsRef = collection(db, "incidents");
     
-    // Parse as number for query (BNN stores incidentId as number)
-    const incidentIdNum = parseInt(incidentId, 10);
-    console.log(`[useIncident] Parsed as number: ${incidentIdNum}`);
+    // Keep as STRING - Firebase stores incidentId as string
+    console.log(`[useIncident] Querying with string: "${incidentId}"`);
     
     const q = query(
       incidentsRef,
-      where("incidentId", "==", incidentIdNum),
+      where("incidentId", "==", incidentId),
       orderBy("lastSeenAt", "desc")
     );
 
     const unsub = onSnapshot(
       q,
       (snapshot) => {
-        console.log(`[useIncident] Query returned ${snapshot.docs.length} documents for incidentId: ${incidentIdNum}`);
-        setIsLoading(false);
-
+        console.log(`[useIncident] Query returned ${snapshot.docs.length} documents for incidentId: "${incidentId}"`);
+        
         if (snapshot.empty) {
-          console.error(`[useIncident] ❌ No documents found for incidentId: ${incidentIdNum} (tried as number)`);
+          console.error(`[useIncident] ❌ No documents found for incidentId: "${incidentId}" (tried as STRING)`);
+          console.error(`[useIncident] 🔍 DEBUG: Let me check if it exists with different type...`);
+          
+          // Try as number as fallback
+          const incidentIdNum = parseInt(incidentId, 10);
+          const qNum = query(
+            incidentsRef,
+            where("incidentId", "==", incidentIdNum),
+            orderBy("lastSeenAt", "desc")
+          );
+          
+          const unsubNum = onSnapshot(qNum, (snapshotNum) => {
+            console.log(`[useIncident] 🔍 Tried as NUMBER: ${incidentIdNum}, found ${snapshotNum.docs.length} documents`);
+            if (!snapshotNum.empty) {
+              console.error(`[useIncident] ⚠️ FOUND AS NUMBER! Firebase stores incidentId as NUMBER, not STRING!`);
+            }
+            unsubNum();
+          });
+          
           setError("not-found");
           setData(undefined);
           setUpdates([]);
+          setIsLoading(false);
           return;
         }
+        
+        setIsLoading(false);
 
         // The first document has the most recent info
         const latestDoc = snapshot.docs[0];

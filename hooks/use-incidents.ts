@@ -59,7 +59,9 @@ function normalize(docId: string, data: any): IncidentLite {
     // Store raw arrays for favorite/bookmark logic
     favoritedBy: data.favoritedBy || [],
     bookmarkedBy: data.bookmarkedBy || [],
-  };
+    // CRITICAL: Store the actual incidentId field for routing/querying
+    incidentId: data.incidentId,
+  } as any;
 }
 
 /**
