@@ -127,19 +127,14 @@ export function IncidentListItem({
           </button>
           <button
             onClick={handleToggleSilence}
-            className={cn(
-              "p-1 rounded transition-colors",
-              silenced
-                ? "bg-[#6B7280] hover:bg-[#9CA3AF]"
-                : "hover:bg-[#F2F2F7]"
-            )}
+            className="p-1 rounded transition-colors hover:bg-gray-100"
             aria-label={silenced ? "Unsilence" : "Silence"}
             title={silenced ? "Click to unsilence" : "Click to silence"}
           >
             {silenced ? (
-              <BellOff className="h-5 w-5 text-white" />
+              <BellOff className="h-5 w-5 text-[#FF3B30]" />
             ) : (
-              <Bell className="h-5 w-5 text-[#6B7280]" />
+              <Bell className="h-5 w-5 text-[#FF9500]" />
             )}
           </button>
         </div>

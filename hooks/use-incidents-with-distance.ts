@@ -59,57 +59,63 @@ export function useIncidentsWithDistance(filters?: Partial<IncidentFilters>) {
       }
       hasRun = true;
       
-      // OPTIMIZATION: Only process visible incidents (8 visible + 4 preload = 12 total)
-      const VISIBLE_COUNT = 8;  // Max visible on screen
-      const PRELOAD_COUNT = 4;  // Preload next 4 for smooth scrolling
-      const BATCH_SIZE = VISIBLE_COUNT + PRELOAD_COUNT; // Total: 12
-      
+      // Process ALL incidents for scrolling support
       console.log(
-        `[useIncidentsWithDistance] 📏 Processing ONLY first ${BATCH_SIZE} incidents (${VISIBLE_COUNT} visible + ${PRELOAD_COUNT} preload)`
+        `[useIncidentsWithDistance] 📏 Processing ALL ${incidents.length} incidents for distance calculation`
       );
-
-      // CRITICAL FIX: Only loop through BATCH_SIZE, not all incidents!
-      const incidentsToProcess = incidents.slice(0, BATCH_SIZE);
       
-      for (let i = 0; i < incidentsToProcess.length && isMounted; i++) {
-        const incident = incidentsToProcess[i];
+      // Process in batches to avoid blocking UI for too long
+      const BATCH_SIZE = 5; // Process 5 at a time
+      
+      for (let i = 0; i < incidents.length && isMounted; i += BATCH_SIZE) {
+        const batch = incidents.slice(i, i + BATCH_SIZE);
         
-        let distance: number | undefined;
+        // Process batch in parallel
+        await Promise.all(
+          batch.map(async (incident) => {
+            let distance: number | undefined;
+            
+            // If we have cached lat/lng, calculate distance (fast!)
+            if (incident.lat !== null && incident.lat !== undefined && 
+                incident.lng !== null && incident.lng !== undefined) {
+              distance = await getIncidentDistance(
+                incident.id,
+                `${incident.address}, ${incident.city}, ${incident.state}`,
+                incident.lat,
+                incident.lng
+              );
+            } else {
+              // No cached lat/lng, need to geocode (slower)
+              distance = await getIncidentDistance(
+                incident.id,
+                `${incident.address}, ${incident.city}, ${incident.state}`,
+                undefined,
+                undefined
+              );
+            }
+            
+            // Update incident with distance
+            if (isMounted && distance !== undefined) {
+              setEnrichedIncidents(prev => 
+                prev.map(inc => 
+                  inc.id === incident.id 
+                    ? { ...inc, distanceMi: distance }
+                    : inc
+                )
+              );
+            }
+          })
+        );
         
-        // If we have cached lat/lng, calculate distance (fast!)
-        if (incident.lat !== null && incident.lat !== undefined && 
-            incident.lng !== null && incident.lng !== undefined) {
-          distance = await getIncidentDistance(
-            incident.id,
-            `${incident.address}, ${incident.city}, ${incident.state}`,
-            incident.lat,
-            incident.lng
-          );
-        } else {
-          // No cached lat/lng, need to geocode (slower)
-          distance = await getIncidentDistance(
-            incident.id,
-            `${incident.address}, ${incident.city}, ${incident.state}`,
-            undefined,
-            undefined
-          );
-        }
-        
-        // Update incidents progressively as each distance is calculated
-        if (isMounted && distance !== undefined) {
-          setEnrichedIncidents(prev => 
-            prev.map(inc => 
-              inc.id === incident.id 
-                ? { ...inc, distanceMi: distance }
-                : inc
-            )
-          );
+        // Small delay between batches to keep UI responsive
+        if (i + BATCH_SIZE < incidents.length) {
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
       }
 
       if (isMounted) {
         console.log(
-          `[useIncidentsWithDistance] ✅ Distance calculation complete - processed ${incidentsToProcess.length} incidents`
+          `[useIncidentsWithDistance] ✅ Distance calculation complete - processed ${incidents.length} incidents`
         );
         setCalculatingDistance(false);
       }

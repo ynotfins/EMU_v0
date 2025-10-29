@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { RoleLayout } from "@/components/role-layout"
 import { FilterBar } from "@/components/filter-bar"
@@ -10,7 +11,7 @@ import { useFilters } from "@/hooks/use-filters"
 import { useProfile } from "@/hooks/use-profile"
 import { useFavoritesContext } from "@/lib/context/favorites-context"
 import { Button } from "@/components/ui/button"
-import { Map, MapPin, AlertCircle } from "lucide-react"
+import { Map, MapPin, AlertCircle, ArrowUpDown } from "lucide-react"
 
 export default function SupeIncidentsPage() {
   const router = useRouter()
@@ -22,6 +23,7 @@ export default function SupeIncidentsPage() {
   } = useIncidentsWithDistance(filters)
   const { data: profile, updateSettings } = useProfile()
   const { toggleSilence } = useFavoritesContext()
+  const [sortByDistance, setSortByDistance] = useState(false)
 
   // Handle favorite/bookmark with Firestore toggle logic
   const handleToggleFavorite = async (id: string) => {
@@ -56,9 +58,32 @@ export default function SupeIncidentsPage() {
     )
   }
 
-  // Null guards and sort by updatedAt descending (newest first)
+  // Null guards and sorting logic
   const safeIncidents = Array.isArray(incidents)
-    ? [...incidents].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    ? (() => {
+        let filtered = [...incidents];
+        
+        // If sorting by distance, filter to last 2 hours only
+        if (sortByDistance) {
+          const twoHoursAgo = Date.now() - (2 * 60 * 60 * 1000);
+          filtered = filtered.filter(inc => {
+            const incidentTime = new Date(inc.updatedAt).getTime();
+            return incidentTime >= twoHoursAgo;
+          });
+          
+          // Sort by distance (closest first), undefined distances go to end
+          filtered.sort((a, b) => {
+            if (a.distanceMi === undefined) return 1;
+            if (b.distanceMi === undefined) return -1;
+            return a.distanceMi - b.distanceMi;
+          });
+        } else {
+          // Default: sort by updatedAt descending (newest first)
+          filtered.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+        }
+        
+        return filtered;
+      })()
     : []
 
   return (
@@ -112,6 +137,27 @@ export default function SupeIncidentsPage() {
           minUpdates={filters.minUpdates}
           onMinUpdatesChange={setMinUpdates}
         />
+
+        {/* Sort Options */}
+        {locationPermissionGranted && (
+          <div className="bg-white border-b border-[#E5E7EB] px-4 py-2 flex items-center justify-between">
+            <p className="text-sm text-[#6B7280]">
+              {sortByDistance 
+                ? `Showing ${safeIncidents.length} alerts from last 2 hours, sorted by distance`
+                : `Showing ${safeIncidents.length} alerts, sorted by time`
+              }
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSortByDistance(!sortByDistance)}
+              className={`gap-2 ${sortByDistance ? 'bg-[#007AFF] text-white hover:bg-[#0051D5] border-[#007AFF]' : ''}`}
+            >
+              <ArrowUpDown className="h-4 w-4" />
+              {sortByDistance ? 'Sort by Time' : 'Sort by Distance'}
+            </Button>
+          </div>
+        )}
 
         {/* Incidents List */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
