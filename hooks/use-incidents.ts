@@ -135,26 +135,38 @@ export function useIncidents(filters?: Partial<IncidentFilters>) {
       (snapshot) => {
         // Group by incidentId and keep only the most recent for each
         const groupedMap = new Map<string, any>();
-        
+
         snapshot.docs.forEach((doc) => {
           const data = doc.data();
           const incidentId = data.incidentId || doc.id;
           const existing = groupedMap.get(incidentId);
-          
-          if (!existing || (data.lastSeenAt?.seconds || 0) > (existing.lastSeenAt?.seconds || 0)) {
+
+          if (
+            !existing ||
+            (data.lastSeenAt?.seconds || 0) >
+              (existing.lastSeenAt?.seconds || 0)
+          ) {
             groupedMap.set(incidentId, { ...data, firestoreDocId: doc.id });
           }
         });
 
         // Convert to array, normalize, and sort by most recent
         const data = Array.from(groupedMap.values())
-          .map((docData) => withUserFlags(normalize(docData.firestoreDocId, docData)))
+          .map((docData) =>
+            withUserFlags(normalize(docData.firestoreDocId, docData))
+          )
           .sort(
             (a, b) =>
               new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
           );
 
-        console.log("[useIncidents] Loaded", data.length, "unique incidents from", snapshot.docs.length, "documents");
+        console.log(
+          "[useIncidents] Loaded",
+          data.length,
+          "unique incidents from",
+          snapshot.docs.length,
+          "documents"
+        );
         setIncidents(data);
         setIsLoading(false);
         setError(null);

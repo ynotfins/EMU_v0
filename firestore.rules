@@ -1,74 +1,11 @@
-// Production-Safe Rules — EMU Alerts
+// DEVELOPMENT MODE - ALL RULES DISABLED
+// TODO: RE-ENABLE SECURITY BEFORE PRODUCTION!
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper functions
-    function authed() { return request.auth != null; }
-    function uid() { return request.auth.uid; }
-    function isSupe() { return authed() && exists(/databases/$(database)/documents/roles/supes/$(uid())); }
-    function isAdmin() { return authed() && exists(/databases/$(database)/documents/roles/admins/$(uid())); }
-
-    // --- Diagnostics (auth-only; safe to keep) ---
-    match /diagnostic/{doc} {
-      allow read: if authed();
-      allow write: if false;
-    }
-
-    // --- Profiles ---
-    match /profiles/{userId} {
-      allow read: if authed();
-      allow write: if authed() && userId == uid();
-    }
-
-    // --- Incidents (TEMPORARY: public reads/writes for development) ---
-    match /incidents/{incidentId} {
-      allow read: if true; // TEMP: Allow unauthenticated reads
-      allow create, delete: if isSupe() || isAdmin();
-      allow update: if true; // TEMP: Allow all updates for development
-
-      function onlyToggleOwnFlags() {
-        let changed = request.resource.data.diff(resource.data).affectedKeys();
-        return changed.hasOnly(['favoritedBy', 'bookmarkedBy']) &&
-               canToggle(resource.data.get('favoritedBy', []), request.resource.data.get('favoritedBy', [])) &&
-               canToggle(resource.data.get('bookmarkedBy', []), request.resource.data.get('bookmarkedBy', []));
-      }
-      function canToggle(before, after) {
-        let removed = before.toSet().difference(after.toSet());
-        let added = after.toSet().difference(before.toSet());
-        return removed.hasOnly([uid()]) && added.hasOnly([uid()]);
-      }
-    }
-
-    // --- Alerts (TEMPORARY: public reads for development) ---
-    match /alerts/{alertId} {
-      allow read: if true; // TEMP: Allow unauthenticated reads
-      allow create, update, delete: if authed();
-    }
-
-    // --- Updates (auth-only reads) ---
-    match /updates/{updateId} {
-      allow read: if authed();
-      allow create, update, delete: if authed();
-    }
-
-    // --- User locations: only the owner can read/write ---
-    match /users/{uid}/locations/{locationId} {
-      allow read, write: if authed() && request.auth.uid == uid;
-    }
-
-    // --- Threads & messages: only participants ---
-    match /threads/{threadId} {
-      allow read, write: if authed() && request.auth.uid in resource.data.participants;
-      
-      match /messages/{messageId} {
-        allow read, write: if authed() && request.auth.uid in get(/databases/$(database)/documents/threads/$(threadId)).data.participants;
-      }
-    }
-
-    // --- Everything else: deny ---
+    // ALLOW EVERYTHING - FOR DEVELOPMENT ONLY
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if true;
     }
   }
 }
