@@ -39,7 +39,7 @@ function normalize(docId: string, data: any): IncidentLite {
   const type = data.type || data.lastType || data.alertType || "Unknown";
   const message = data.message || data.lastMessage || data.alertMessage || "";
 
-  return {
+  const normalized = {
     id: docId,
     incidentNumber:
       data.incidentNumber || data.incidentId || parseInt(docId) || 0,
@@ -62,6 +62,20 @@ function normalize(docId: string, data: any): IncidentLite {
     // CRITICAL: Store the actual incidentId field for routing/querying
     incidentId: data.incidentId,
   } as any;
+  
+  // DEBUG: Log what we're storing for routing
+  if (docId === "6xE4cVQPSqpjn88vC4kE" || Math.random() < 0.01) {
+    console.log(`[normalize] 🔍 Document ${docId} fields:`, {
+      docId,
+      'data.incidentId': data.incidentId,
+      'data.incidentNumber': data.incidentNumber,
+      'normalized.incidentId': normalized.incidentId,
+      'normalized.incidentNumber': normalized.incidentNumber,
+      'typeof data.incidentId': typeof data.incidentId,
+    });
+  }
+  
+  return normalized;
 }
 
 /**
@@ -110,17 +124,20 @@ function withUserFlags(incident: IncidentLite): IncidentLite {
   const bookmarkedBy = incident.bookmarkedBy ?? [];
   const isFavorited = favoritedBy.includes(uid);
   const isBookmarked = bookmarkedBy.includes(uid);
-  
+
   // Only log if it's favorited or bookmarked (reduce noise)
   if (isFavorited || isBookmarked) {
-    console.log(`[withUserFlags] ⭐ Incident ${incident.incidentNumber} for uid ${uid}:`, {
-      isFavorited,
-      isBookmarked,
-      favoritedBy: favoritedBy.length > 0 ? favoritedBy : '(empty)',
-      bookmarkedBy: bookmarkedBy.length > 0 ? bookmarkedBy : '(empty)'
-    });
+    console.log(
+      `[withUserFlags] ⭐ Incident ${incident.incidentNumber} for uid ${uid}:`,
+      {
+        isFavorited,
+        isBookmarked,
+        favoritedBy: favoritedBy.length > 0 ? favoritedBy : "(empty)",
+        bookmarkedBy: bookmarkedBy.length > 0 ? bookmarkedBy : "(empty)",
+      }
+    );
   }
-  
+
   return {
     ...incident,
     isFavorited,
@@ -252,7 +269,12 @@ export function useIncidents(filters?: Partial<IncidentFilters>) {
 export async function toggleFavorite(incidentId: string): Promise<void> {
   const userId = getUid(auth.currentUser?.uid);
   console.log("============================================");
-  console.log("[toggleFavorite] Starting - userId:", userId, "incidentId:", incidentId);
+  console.log(
+    "[toggleFavorite] Starting - userId:",
+    userId,
+    "incidentId:",
+    incidentId
+  );
 
   if (!userId) {
     console.warn("[toggleFavorite] No user logged in");
@@ -261,23 +283,23 @@ export async function toggleFavorite(incidentId: string): Promise<void> {
 
   try {
     const incidentRef = doc(db, "incidents", incidentId);
-    
+
     // Read current state to determine action
     const snap = await getDoc(incidentRef);
     if (!snap.exists()) {
       console.error("[toggleFavorite] ❌ Document not found:", incidentId);
       return;
     }
-    
+
     const data = snap.data();
     const favoritedBy = data.favoritedBy || [];
     const isFavorited = favoritedBy.includes(userId);
-    
+
     console.log("[toggleFavorite] Current state:");
     console.log("  - favoritedBy:", favoritedBy);
     console.log("  - isFavorited:", isFavorited);
     console.log("  - Action:", isFavorited ? "REMOVE" : "ADD");
-    
+
     if (isFavorited) {
       // Remove from favorites
       await updateDoc(incidentRef, {
@@ -291,10 +313,13 @@ export async function toggleFavorite(incidentId: string): Promise<void> {
       });
       console.log("[toggleFavorite] ✅ ADDED", userId, "to favoritedBy");
     }
-    
+
     // Verify
     const verifySnap = await getDoc(incidentRef);
-    console.log("[toggleFavorite] 🔍 VERIFICATION - favoritedBy after:", verifySnap.data()?.favoritedBy);
+    console.log(
+      "[toggleFavorite] 🔍 VERIFICATION - favoritedBy after:",
+      verifySnap.data()?.favoritedBy
+    );
     console.log("============================================");
   } catch (error) {
     console.error("[toggleFavorite] ❌ Error:", error);
@@ -322,7 +347,12 @@ export async function unfavorite(incidentId: string): Promise<void> {
 export async function toggleBookmark(incidentId: string): Promise<void> {
   const userId = getUid(auth.currentUser?.uid);
   console.log("============================================");
-  console.log("[toggleBookmark] Starting - userId:", userId, "incidentId:", incidentId);
+  console.log(
+    "[toggleBookmark] Starting - userId:",
+    userId,
+    "incidentId:",
+    incidentId
+  );
 
   if (!userId) {
     console.warn("[toggleBookmark] No user logged in");
@@ -331,23 +361,23 @@ export async function toggleBookmark(incidentId: string): Promise<void> {
 
   try {
     const incidentRef = doc(db, "incidents", incidentId);
-    
+
     // Read current state to determine action
     const snap = await getDoc(incidentRef);
     if (!snap.exists()) {
       console.error("[toggleBookmark] ❌ Document not found:", incidentId);
       return;
     }
-    
+
     const data = snap.data();
     const bookmarkedBy = data.bookmarkedBy || [];
     const isBookmarked = bookmarkedBy.includes(userId);
-    
+
     console.log("[toggleBookmark] Current state:");
     console.log("  - bookmarkedBy:", bookmarkedBy);
     console.log("  - isBookmarked:", isBookmarked);
     console.log("  - Action:", isBookmarked ? "REMOVE" : "ADD");
-    
+
     if (isBookmarked) {
       // Remove from bookmarks
       await updateDoc(incidentRef, {
@@ -361,10 +391,13 @@ export async function toggleBookmark(incidentId: string): Promise<void> {
       });
       console.log("[toggleBookmark] ✅ ADDED", userId, "to bookmarkedBy");
     }
-    
+
     // Verify
     const verifySnap = await getDoc(incidentRef);
-    console.log("[toggleBookmark] 🔍 VERIFICATION - bookmarkedBy after:", verifySnap.data()?.bookmarkedBy);
+    console.log(
+      "[toggleBookmark] 🔍 VERIFICATION - bookmarkedBy after:",
+      verifySnap.data()?.bookmarkedBy
+    );
     console.log("============================================");
   } catch (error) {
     console.error("[toggleBookmark] ❌ Error:", error);
