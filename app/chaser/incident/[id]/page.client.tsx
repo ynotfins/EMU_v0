@@ -77,7 +77,7 @@ export default function Client({ id }: { id: string }) {
             </TabsTrigger>
           </TabsList>
 
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto pb-8">
             <TabsContent value="details" className="m-0 h-full">
               {/* Map - Embedded Google Maps at CITY zoom level */}
               <div 
@@ -177,7 +177,7 @@ export default function Client({ id }: { id: string }) {
 
               {/* Updates Section - Show initial message if no updates */}
               {updates && updates.length > 0 ? (
-                <div className="px-4 py-3 border-t">
+                <div className="px-4 py-3">
                   <h3 className="font-semibold text-base mb-3">
                     Updates ({updates.length})
                   </h3>
@@ -217,7 +217,7 @@ export default function Client({ id }: { id: string }) {
                   </div>
                 </div>
               ) : (
-                <div className="px-4 py-3 border-t">
+                <div className="px-4 py-3">
                   <h3 className="font-semibold text-base mb-3">
                     Initial Alert
                   </h3>
@@ -239,7 +239,7 @@ export default function Client({ id }: { id: string }) {
               )}
 
               {/* Employee Notes - Auto-saves on blur */}
-              <div className="px-4 py-3 border-t">
+              <div className="px-4 py-3">
                 <h3 className="font-semibold text-base mb-3">
                   Employee Notes{" "}
                   <span className="text-xs text-gray-500">(auto-saves)</span>
@@ -280,7 +280,7 @@ export default function Client({ id }: { id: string }) {
 
               {/* Files */}
               {files && files.length > 0 && (
-                <div className="px-4 py-3 border-t">
+                <div className="px-4 py-3">
                   <h3 className="font-semibold text-base mb-3">
                     Files ({files.length})
                   </h3>
