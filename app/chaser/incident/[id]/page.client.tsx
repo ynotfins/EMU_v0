@@ -9,11 +9,12 @@ import { MapCard } from "@/components/map-card";
 import { HomeownerForm } from "@/components/homeowner-form";
 import { DocsManager } from "@/components/docs-manager";
 import { ESignManager } from "@/components/esign-manager";
+import { IncidentChat } from "@/components/incident-chat";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart } from "lucide-react";
+import { Heart, MessageCircle } from "lucide-react";
 import type { HomeownerForm as HomeownerFormType } from "@/types/domain";
 
 export default function Client({ id }: { id: string }) {
@@ -69,6 +70,10 @@ export default function Client({ id }: { id: string }) {
             </TabsTrigger>
             <TabsTrigger value="sign" className="flex-1">
               Sign
+            </TabsTrigger>
+            <TabsTrigger value="chat" className="flex-1">
+              <MessageCircle className="h-4 w-4 mr-1 inline" />
+              Chat
             </TabsTrigger>
           </TabsList>
 
@@ -287,6 +292,10 @@ export default function Client({ id }: { id: string }) {
                   // TODO: Implement live signature save
                 }}
               />
+            </TabsContent>
+
+            <TabsContent value="chat" className="m-0 h-full flex flex-col">
+              <IncidentChat incidentId={id} />
             </TabsContent>
           </div>
         </Tabs>
