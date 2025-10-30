@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "include": ["/*"],
+  "exclude": [
+    "/app-icon.png",
+    "/emergency-alerts-logo.png",
+    "/placeholder-logo.png",
+    "/placeholder-logo.svg",
+    "/placeholder-user.jpg",
+    "/placeholder.jpg",
+    "/placeholder.svg",
+    "/manifest.json",
+    "/firebase-messaging-sw.js",
+    "/_next/static/*"
+  ]
+}
+
