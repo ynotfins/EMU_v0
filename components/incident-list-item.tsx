@@ -28,6 +28,8 @@ export function IncidentListItem({
 }: IncidentListItemProps) {
   const { l1, l2, l3 } = formatListLines(incident);
   const updateCount = incident.updates?.length || 0;
+  // Blue bar: 1 update = 20%, 5 updates = 100% (full height)
+  // Each update is 1/5 of the card height
   const barHeightPercent = updateCount > 0 ? Math.min(updateCount, 5) * 20 : 0;
 
   // Track silence state locally
@@ -61,8 +63,9 @@ export function IncidentListItem({
     >
       {barHeightPercent > 0 && (
         <div
-          className="absolute left-0 top-0 w-1 bg-[#007AFF] rounded-l-lg transition-all"
+          className="absolute left-0 top-0 w-1.5 bg-[#007AFF] rounded-l-lg transition-all"
           style={{ height: `${barHeightPercent}%` }}
+          aria-label={`${updateCount} update${updateCount !== 1 ? 's' : ''}`}
         />
       )}
 
