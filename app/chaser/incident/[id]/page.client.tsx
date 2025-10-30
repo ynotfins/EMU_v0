@@ -295,7 +295,10 @@ export default function Client({ id }: { id: string }) {
             </TabsContent>
 
             <TabsContent value="chat" className="m-0 h-full flex flex-col">
-              <IncidentChat incidentId={id} />
+              <IncidentChat 
+                incidentId={id} 
+                incidentAddress={incident.address || 'Unknown Address'} 
+              />
             </TabsContent>
           </div>
         </Tabs>

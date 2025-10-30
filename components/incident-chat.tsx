@@ -4,26 +4,59 @@ import { useState, useEffect, useRef } from 'react';
 import { Send } from 'lucide-react';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
-import { subscribeToChat, sendChatMessage, type ChatMessage } from '@/lib/realtime-database';
+import { subscribeToIncidentChat, sendIncidentMessage, createIncidentChat, getAllSupes, type ChatMessage } from '@/lib/realtime-database';
 import { useProfile } from '@/hooks/use-profile';
 
 interface IncidentChatProps {
   incidentId: string;
+  incidentAddress: string;
 }
 
-export function IncidentChat({ incidentId }: IncidentChatProps) {
+export function IncidentChat({ incidentId, incidentAddress }: IncidentChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const [chatInitialized, setChatInitialized] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { data: profile } = useProfile();
+
+  // Initialize chat with ALL supes on first open
+  useEffect(() => {
+    if (!profile || !incidentId || chatInitialized) return;
+
+    const initChat = async () => {
+      try {
+        console.log(`[IncidentChat] 🚀 Initializing incident chat for ${incidentId}`);
+        
+        // Get all supes from Firestore
+        const supes = await getAllSupes();
+        console.log(`[IncidentChat] Found ${supes.length} supes to add to chat`);
+
+        // Create chat with this chaser + ALL supes
+        await createIncidentChat(
+          incidentId,
+          incidentAddress,
+          profile.id,
+          profile.name || profile.email || 'Chaser',
+          supes
+        );
+
+        setChatInitialized(true);
+        console.log(`[IncidentChat] ✅ Chat initialized with ${supes.length} supes`);
+      } catch (error) {
+        console.error('[IncidentChat] Failed to initialize chat:', error);
+      }
+    };
+
+    initChat();
+  }, [profile, incidentId, incidentAddress, chatInitialized]);
 
   // Subscribe to chat messages
   useEffect(() => {
     if (!incidentId) return;
 
     console.log(`[IncidentChat] 💬 Subscribing to chat for incident ${incidentId}`);
-    const unsubscribe = subscribeToChat(incidentId, (msgs) => {
+    const unsubscribe = subscribeToIncidentChat(incidentId, (msgs) => {
       setMessages(msgs);
       console.log(`[IncidentChat] Received ${msgs.length} messages`);
     });
@@ -44,7 +77,7 @@ export function IncidentChat({ incidentId }: IncidentChatProps) {
 
     setSending(true);
     try {
-      await sendChatMessage(
+      await sendIncidentMessage(
         incidentId,
         newMessage.trim(),
         profile.name || profile.email || 'Anonymous',
