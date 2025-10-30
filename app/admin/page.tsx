@@ -2,9 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
+import { onAuthStateChanged } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useProfile } from '@/hooks/use-profile';
+import { ShieldAlert, Loader2 } from 'lucide-react';
 
 interface User {
   id: string;
@@ -14,8 +18,43 @@ interface User {
 }
 
 export default function AdminPage() {
+  const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [authChecking, setAuthChecking] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const { data: currentUserProfile } = useProfile(currentUserId || undefined);
+
+  // Auth check: Ensure user is signed in and has admin role
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        console.log('[Admin] ❌ No user signed in, redirecting to login');
+        router.push('/login');
+        return;
+      }
+
+      setCurrentUserId(user.uid);
+      console.log('[Admin] ✅ User authenticated:', user.email);
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
+  // Role check: Ensure user has admin role
+  useEffect(() => {
+    if (!currentUserProfile) return;
+
+    if (currentUserProfile.role !== 'admin') {
+      console.log(`[Admin] ❌ Access denied: User role is "${currentUserProfile.role}", not "admin"`);
+      alert('Access Denied: Admin privileges required');
+      router.push('/');
+      return;
+    }
+
+    console.log('[Admin] ✅ Admin access granted');
+    setAuthChecking(false);
+  }, [currentUserProfile, router]);
 
   useEffect(() => {
     loadUsers();
@@ -54,12 +93,25 @@ export default function AdminPage() {
     }
   };
 
+  // Show loading while checking auth
+  if (authChecking || !currentUserProfile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="w-16 h-16 text-[#007AFF] animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Verifying admin access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading while fetching users
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p>Loading users...</p>
+          <Loader2 className="w-16 h-16 text-[#007AFF] animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading users...</p>
         </div>
       </div>
     );
@@ -68,7 +120,22 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">👤 User Management</h1>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold">🔒 Admin Panel</h1>
+            <p className="text-gray-600 text-sm mt-1">
+              Logged in as: <span className="font-semibold">{currentUserProfile.email}</span>
+              <Badge className="ml-2 bg-purple-500">ADMIN</Badge>
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => router.push('/chaser/incidents')}
+            className="flex items-center gap-2"
+          >
+            ← Back to Incidents
+          </Button>
+        </div>
 
         <div className="bg-white rounded-lg shadow">
           <table className="w-full">
