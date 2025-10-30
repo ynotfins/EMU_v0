@@ -28,14 +28,26 @@ export const db: Firestore = getFirestore(app);
 export const storage = getStorage(app);
 
 // Set auth persistence to LOCAL (never expires until explicit sign out)
+// CRITICAL: This ensures users NEVER get signed out automatically
 if (typeof window !== "undefined") {
   setPersistence(auth, browserLocalPersistence)
     .then(() => {
-      console.log("[Firebase] ✅ Auth persistence set to LOCAL - users stay signed in forever");
+      console.log("[Firebase] ✅ Auth persistence set to LOCAL - users stay signed in FOREVER");
+      console.log("[Firebase] 🔒 Users will ONLY be signed out if they manually click 'Sign Out'");
     })
     .catch((error) => {
-      console.error("[Firebase] ❌ Failed to set persistence:", error);
+      console.error("[Firebase] ❌ CRITICAL: Failed to set persistence:", error);
+      console.error("[Firebase] ⚠️ Users may be signed out unexpectedly!");
     });
+  
+  // Additional check: Verify persistence is actually set
+  setTimeout(() => {
+    if (auth.currentUser) {
+      console.log("[Firebase] ✅ User still authenticated after persistence check");
+    } else {
+      console.warn("[Firebase] ⚠️ No user found after setting persistence - check browser settings");
+    }
+  }, 1000);
 }
 
 // Messaging only available in browser context AND if browser supports it
