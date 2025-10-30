@@ -83,8 +83,15 @@ export default function Client({ id }: { id: string }) {
               <div className="w-full h-64 bg-gray-100">
                 <MapCard
                   address={`${incident.address}, ${incident.city}, ${incident.state}`}
-                  lat={null}
-                  lng={null}
+                  lat={incident.lat || undefined}
+                  lng={incident.lng || undefined}
+                  onOpenMaps={() => {
+                    // Open Google Maps at CITY LEVEL (zoom 12-13)
+                    // Format: https://www.google.com/maps/search/?api=1&query=CITY,STATE&zoom=12
+                    const cityQuery = encodeURIComponent(`${incident.city}, ${incident.state}`);
+                    const url = `https://www.google.com/maps/search/?api=1&query=${cityQuery}`;
+                    window.open(url, '_blank');
+                  }}
                 />
               </div>
 

@@ -86,9 +86,9 @@ export function FilterBar({
 
   return (
     <div className="bg-white border-b border-[#E5E7EB] p-3 space-y-2">
-      {/* Row 1: Distance badges */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs font-medium text-[#6B7280] min-w-[60px]">Distance:</span>
+      {/* Row 1: Distance badges (compact) */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="text-xs font-medium text-[#6B7280]">Distance:</span>
         {DISTANCE_OPTIONS.map((distance) => (
           <Badge
             key={distance}
@@ -136,13 +136,37 @@ export function FilterBar({
         )}
       </div>
 
-      {/* Row 2: Type badges + Search + Distance button */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs font-medium text-[#6B7280] min-w-[60px]">Type:</span>
+      {/* Row 2: Search + Distance + Type badges (compact on mobile) */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {/* Search Button FIRST (green oval) */}
+        {!searchExpanded && (
+          <Badge
+            variant="outline"
+            className="cursor-pointer hover:bg-[#F2F2F7] text-xs px-2 py-0.5 border-[#34C759] text-[#34C759]"
+            onClick={() => setSearchExpanded(true)}
+          >
+            Search
+          </Badge>
+        )}
+
+        {/* Distance Button SECOND */}
+        <Badge
+          variant="outline"
+          className={cn(
+            "cursor-pointer text-xs px-2 py-0.5 flex items-center gap-0.5",
+            distanceMi ? "bg-[#007AFF] text-white hover:bg-[#0051D5]" : "hover:bg-[#F2F2F7]"
+          )}
+          onClick={() => onDistanceChange(distanceMi ? undefined : 50)}
+        >
+          <ChevronDown className="h-3 w-3" />
+          Dist
+        </Badge>
+
+        {/* THEN Type badges (more compact) */}
         <Badge
           variant={types.length === 0 ? "default" : "outline"}
           className={cn(
-            "cursor-pointer text-xs px-2 py-0.5",
+            "cursor-pointer text-xs px-1.5 py-0.5",
             types.length === 0 ? "bg-[#007AFF] hover:bg-[#0051D5]" : "hover:bg-[#F2F2F7]",
           )}
           onClick={() => onTypesChange([])}
@@ -154,7 +178,7 @@ export function FilterBar({
             key={type}
             variant={types.includes(type) ? "default" : "outline"}
             className={cn(
-              "cursor-pointer text-xs px-2 py-0.5",
+              "cursor-pointer text-xs px-1.5 py-0.5 whitespace-nowrap",
               types.includes(type) ? "bg-[#007AFF] hover:bg-[#0051D5]" : "hover:bg-[#F2F2F7]",
             )}
             onClick={() => toggleType(type)}
@@ -162,30 +186,6 @@ export function FilterBar({
             {type}
           </Badge>
         ))}
-
-        {/* Search Button (green oval like Custom) */}
-        {!searchExpanded ? (
-          <Badge
-            variant="outline"
-            className="cursor-pointer hover:bg-[#F2F2F7] text-xs px-2 py-0.5 border-[#34C759] text-[#34C759]"
-            onClick={() => setSearchExpanded(true)}
-          >
-            Search
-          </Badge>
-        ) : null}
-
-        {/* Distance Sort Button (compact) */}
-        <Badge
-          variant="outline"
-          className={cn(
-            "cursor-pointer text-xs px-2 py-0.5 flex items-center gap-1",
-            distanceMi ? "bg-[#007AFF] text-white hover:bg-[#0051D5]" : "hover:bg-[#F2F2F7]"
-          )}
-          onClick={() => onDistanceChange(distanceMi ? undefined : 50)}
-        >
-          <ChevronDown className="h-3 w-3" />
-          Distance
-        </Badge>
       </div>
 
       {/* Expanded Search Row (appears when Search clicked) */}
@@ -205,9 +205,9 @@ export function FilterBar({
         </div>
       )}
 
-      {/* Row 3: Updates badges */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs font-medium text-[#6B7280] min-w-[60px]">Updates:</span>
+      {/* Row 3: Updates badges (no label to save space) */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="text-xs font-medium text-[#6B7280]">Updates:</span>
         {UPDATES_OPTIONS.map((updates) => (
           <Badge
             key={updates}
