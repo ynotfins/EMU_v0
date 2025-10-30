@@ -6,35 +6,41 @@ import { Home, Heart, MessageSquare, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface BottomNavProps {
-  role: "chaser" | "supe"
+  role: "chaser" | "supe" | "super_admin"
 }
 
 export function BottomNav({ role }: BottomNavProps) {
   const pathname = usePathname()
+  
+  // Super admin can access supe routes
+  const baseRole = role === "super_admin" ? "supe" : role;
+  
+  // Show "Supe" label for supe and super_admin roles
+  const profileLabel = (role === "supe" || role === "super_admin") ? "Supe" : "Profile";
 
   const navItems = [
     {
       label: "Incidents",
       icon: Home,
-      href: `/${role}/incidents`,
+      href: `/${baseRole}/incidents`,
       active: pathname.includes("/incidents") && !pathname.includes("/incident/"),
     },
     {
       label: "Favorites",
       icon: Heart,
-      href: `/${role}/favorites`,
+      href: `/${baseRole}/favorites`,
       active: pathname.includes("/favorites"),
     },
     {
       label: "Chat",
       icon: MessageSquare,
-      href: `/${role}/chat`,
+      href: `/${baseRole}/chat`,
       active: pathname.includes("/chat"),
     },
     {
-      label: "Profile",
+      label: profileLabel,
       icon: User,
-      href: `/${role}/profile`,
+      href: `/${baseRole}/profile`,
       active: pathname.includes("/profile"),
     },
   ]
@@ -54,7 +60,7 @@ export function BottomNav({ role }: BottomNavProps) {
               )}
             >
               {item.label === "Favorites" ? (
-                <Icon className={cn("h-6 w-6", item.active ? "fill-[#FF3B30] text-[#FF3B30]" : "")} />
+                <Icon className={cn("h-6 w-6 fill-[#FF3B30] text-[#FF3B30]")} />
               ) : (
                 <Icon className="h-6 w-6" />
               )}
