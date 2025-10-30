@@ -79,19 +79,18 @@ export default function Client({ id }: { id: string }) {
 
           <div className="flex-1 overflow-y-auto">
             <TabsContent value="details" className="m-0 h-full">
-              {/* Map */}
-              <div className="w-full h-64 bg-gray-100">
-                <MapCard
-                  address={`${incident.address}, ${incident.city}, ${incident.state}`}
-                  lat={incident.lat || undefined}
-                  lng={incident.lng || undefined}
-                  onOpenMaps={() => {
-                    // Open Google Maps at CITY LEVEL (zoom 12-13)
-                    // Format: https://www.google.com/maps/search/?api=1&query=CITY,STATE&zoom=12
-                    const cityQuery = encodeURIComponent(`${incident.city}, ${incident.state}`);
-                    const url = `https://www.google.com/maps/search/?api=1&query=${cityQuery}`;
-                    window.open(url, '_blank');
-                  }}
+              {/* Map - Embedded Google Maps at CITY zoom level */}
+              <div className="w-full h-64 bg-gray-100 relative">
+                {/* Google Maps Embed showing CITY zoom (zoom=12) */}
+                <iframe
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  allowFullScreen
+                  referrerPolicy="no-referrer-when-downgrade"
+                  src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8'}&q=${encodeURIComponent(incident.address + ', ' + incident.city + ', ' + incident.state)}&zoom=12`}
+                  title="Incident Location Map"
                 />
               </div>
 

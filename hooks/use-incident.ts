@@ -126,8 +126,8 @@ export function useIncident(incidentId: string) {
           `Found ${snapshot.docs.length} update docs`
         );
 
-        // Map and deduplicate updates by timestamp + message
-        const seenKeys = new Set();
+        // Map and AGGRESSIVELY deduplicate updates by message content
+        const seenMessages = new Map<string, any>();
         const updatesData = snapshot.docs
           .map((doc) => {
             const data = doc.data();
@@ -147,14 +147,21 @@ export function useIncident(incidentId: string) {
             };
           })
           .filter((update) => {
-            // Create unique key from timestamp + message to catch true duplicates
-            const uniqueKey = `${update.ts}|${update.message}|${update.stage}`;
+            // AGGRESSIVE deduplication: Use only MESSAGE as key (ignoring tiny timestamp diffs)
+            // Normalize message: trim, lowercase, remove extra whitespace
+            const normalizedMsg = update.message.trim().toLowerCase().replace(/\s+/g, ' ');
             
-            if (seenKeys.has(uniqueKey)) {
-              console.log(`[useIncident] ⚠️ Skipping duplicate: ${update.ts} - ${update.message}`);
+            if (seenMessages.has(normalizedMsg)) {
+              const existing = seenMessages.get(normalizedMsg);
+              console.log(`[useIncident] ⚠️ Skipping duplicate message:`, {
+                duplicate: update.ts.substring(0, 19),
+                original: existing.ts.substring(0, 19),
+                message: update.message.substring(0, 50) + '...'
+              });
               return false;
             }
-            seenKeys.add(uniqueKey);
+            
+            seenMessages.set(normalizedMsg, update);
             return true;
           });
 
