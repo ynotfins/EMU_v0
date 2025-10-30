@@ -25,6 +25,7 @@ export default function SupeIncidentsPage() {
   const { toggleSilence } = useFavoritesContext()
   const [sortByDistance, setSortByDistance] = useState(false)
   const [hiddenIncidents, setHiddenIncidents] = useState<Set<string>>(new Set())
+  const [filtersCollapsed, setFiltersCollapsed] = useState(false)
 
   // Handle favorite/bookmark with Firestore toggle logic
   const handleToggleFavorite = async (id: string) => {
@@ -117,9 +118,18 @@ export default function SupeIncidentsPage() {
             <h1 className="text-xl font-bold text-[#6B7280]">FIRE ALERTS</h1>
           </div>
           
-          {/* Right: Buttons */}
-          <div className="flex items-center gap-2">
-            {/* High Alert Button - Stacked Text */}
+          {/* Right: Collapse Button + High Alert + Live Map */}
+          <div className="flex items-end gap-2">
+            {/* Collapse Filters Button - Pinching Hand */}
+            <button
+              onClick={() => setFiltersCollapsed(!filtersCollapsed)}
+              className="text-2xl pb-1 hover:scale-110 transition-transform"
+              title={filtersCollapsed ? "Show filters" : "Hide filters"}
+            >
+              🤏
+            </button>
+
+            {/* High Alert Button */}
             <button
               onClick={() => setHighAlertOnly(!filters.highAlertOnly)}
               className={`
@@ -163,23 +173,25 @@ export default function SupeIncidentsPage() {
         )}
 
 
-        {/* Filters */}
-        <FilterBar
-          distanceMi={filters.distanceMi}
-          onDistanceChange={setDistance}
-          types={filters.types}
-          onTypesChange={setTypes}
-          keyword={filters.keyword}
-          onKeywordChange={setKeyword}
-          highAlertEnabled={filters.highAlertOnly}
-          onHighAlertChange={setHighAlertOnly}
-          highAlertSound={profile.settings.highAlertSound}
-          onHighAlertSoundChange={(soundId) => updateSettings({ highAlertSound: soundId })}
-          muted={profile.settings.muted}
-          onMutedChange={(muted) => updateSettings({ muted })}
-          minUpdates={filters.minUpdates}
-          onMinUpdatesChange={setMinUpdates}
-        />
+        {/* Filters - Collapsible */}
+        {!filtersCollapsed && (
+          <FilterBar
+            distanceMi={filters.distanceMi}
+            onDistanceChange={setDistance}
+            types={filters.types}
+            onTypesChange={setTypes}
+            keyword={filters.keyword}
+            onKeywordChange={setKeyword}
+            highAlertEnabled={filters.highAlertOnly}
+            onHighAlertChange={setHighAlertOnly}
+            highAlertSound={profile.settings.highAlertSound}
+            onHighAlertSoundChange={(soundId) => updateSettings({ highAlertSound: soundId })}
+            muted={profile.settings.muted}
+            onMutedChange={(muted) => updateSettings({ muted })}
+            minUpdates={filters.minUpdates}
+            onMinUpdatesChange={setMinUpdates}
+          />
+        )}
 
         {/* Sort Options */}
         {locationPermissionGranted && (

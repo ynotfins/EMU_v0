@@ -25,6 +25,7 @@ export default function ChaserIncidentsPage() {
   const { toggleSilence } = useFavoritesContext()
   const [sortByDistance, setSortByDistance] = useState(false)
   const [hiddenIncidents, setHiddenIncidents] = useState<Set<string>>(new Set())
+  const [filtersCollapsed, setFiltersCollapsed] = useState(false)
 
   // Handle favorite/bookmark with Firestore toggle logic
   const handleToggleFavorite = async (id: string) => {
@@ -117,28 +118,40 @@ export default function ChaserIncidentsPage() {
             <h1 className="text-xl font-bold text-[#6B7280]">FIRE ALERTS</h1>
           </div>
           
-          {/* Right: High Alert Button - Stacked Text */}
-          <button
-            onClick={() => setHighAlertOnly(!filters.highAlertOnly)}
-            className={`
-              relative px-4 py-2 rounded-md font-bold text-xs leading-tight transition-all
-              ${filters.highAlertOnly 
-                ? 'bg-[#FF3B30] text-white shadow-lg' 
-                : 'bg-gray-100 text-gray-600 border border-gray-300'
-              }
-            `}
-          >
-            <div className="flex flex-col items-center">
-              <span>HIGH</span>
-              <span>ALERT</span>
-            </div>
-            {/* Squiggly lines when ON */}
-            {filters.highAlertOnly && (
-              <div className="absolute -top-2 -right-2 text-[#FF3B30] text-2xl animate-pulse">
-                ≈
+          {/* Right: Collapse Button + High Alert Button */}
+          <div className="flex items-end gap-2">
+            {/* Collapse Filters Button - Pinching Hand */}
+            <button
+              onClick={() => setFiltersCollapsed(!filtersCollapsed)}
+              className="text-2xl pb-1 hover:scale-110 transition-transform"
+              title={filtersCollapsed ? "Show filters" : "Hide filters"}
+            >
+              🤏
+            </button>
+
+            {/* High Alert Button */}
+            <button
+              onClick={() => setHighAlertOnly(!filters.highAlertOnly)}
+              className={`
+                relative px-4 py-2 rounded-md font-bold text-xs leading-tight transition-all
+                ${filters.highAlertOnly 
+                  ? 'bg-[#FF3B30] text-white shadow-lg' 
+                  : 'bg-gray-100 text-gray-600 border border-gray-300'
+                }
+              `}
+            >
+              <div className="flex flex-col items-center">
+                <span>HIGH</span>
+                <span>ALERT</span>
               </div>
-            )}
-          </button>
+              {/* Squiggly lines when ON */}
+              {filters.highAlertOnly && (
+                <div className="absolute -top-2 -right-2 text-[#FF3B30] text-2xl animate-pulse">
+                  ≈
+                </div>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Location Permission Banner */}
@@ -155,23 +168,25 @@ export default function ChaserIncidentsPage() {
         )}
 
 
-        {/* Filters */}
-        <FilterBar
-          distanceMi={filters.distanceMi}
-          onDistanceChange={setDistance}
-          types={filters.types}
-          onTypesChange={setTypes}
-          keyword={filters.keyword}
-          onKeywordChange={setKeyword}
-          highAlertEnabled={filters.highAlertOnly}
-          onHighAlertChange={setHighAlertOnly}
-          highAlertSound={profile.settings.highAlertSound}
-          onHighAlertSoundChange={(soundId) => updateSettings({ highAlertSound: soundId })}
-          muted={profile.settings.muted}
-          onMutedChange={(muted) => updateSettings({ muted })}
-          minUpdates={filters.minUpdates}
-          onMinUpdatesChange={setMinUpdates}
-        />
+        {/* Filters - Collapsible */}
+        {!filtersCollapsed && (
+          <FilterBar
+            distanceMi={filters.distanceMi}
+            onDistanceChange={setDistance}
+            types={filters.types}
+            onTypesChange={setTypes}
+            keyword={filters.keyword}
+            onKeywordChange={setKeyword}
+            highAlertEnabled={filters.highAlertOnly}
+            onHighAlertChange={setHighAlertOnly}
+            highAlertSound={profile.settings.highAlertSound}
+            onHighAlertSoundChange={(soundId) => updateSettings({ highAlertSound: soundId })}
+            muted={profile.settings.muted}
+            onMutedChange={(muted) => updateSettings({ muted })}
+            minUpdates={filters.minUpdates}
+            onMinUpdatesChange={setMinUpdates}
+          />
+        )}
 
 
         {/* Hidden Incidents Banner - Subtle sliver */}
