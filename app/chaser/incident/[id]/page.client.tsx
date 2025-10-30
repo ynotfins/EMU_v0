@@ -69,7 +69,7 @@ export default function Client({ id }: { id: string }) {
               Docs
             </TabsTrigger>
             <TabsTrigger value="sign" className="flex-1">
-              Sign
+              eSign
             </TabsTrigger>
             <TabsTrigger value="chat" className="flex-1">
               <MessageCircle className="h-4 w-4 mr-1 inline" />
