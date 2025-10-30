@@ -16,7 +16,7 @@
 import { useState, useEffect } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { geocodeCache, userLocationCache } from '@/lib/offline-cache';
+import { geocodeCache, userLocationCache, locationPermission } from '@/lib/offline-cache';
 
 interface Location {
   lat: number;
@@ -148,7 +148,13 @@ export function useLocationDistance() {
       return;
     }
 
-    console.log('[useLocationDistance] 📍 Requesting location permission...');
+    // Check if permission was previously granted
+    if (locationPermission.wasGranted()) {
+      console.log('[useLocationDistance] ✅ Location permission already granted (never asking again)');
+      setPermissionGranted(true);
+    } else {
+      console.log('[useLocationDistance] 📍 Requesting location permission...');
+    }
     
     // Try to use cached location first
     const cachedLoc = userLocationCache.get();
@@ -174,6 +180,11 @@ export function useLocationDistance() {
           setUserLocation({ lat: newLat, lng: newLng });
         } else {
           console.log('[useLocationDistance] ⏸️ Location unchanged (using cached)');
+        }
+        
+        // Save permission status permanently (never ask again)
+        if (!locationPermission.wasGranted()) {
+          locationPermission.setGranted();
         }
         
         setPermissionGranted(true);

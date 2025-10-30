@@ -12,6 +12,7 @@
 const GEOCODE_CACHE_KEY = 'emu-geocode-cache';
 const USER_LOCATION_KEY = 'emu-user-location';
 const DEVICE_TYPE_KEY = 'emu-device-type';
+const LOCATION_PERMISSION_KEY = 'emu-location-permission-granted';
 
 // Device-specific thresholds
 const SIGNIFICANT_MOVE_THRESHOLD = {
@@ -402,6 +403,50 @@ export class UserLocationCache {
     console.log('[UserLocationCache] 🗑️ Cache cleared');
   }
 }
+
+/**
+ * Location Permission Manager
+ * Save permission status so we never ask again
+ */
+export const locationPermission = {
+  /**
+   * Check if permission was previously granted
+   */
+  wasGranted(): boolean {
+    if (typeof window === 'undefined') return false;
+    try {
+      const stored = localStorage.getItem(LOCATION_PERMISSION_KEY);
+      return stored === 'true';
+    } catch {
+      return false;
+    }
+  },
+
+  /**
+   * Save that permission was granted
+   */
+  setGranted(): void {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(LOCATION_PERMISSION_KEY, 'true');
+      console.log('[LocationPermission] ✅ Saved - will never ask again');
+    } catch (error) {
+      console.error('[LocationPermission] Failed to save:', error);
+    }
+  },
+
+  /**
+   * Clear permission status (for testing)
+   */
+  clear(): void {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.removeItem(LOCATION_PERMISSION_KEY);
+    } catch (error) {
+      console.error('[LocationPermission] Failed to clear:', error);
+    }
+  },
+};
 
 /**
  * Singleton instances for app-wide use
