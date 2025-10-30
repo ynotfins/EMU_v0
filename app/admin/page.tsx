@@ -14,7 +14,7 @@ interface User {
   id: string;
   email: string;
   name: string;
-  role: 'chaser' | 'supe' | 'admin';
+  role: 'super_admin' | 'admin' | 'supe' | 'chaser';
 }
 
 export default function AdminPage() {
@@ -41,18 +41,18 @@ export default function AdminPage() {
     return () => unsubscribe();
   }, [router]);
 
-  // Role check: Ensure user has admin role
+  // Role check: Ensure user has admin or super_admin role
   useEffect(() => {
     if (!currentUserProfile) return;
 
-    if (currentUserProfile.role !== 'admin') {
-      console.log(`[Admin] ❌ Access denied: User role is "${currentUserProfile.role}", not "admin"`);
+    if (currentUserProfile.role !== 'admin' && currentUserProfile.role !== 'super_admin') {
+      console.log(`[Admin] ❌ Access denied: User role is "${currentUserProfile.role}", requires admin or super_admin"`);
       alert('Access Denied: Admin privileges required');
       router.push('/');
       return;
     }
 
-    console.log('[Admin] ✅ Admin access granted');
+    console.log(`[Admin] ✅ Access granted: ${currentUserProfile.role}`);
     setAuthChecking(false);
   }, [currentUserProfile, router]);
 
@@ -78,7 +78,20 @@ export default function AdminPage() {
     }
   };
 
-  const changeRole = async (userId: string, newRole: 'chaser' | 'supe' | 'admin') => {
+  const changeRole = async (userId: string, newRole: 'super_admin' | 'admin' | 'supe' | 'chaser') => {
+    // Prevent non-super_admin from creating other admins
+    if (currentUserProfile?.role !== 'super_admin' && (newRole === 'admin' || newRole === 'super_admin')) {
+      alert('Only Super Admin can create admins');
+      return;
+    }
+
+    // Prevent changing super_admin role (only super_admin can)
+    const targetUser = users.find(u => u.id === userId);
+    if (targetUser?.role === 'super_admin' && currentUserProfile?.role !== 'super_admin') {
+      alert('Only Super Admin can modify Super Admin accounts');
+      return;
+    }
+
     try {
       await updateDoc(doc(db, 'users', userId), { role: newRole });
       console.log(`[Admin] Changed user ${userId} role to ${newRole}`);
@@ -86,7 +99,7 @@ export default function AdminPage() {
       // Update local state
       setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
       
-      alert(`User role updated to ${newRole.toUpperCase()}!`);
+      alert(`User role updated to ${newRole.toUpperCase().replace('_', ' ')}!`);
     } catch (error) {
       console.error('[Admin] Failed to update role:', error);
       alert('Failed to update role. Check console for details.');
@@ -125,7 +138,9 @@ export default function AdminPage() {
             <h1 className="text-3xl font-bold">🔒 Admin Panel</h1>
             <p className="text-gray-600 text-sm mt-1">
               Logged in as: <span className="font-semibold">{currentUserProfile.email}</span>
-              <Badge className="ml-2 bg-purple-500">ADMIN</Badge>
+              <Badge className={`ml-2 ${currentUserProfile.role === 'super_admin' ? 'bg-red-600' : 'bg-purple-500'}`}>
+                {currentUserProfile.role === 'super_admin' ? 'SUPER ADMIN' : 'ADMIN'}
+              </Badge>
             </p>
           </div>
           <Button
@@ -155,23 +170,25 @@ export default function AdminPage() {
                   <td className="p-4">
                     <Badge
                       className={
-                        user.role === 'admin'
+                        user.role === 'super_admin'
+                          ? 'bg-red-600'
+                          : user.role === 'admin'
                           ? 'bg-purple-500'
                           : user.role === 'supe'
                           ? 'bg-blue-500'
                           : 'bg-green-500'
                       }
                     >
-                      {user.role.toUpperCase()}
+                      {user.role === 'super_admin' ? 'SUPER ADMIN' : user.role.toUpperCase()}
                     </Badge>
                   </td>
                   <td className="p-4">
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => changeRole(user.id, 'chaser')}
-                        disabled={user.role === 'chaser'}
+                        disabled={user.role === 'chaser' || (user.role === 'super_admin' && currentUserProfile?.role !== 'super_admin')}
                         className="text-xs"
                       >
                         → Chaser
@@ -180,20 +197,33 @@ export default function AdminPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => changeRole(user.id, 'supe')}
-                        disabled={user.role === 'supe'}
+                        disabled={user.role === 'supe' || (user.role === 'super_admin' && currentUserProfile?.role !== 'super_admin')}
                         className="text-xs"
                       >
                         → Supe
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => changeRole(user.id, 'admin')}
-                        disabled={user.role === 'admin'}
-                        className="text-xs"
-                      >
-                        → Admin
-                      </Button>
+                      {currentUserProfile?.role === 'super_admin' && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => changeRole(user.id, 'admin')}
+                            disabled={user.role === 'admin'}
+                            className="text-xs"
+                          >
+                            → Admin
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => changeRole(user.id, 'super_admin')}
+                            disabled={user.role === 'super_admin'}
+                            className="text-xs bg-red-50 hover:bg-red-100"
+                          >
+                            → Super Admin
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -203,12 +233,12 @@ export default function AdminPage() {
         </div>
 
         <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-          <h2 className="font-semibold text-blue-900 mb-2">💡 How to use:</h2>
+          <h2 className="font-semibold text-blue-900 mb-2">💡 Role Hierarchy:</h2>
           <ul className="text-sm text-blue-800 space-y-1">
-            <li>• Click a button to change a user's role</li>
-            <li>• <strong>Chaser</strong>: Field responder, sees incidents, can chat with supes</li>
-            <li>• <strong>Supe</strong>: Supervisor, manages chasers, sees everything</li>
-            <li>• <strong>Admin</strong>: Full access, can manage users</li>
+            <li>• <strong className="text-red-600">Super Admin</strong>: GOD MODE - full control, can manage all roles including admins</li>
+            <li>• <strong className="text-purple-600">Admin</strong>: Can manage chasers and supes only (not other admins)</li>
+            <li>• <strong className="text-blue-600">Supe</strong>: Supervisor, manages chasers, sees live map, approves docs</li>
+            <li>• <strong className="text-green-600">Chaser</strong>: Field responder, sees incidents, responds to alerts</li>
           </ul>
         </div>
       </div>

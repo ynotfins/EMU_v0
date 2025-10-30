@@ -1,4 +1,4 @@
-export type Role = "admin" | "supe" | "chaser"
+export type Role = "super_admin" | "admin" | "supe" | "chaser"
 
 export interface IncidentUpdate {
   ts: string
