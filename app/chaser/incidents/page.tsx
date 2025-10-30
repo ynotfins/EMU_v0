@@ -106,8 +106,26 @@ export default function ChaserIncidentsPage() {
     <RoleLayout role="chaser">
       <div className="flex flex-col h-screen">
         {/* Header */}
-        <div className="bg-white border-b border-[#E5E7EB] p-4">
-          <h1 className="text-2xl font-bold text-foreground">NFA Alerts</h1>
+        <div className="bg-white border-b border-[#E5E7EB] px-4 py-3 flex items-center justify-between">
+          {/* Left: Helmet Icon + FIRE ALERTS */}
+          <div className="flex items-center gap-3">
+            <img 
+              src="/app-icon.png" 
+              alt="EMU Alerts" 
+              className="h-8 w-8"
+            />
+            <h1 className="text-xl font-bold text-[#6B7280]">FIRE ALERTS</h1>
+          </div>
+          
+          {/* Right: High Alert Button (smaller) */}
+          <Button
+            variant={filters.highAlertOnly ? "destructive" : "outline"}
+            size="sm"
+            onClick={() => setHighAlertOnly(!filters.highAlertOnly)}
+            className="text-xs px-3 py-1 h-7"
+          >
+            High Alert {filters.highAlertOnly ? "ON" : "OFF"}
+          </Button>
         </div>
 
         {/* Location Permission Banner */}
@@ -123,14 +141,6 @@ export default function ChaserIncidentsPage() {
           </div>
         )}
 
-        {locationPermissionGranted === true && userLocation && (
-          <div className="bg-[#34C759] text-white p-2 flex items-center justify-center gap-2">
-            <MapPin className="h-4 w-4" />
-            <p className="text-sm font-medium">
-              Location enabled • {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
-            </p>
-          </div>
-        )}
 
         {/* Filters */}
         <FilterBar

@@ -106,12 +106,32 @@ export default function SupeIncidentsPage() {
     <RoleLayout role="supe">
       <div className="flex flex-col h-screen">
         {/* Header */}
-        <div className="bg-white border-b border-[#E5E7EB] p-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-foreground">NFA Alerts</h1>
-          <Button onClick={() => router.push("/supe/map")} className="bg-[#007AFF] hover:bg-[#0051D5]">
-            <Map className="h-4 w-4 mr-2" />
-            Live Map
-          </Button>
+        <div className="bg-white border-b border-[#E5E7EB] px-4 py-3 flex items-center justify-between">
+          {/* Left: Helmet Icon + FIRE ALERTS */}
+          <div className="flex items-center gap-3">
+            <img 
+              src="/app-icon.png" 
+              alt="EMU Alerts" 
+              className="h-8 w-8"
+            />
+            <h1 className="text-xl font-bold text-[#6B7280]">FIRE ALERTS</h1>
+          </div>
+          
+          {/* Right: Buttons */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant={filters.highAlertOnly ? "destructive" : "outline"}
+              size="sm"
+              onClick={() => setHighAlertOnly(!filters.highAlertOnly)}
+              className="text-xs px-3 py-1 h-7"
+            >
+              High Alert {filters.highAlertOnly ? "ON" : "OFF"}
+            </Button>
+            <Button onClick={() => router.push("/supe/map")} size="sm" className="bg-[#007AFF] hover:bg-[#0051D5] text-xs px-3 py-1 h-7">
+              <Map className="h-3 w-3 mr-1" />
+              Live Map
+            </Button>
+          </div>
         </div>
 
         {/* Location Permission Banner */}
@@ -127,14 +147,6 @@ export default function SupeIncidentsPage() {
           </div>
         )}
 
-        {locationPermissionGranted === true && userLocation && (
-          <div className="bg-[#34C759] text-white p-2 flex items-center justify-center gap-2">
-            <MapPin className="h-4 w-4" />
-            <p className="text-sm font-medium">
-              Location enabled • {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
-            </p>
-          </div>
-        )}
 
         {/* Filters */}
         <FilterBar
