@@ -1,17 +1,56 @@
 {
-  "name": "EMU Alerts",
+  "name": "EMU Alerts - Emergency Management",
   "short_name": "EMU Alerts",
-  "description": "Emergency Management Unit - Professional alert management and response system",
+  "description": "Emergency Management Unit - Professional alert management and response system for first responders",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#007AFF",
+  "categories": ["business", "productivity", "utilities"],
   "icons": [
     {
       "src": "/app-icon.png",
       "sizes": "1024x1024",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/app-icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "View Incidents",
+      "short_name": "Incidents",
+      "description": "View active fire alerts",
+      "url": "/chaser/incidents",
+      "icons": [{ "src": "/app-icon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Favorites",
+      "short_name": "Favorites",
+      "description": "View favorite incidents",
+      "url": "/chaser/favorites",
+      "icons": [{ "src": "/app-icon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Chat",
+      "short_name": "Chat",
+      "description": "Team communication",
+      "url": "/chaser/chat",
+      "icons": [{ "src": "/app-icon.png", "sizes": "96x96" }]
     }
   ]
 }

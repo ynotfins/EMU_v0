@@ -1,6 +1,6 @@
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth, setPersistence, browserLocalPersistence, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, type Firestore } from "firebase/firestore";
+import { getFirestore, type Firestore, enableIndexedDbPersistence, enableMultiTabIndexedDbPersistence } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getMessaging, type Messaging } from "firebase/messaging";
 import { saveAuthState, loadAuthState } from "./auth-persistence";
@@ -27,6 +27,24 @@ if (!getApps().length) {
 export const auth: Auth = getAuth(app);
 export const db: Firestore = getFirestore(app);
 export const storage = getStorage(app);
+
+// Enable Firestore offline persistence (CRITICAL for PWA)
+if (typeof window !== "undefined") {
+  enableMultiTabIndexedDbPersistence(db)
+    .then(() => {
+      console.log("[Firestore] ✅ Offline persistence enabled (multi-tab support)");
+      console.log("[Firestore] 📱 App will work offline with cached data!");
+    })
+    .catch((err) => {
+      if (err.code === "failed-precondition") {
+        console.warn("[Firestore] ⚠️ Multiple tabs open, persistence enabled in first tab only");
+      } else if (err.code === "unimplemented") {
+        console.warn("[Firestore] ⚠️ Browser doesn't support persistence");
+      } else {
+        console.error("[Firestore] ❌ Failed to enable persistence:", err);
+      }
+    });
+}
 
 // Set auth persistence to LOCAL (never expires until explicit sign out)
 // CRITICAL: This ensures users NEVER get signed out automatically
