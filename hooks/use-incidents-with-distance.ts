@@ -24,7 +24,9 @@ import type { IncidentFilters } from "./use-filters";
  * Drop-in replacement for useIncidents
  */
 export function useIncidentsWithDistance(filters?: Partial<IncidentFilters>) {
-  const { data: incidents, isLoading, error } = useIncidents(filters);
+  // DON'T pass distance filter to useIncidents - we'll apply it AFTER distance calculation
+  const filtersWithoutDistance = filters ? { ...filters, distanceMi: undefined } : undefined;
+  const { data: incidents, isLoading, error } = useIncidents(filtersWithoutDistance);
   const {
     userLocation,
     permissionGranted,
@@ -129,8 +131,28 @@ export function useIncidentsWithDistance(filters?: Partial<IncidentFilters>) {
     };
   }, [incidents, userLocation]); // REMOVED getIncidentDistance from dependencies!
 
+  // Apply distance filter AFTER enrichment (when distanceMi is calculated)
+  let filteredIncidents = enrichedIncidents;
+  
+  if (filters?.distanceMi !== undefined && userLocation) {
+    const fourHoursAgo = Date.now() - (4 * 60 * 60 * 1000);
+    filteredIncidents = enrichedIncidents.filter((inc) => {
+      const incidentTime = new Date(inc.updatedAt).getTime();
+      const isRecent = incidentTime >= fourHoursAgo;
+      const withinDistance = inc.distanceMi !== undefined && inc.distanceMi <= filters.distanceMi!;
+      
+      // Debug logging for distance filter
+      if (inc.distanceMi !== undefined) {
+        console.log(`[distance filter] ${inc.address}: ${inc.distanceMi.toFixed(1)}mi - ${withinDistance && isRecent ? 'SHOW' : 'HIDE'}`);
+      }
+      
+      return isRecent && withinDistance;
+    });
+    console.log(`[useIncidentsWithDistance] 🔍 Distance filter: ${filteredIncidents.length}/${enrichedIncidents.length} incidents within ${filters.distanceMi}mi in last 4 hours`);
+  }
+
   return {
-    data: enrichedIncidents,
+    data: filteredIncidents,
     isLoading: isLoading, // Don't wait for distance calculation!
     error,
     userLocation,
