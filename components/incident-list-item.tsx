@@ -65,7 +65,7 @@ export function IncidentListItem({
         <div
           className="absolute left-0 top-0 w-1.5 bg-[#007AFF] rounded-l-lg transition-all"
           style={{ height: `${barHeightPercent}%` }}
-          aria-label={`${updateCount} update${updateCount !== 1 ? 's' : ''}`}
+          aria-label={`${updateCount} update${updateCount !== 1 ? "s" : ""}`}
         />
       )}
 

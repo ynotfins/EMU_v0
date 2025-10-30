@@ -1,35 +1,189 @@
-"use client"
+"use client";
 
-import { RoleLayout } from "@/components/role-layout"
-import { ThreadList } from "@/components/thread-list"
-import { useThreads } from "@/hooks/use-threads"
-import { useRouter } from "next/navigation"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect } from 'react';
+import { RoleLayout } from "@/components/role-layout";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, MessageCircle } from "lucide-react";
+import { ChatContacts } from '@/components/chat-contacts';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { useProfile } from '@/hooks/use-profile';
+import { subscribeToDirectChat, sendDirectMessage, type ChatMessage } from '@/lib/realtime-database';
 
 export default function SupeChatPage() {
-  const router = useRouter()
-  const { data: threads } = useThreads()
+  const { data: profile } = useProfile();
+  const [selectedContact, setSelectedContact] = useState<{ id: string; name: string } | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messageText, setMessageText] = useState('');
 
-  const handleSelectThread = (threadId: string) => {
-    router.push(`/supe/chat/${threadId}`)
-  }
+  // Subscribe to direct chat when contact is selected
+  useEffect(() => {
+    if (!selectedContact || !profile) return;
 
-  return (
-    <RoleLayout role="supe">
-      <div className="flex flex-col h-screen">
-        {/* Header */}
-        <div className="bg-white border-b border-[#E5E7EB] p-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-foreground">Chat</h1>
-            <Badge className="bg-[#34C759] hover:bg-[#2DA84A]">Online</Badge>
+    console.log('[Chat] 📡 Subscribing to direct chat with:', selectedContact.name);
+    const unsubscribe = subscribeToDirectChat(
+      profile.id,
+      selectedContact.id,
+      (updatedMessages) => {
+        console.log(`[Chat] 📨 Received ${updatedMessages.length} messages`);
+        setMessages(updatedMessages);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [selectedContact, profile]);
+
+  const handleSendMessage = async () => {
+    if (!messageText.trim() || !profile || !selectedContact) return;
+
+    try {
+      console.log('[Chat] 📤 Sending message to:', selectedContact.name);
+      await sendDirectMessage(profile.id, selectedContact.id, {
+        userId: profile.id,
+        userName: profile.name,
+        userRole: profile.role,
+        message: messageText.trim(),
+        timestamp: Date.now(),
+        read: false,
+      });
+
+      setMessageText('');
+    } catch (error) {
+      console.error('[Chat] ❌ Error sending message:', error);
+    }
+  };
+
+  // Contacts View
+  if (!selectedContact) {
+    return (
+      <RoleLayout role="supe">
+        <div className="flex flex-col h-screen bg-white">
+          {/* Header */}
+          <div className="bg-white border-b border-[#E5E7EB] p-4">
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-bold text-foreground">Chat</h1>
+              <Badge className="bg-[#34C759] hover:bg-[#34C759] text-white">
+                Online
+              </Badge>
+            </div>
+          </div>
+
+          {/* Contacts List */}
+          <div className="flex-1 overflow-hidden">
+            <ChatContacts
+              currentUserId={profile?.id || ''}
+              onSelectContact={(contactId, contactName) => {
+                console.log('[Chat] Selected contact:', contactName);
+                setSelectedContact({ id: contactId, name: contactName });
+                setMessages([]); // Clear previous messages
+              }}
+            />
           </div>
         </div>
+      </RoleLayout>
+    );
+  }
 
-        {/* Thread List */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <ThreadList threads={threads} onSelectThread={handleSelectThread} />
+  // Chat View
+  return (
+    <RoleLayout role="supe">
+      <div className="flex flex-col h-screen bg-gray-50">
+        {/* Header */}
+        <div className="bg-white border-b border-[#E5E7EB] p-4 flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSelectedContact(null);
+              setMessages([]);
+            }}
+            className="p-2"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-lg font-semibold text-foreground">
+              {selectedContact.name}
+            </h1>
+          </div>
+          <Badge className="bg-[#34C759] text-white">
+            Online
+          </Badge>
+        </div>
+
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {messages.length === 0 && (
+            <div className="text-center text-gray-400 py-8">
+              <MessageCircle className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+              <p className="text-sm">No messages yet</p>
+              <p className="text-xs mt-1">Start the conversation!</p>
+            </div>
+          )}
+
+          {messages.map((msg) => {
+            const isOwnMessage = msg.userId === profile?.id;
+
+            return (
+              <div
+                key={msg.id}
+                className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-[70%] rounded-lg p-3 ${
+                    isOwnMessage
+                      ? 'bg-[#007AFF] text-white'
+                      : 'bg-white text-gray-900'
+                  }`}
+                >
+                  {!isOwnMessage && (
+                    <p className="text-xs font-semibold mb-1 opacity-70">
+                      {msg.userName}
+                    </p>
+                  )}
+                  <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
+                  <p
+                    className={`text-xs mt-1 ${
+                      isOwnMessage ? 'text-white/70' : 'text-gray-500'
+                    }`}
+                  >
+                    {new Date(msg.timestamp).toLocaleTimeString([], {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Input */}
+        <div className="bg-white border-t border-[#E5E7EB] p-4">
+          <div className="flex items-end gap-2">
+            <Textarea
+              placeholder="Type a message..."
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              className="flex-1 min-h-[44px] max-h-32 resize-none"
+              rows={1}
+            />
+            <Button
+              onClick={handleSendMessage}
+              disabled={!messageText.trim()}
+              className="bg-[#007AFF] hover:bg-[#0051D5] h-11"
+            >
+              Send
+            </Button>
+          </div>
         </div>
       </div>
     </RoleLayout>
-  )
+  );
 }
