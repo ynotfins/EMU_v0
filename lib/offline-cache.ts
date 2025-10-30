@@ -108,6 +108,9 @@ export class GeocodeCache {
    * Load cache from localStorage
    */
   private loadFromStorage(): Map<string, GeocodedAddress> {
+    // Skip during SSR (server-side rendering)
+    if (typeof window === 'undefined') return new Map();
+    
     try {
       const stored = localStorage.getItem(GEOCODE_CACHE_KEY);
       if (stored) {
@@ -124,6 +127,9 @@ export class GeocodeCache {
    * Save cache to localStorage
    */
   private saveToStorage(): void {
+    // Skip during SSR (server-side rendering)
+    if (typeof window === 'undefined') return;
+    
     try {
       const data = Object.fromEntries(this.cache);
       localStorage.setItem(GEOCODE_CACHE_KEY, JSON.stringify(data));
@@ -219,6 +225,9 @@ export class UserLocationCache {
    * Load from localStorage
    */
   private loadFromStorage(): CachedUserLocation | null {
+    // Skip during SSR (server-side rendering)
+    if (typeof window === 'undefined') return null;
+    
     try {
       const stored = localStorage.getItem(USER_LOCATION_KEY);
       if (stored) {
@@ -236,6 +245,9 @@ export class UserLocationCache {
    * Save to localStorage
    */
   private saveToStorage(): void {
+    // Skip during SSR (server-side rendering)
+    if (typeof window === 'undefined') return;
+    
     if (this.cachedLocation) {
       try {
         localStorage.setItem(USER_LOCATION_KEY, JSON.stringify(this.cachedLocation));
@@ -381,7 +393,12 @@ export class UserLocationCache {
    */
   clear(): void {
     this.cachedLocation = null;
-    localStorage.removeItem(USER_LOCATION_KEY);
+    
+    // Skip during SSR (server-side rendering)
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(USER_LOCATION_KEY);
+    }
+    
     console.log('[UserLocationCache] 🗑️ Cache cleared');
   }
 }
