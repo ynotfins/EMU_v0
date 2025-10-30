@@ -1,0 +1,61 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+
+export interface Response {
+  id: string;
+  incidentId: string;
+  userId: string;
+  userName: string;
+  userRole: string;
+  incidentAddress: string;
+  respondedAt: any;
+  status: "active" | "completed" | "cancelled";
+  createdAt: any;
+}
+
+export function useResponses(userId: string | undefined) {
+  const [responses, setResponses] = useState<Response[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
+    console.log(`[useResponses] 📡 Subscribing to responses for user: ${userId}`);
+
+    const responsesRef = collection(db, "responses");
+    const q = query(
+      responsesRef,
+      where("userId", "==", userId),
+      orderBy("respondedAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const responsesData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Response[];
+
+        console.log(`[useResponses] ✅ Loaded ${responsesData.length} responses`);
+        setResponses(responsesData);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("[useResponses] ❌ Error fetching responses:", error);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [userId]);
+
+  return { responses, loading };
+}
+

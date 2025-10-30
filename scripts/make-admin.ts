@@ -73,5 +73,51 @@ async function makeAdmin(email: string) {
   }
 }
 
-// Make ynotfins@gmail.com an admin
-makeAdmin("ynotfins@gmail.com");
+// Make ynotfins@gmail.com a SUPER ADMIN (not just admin)
+async function makeSuperAdmin(email: string) {
+  try {
+    console.log(`🔍 Searching for user with email: ${email}`);
+
+    // Find user by email
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", email));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      console.error(`❌ No user found with email: ${email}`);
+      console.log("\n💡 Available users:");
+      const allUsers = await getDocs(collection(db, "users"));
+      allUsers.forEach((doc) => {
+        const data = doc.data();
+        console.log(`  - ${data.email} (role: ${data.role})`);
+      });
+      return;
+    }
+
+    // Update user role to super_admin
+    const userDoc = querySnapshot.docs[0];
+    const userData = userDoc.data();
+
+    console.log(
+      `✅ Found user: ${userData.email} (current role: ${userData.role})`
+    );
+    console.log(`🔄 Updating role to super_admin...`);
+
+    await updateDoc(doc(db, "users", userDoc.id), {
+      role: "super_admin",
+    });
+
+    console.log(`✅ SUCCESS! ${email} is now a SUPER ADMIN!`);
+    console.log(`\n📝 User details:`);
+    console.log(`  ID: ${userDoc.id}`);
+    console.log(`  Email: ${userData.email}`);
+    console.log(`  Name: ${userData.name}`);
+    console.log(`  Role: super_admin ← UPDATED`);
+    console.log(`\n🔥 GOD MODE ACTIVATED!`);
+  } catch (error) {
+    console.error("❌ Error making user super admin:", error);
+  }
+}
+
+// Make ynotfins@gmail.com a SUPER ADMIN
+makeSuperAdmin("ynotfins@gmail.com");

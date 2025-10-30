@@ -16,12 +16,44 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heart, MessageCircle } from "lucide-react";
 import type { HomeownerForm as HomeownerFormType } from "@/types/domain";
+import { recordAlertResponse } from "@/lib/actions/responses";
+import { useProfile } from "@/hooks/use-profile";
+import { auth } from "@/lib/firebase";
 
 export default function Client({ id }: { id: string }) {
   const { data: incident, updates, error } = useIncident(id);
   const { data: files } = useFiles(id);
+  const { data: profile } = useProfile(auth.currentUser?.uid);
   const [noteText, setNoteText] = useState("");
   const [homeownerData, setHomeownerData] = useState<HomeownerFormType>({});
+  const [responding, setResponding] = useState(false);
+
+  // Handle respond to alert action
+  const handleRespondToAlert = async () => {
+    if (!profile || !incident || responding) return;
+
+    setResponding(true);
+    try {
+      // Open Google Maps navigation
+      const address = encodeURIComponent(`${incident.address}, ${incident.city}, ${incident.state}`);
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${address}`, '_blank');
+
+      // Record response and notify supes
+      console.log('[Respond] Recording response and notifying supes...');
+      await recordAlertResponse(
+        incident.id,
+        profile.id,
+        profile.name,
+        profile.role,
+        incident.address
+      );
+      console.log('[Respond] ✅ Response recorded successfully!');
+    } catch (error) {
+      console.error('[Respond] ❌ Error recording response:', error);
+    } finally {
+      setResponding(false);
+    }
+  };
 
   if (error) {
     return (
@@ -82,13 +114,7 @@ export default function Client({ id }: { id: string }) {
               {/* Map - Embedded Google Maps at CITY zoom level */}
               <div 
                 className="w-full h-64 bg-gray-100 relative cursor-pointer"
-                onClick={() => {
-                  // Open Google Maps navigation
-                  const address = encodeURIComponent(`${incident.address}, ${incident.city}, ${incident.state}`);
-                  window.open(`https://www.google.com/maps/dir/?api=1&destination=${address}`, '_blank');
-                  // TODO: Notify supes + add to responses list
-                  console.log('[Respond] User responded to alert:', incident.id);
-                }}
+                onClick={handleRespondToAlert}
               >
                 {/* Google Maps Embed showing CITY zoom (zoom=12) */}
                 <iframe
@@ -107,13 +133,11 @@ export default function Client({ id }: { id: string }) {
                   className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-[#34C759] hover:bg-[#2FB350] text-white px-3 py-1 text-xs z-10"
                   onClick={(e) => {
                     e.stopPropagation();
-                    const address = encodeURIComponent(`${incident.address}, ${incident.city}, ${incident.state}`);
-                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${address}`, '_blank');
-                    // TODO: Notify supes + add to responses list
-                    console.log('[Respond] User responded to alert:', incident.id);
+                    handleRespondToAlert();
                   }}
+                  disabled={responding}
                 >
-                  Respond to Alert
+                  {responding ? 'Responding...' : 'Respond to Alert'}
                 </Button>
 
                 {/* Respond Button - Bottom Center */}
@@ -122,13 +146,11 @@ export default function Client({ id }: { id: string }) {
                   className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-[#34C759] hover:bg-[#2FB350] text-white px-3 py-1 text-xs z-10"
                   onClick={(e) => {
                     e.stopPropagation();
-                    const address = encodeURIComponent(`${incident.address}, ${incident.city}, ${incident.state}`);
-                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${address}`, '_blank');
-                    // TODO: Notify supes + add to responses list
-                    console.log('[Respond] User responded to alert:', incident.id);
+                    handleRespondToAlert();
                   }}
+                  disabled={responding}
                 >
-                  Respond to Alert
+                  {responding ? 'Responding...' : 'Respond to Alert'}
                 </Button>
 
                 {/* Alert ID - Lower Left Corner (non-clickable) */}

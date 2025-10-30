@@ -14,7 +14,10 @@ import {
   unbookmark,
 } from "@/hooks/use-incidents";
 import { useFavoritesContext } from "@/lib/context/favorites-context";
-import { Heart, Bookmark, FileText, type LucideIcon } from "lucide-react";
+import { Heart, Bookmark, FileText, Navigation, type LucideIcon } from "lucide-react";
+import { useResponses } from "@/hooks/use-responses";
+import { useProfile } from "@/hooks/use-profile";
+import { auth } from "@/lib/firebase";
 
 // Enhanced empty state with nice UI matching screenshots
 function EmptyState({
@@ -57,6 +60,8 @@ export default function ChaserFavoritesPage() {
   const router = useRouter();
   const { data: allIncidents } = useIncidents();
   const { toggleSilence } = useFavoritesContext();
+  const { data: profile } = useProfile(auth.currentUser?.uid);
+  const { responses, loading: responsesLoading } = useResponses(profile?.id);
   const [activeTab, setActiveTab] = useState("favorites");
 
   const safeIncidents = Array.isArray(allIncidents) ? allIncidents : [];
@@ -65,6 +70,11 @@ export default function ChaserFavoritesPage() {
   const notedIncidents = safeIncidents.filter(
     (inc) => inc.id === "inc-001" || inc.id === "inc-003"
   );
+  
+  // Get incidents for responses
+  const responseIncidents = responses.map(response => {
+    return safeIncidents.find(inc => inc.id === response.incidentId);
+  }).filter(Boolean);
 
   // Handle favorite/bookmark with Firestore toggle logic
   const handleToggleFavorite = async (id: string) => {
@@ -115,6 +125,10 @@ export default function ChaserFavoritesPage() {
             <TabsTrigger value="notes" className="gap-2">
               <FileText className="h-4 w-4" />
               Notes
+            </TabsTrigger>
+            <TabsTrigger value="responses" className="gap-2">
+              <Navigation className="h-4 w-4" />
+              Responses ({responses.length})
             </TabsTrigger>
           </TabsList>
 
@@ -194,6 +208,45 @@ export default function ChaserFavoritesPage() {
                     key={incident.id}
                     incident={incident}
                     onOpen={handleOpenIncident}
+                    onToggleFavorite={handleToggleFavorite}
+                    onToggleBookmark={handleToggleBookmark}
+                    onToggleSilence={toggleSilence}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Responses Tab - Shows incidents user has responded to */}
+          <TabsContent
+            value="responses"
+            className="flex-1 overflow-y-auto p-0 mt-0"
+          >
+            {responsesLoading ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#007AFF] mx-auto mb-4"></div>
+                  <p className="text-sm text-gray-500">Loading responses...</p>
+                </div>
+              </div>
+            ) : responseIncidents.length === 0 ? (
+              <EmptyState
+                icon={Navigation}
+                title="No Responses Yet"
+                message="When you respond to an alert, it will appear here"
+                actionLabel="View All Alerts"
+                onAction={() => router.push("/chaser/incidents")}
+                iconColor="text-[#34C759]"
+              />
+            ) : (
+              <div className="divide-y divide-gray-200">
+                {responseIncidents.map((incident: any) => (
+                  <IncidentListItem
+                    key={incident.id}
+                    incident={incident}
+                    onOpen={(incidentId) => {
+                      router.push(`/chaser/incident/${incidentId}`);
+                    }}
                     onToggleFavorite={handleToggleFavorite}
                     onToggleBookmark={handleToggleBookmark}
                     onToggleSilence={toggleSilence}
