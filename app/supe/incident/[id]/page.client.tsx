@@ -16,7 +16,7 @@ export default function Client({ id }: { id: string }) {
     return (
       <RoleLayout role="supe">
         <div className="flex items-center justify-center h-screen">
-          <p className="text-red-600">Error: {error}</p>
+          <p className="text-destructive">Error: {error}</p>
         </div>
       </RoleLayout>
     )

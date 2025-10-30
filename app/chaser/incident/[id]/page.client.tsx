@@ -27,7 +27,7 @@ export default function Client({ id }: { id: string }) {
     return (
       <RoleLayout role="chaser">
         <div className="flex items-center justify-center h-screen">
-          <p className="text-red-600">Error: {error}</p>
+          <p className="text-destructive">Error: {error}</p>
         </div>
       </RoleLayout>
     );
@@ -112,8 +112,8 @@ export default function Client({ id }: { id: string }) {
                     <Heart
                       className={`h-6 w-6 transition-colors ${
                         incident.isFavorited
-                          ? "fill-red-500 text-red-500"
-                          : "text-gray-400 hover:text-red-400"
+                          ? "fill-[#FF3B30] text-[#FF3B30]"
+                          : "text-gray-400 hover:text-[#FF3B30]"
                       }`}
                     />
                   </button>
