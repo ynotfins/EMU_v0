@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Search, Bell, BellOff } from "lucide-react"
+import { Search, Bell, BellOff, ChevronDown } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -51,6 +51,7 @@ export function FilterBar({
   const [showCustomDistance, setShowCustomDistance] = useState(false)
   const [customUpdates, setCustomUpdates] = useState("")
   const [showCustomUpdates, setShowCustomUpdates] = useState(false)
+  const [searchExpanded, setSearchExpanded] = useState(false)
 
   const toggleType = (type: string) => {
     if (types.includes(type)) {
@@ -84,16 +85,16 @@ export function FilterBar({
   const isCustomUpdates = minUpdates && !UPDATES_OPTIONS.includes(minUpdates)
 
   return (
-    <div className="bg-white border-b border-[#E5E7EB] p-4 space-y-3">
-      {/* Distance Filter */}
+    <div className="bg-white border-b border-[#E5E7EB] p-3 space-y-2">
+      {/* Row 1: Distance badges */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-sm font-medium text-[#6B7280]">Distance:</span>
+        <span className="text-xs font-medium text-[#6B7280] min-w-[60px]">Distance:</span>
         {DISTANCE_OPTIONS.map((distance) => (
           <Badge
             key={distance}
             variant={distanceMi === distance ? "default" : "outline"}
             className={cn(
-              "cursor-pointer",
+              "cursor-pointer text-xs px-2 py-0.5",
               distanceMi === distance ? "bg-[#007AFF] hover:bg-[#0051D5]" : "hover:bg-[#F2F2F7]",
             )}
             onClick={() => onDistanceChange(distance)}
@@ -102,7 +103,7 @@ export function FilterBar({
           </Badge>
         ))}
         {isCustomDistance && (
-          <Badge variant="default" className="bg-[#007AFF]">
+          <Badge variant="default" className="bg-[#007AFF] text-xs px-2 py-0.5">
             {distanceMi} mi
           </Badge>
         )}
@@ -113,51 +114,35 @@ export function FilterBar({
               placeholder="Miles"
               value={customDistance}
               onChange={(e) => setCustomDistance(e.target.value)}
-              className="w-20 h-7 text-sm"
+              className="w-16 h-6 text-xs"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   handleCustomDistance()
                 }
               }}
             />
-            <Button size="sm" onClick={handleCustomDistance} className="h-7">
+            <Button size="sm" onClick={handleCustomDistance} className="h-6 text-xs px-2">
               Set
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setShowCustomDistance(false)
-                setCustomDistance("")
-              }}
-              className="h-7 text-xs"
-            >
-              Cancel
             </Button>
           </div>
         ) : (
           <Badge
             variant="outline"
-            className="cursor-pointer hover:bg-[#F2F2F7]"
+            className="cursor-pointer hover:bg-[#F2F2F7] text-xs px-2 py-0.5 border-[#34C759] text-[#34C759]"
             onClick={() => setShowCustomDistance(true)}
           >
             Custom
           </Badge>
         )}
-        {distanceMi && (
-          <Button variant="ghost" size="sm" onClick={() => onDistanceChange(undefined)} className="h-7 text-xs">
-            Clear
-          </Button>
-        )}
       </div>
 
-      {/* Type Filter */}
+      {/* Row 2: Type badges + Search + Distance button */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-sm font-medium text-[#6B7280]">Type:</span>
+        <span className="text-xs font-medium text-[#6B7280] min-w-[60px]">Type:</span>
         <Badge
           variant={types.length === 0 ? "default" : "outline"}
           className={cn(
-            "cursor-pointer",
+            "cursor-pointer text-xs px-2 py-0.5",
             types.length === 0 ? "bg-[#007AFF] hover:bg-[#0051D5]" : "hover:bg-[#F2F2F7]",
           )}
           onClick={() => onTypesChange([])}
@@ -169,7 +154,7 @@ export function FilterBar({
             key={type}
             variant={types.includes(type) ? "default" : "outline"}
             className={cn(
-              "cursor-pointer",
+              "cursor-pointer text-xs px-2 py-0.5",
               types.includes(type) ? "bg-[#007AFF] hover:bg-[#0051D5]" : "hover:bg-[#F2F2F7]",
             )}
             onClick={() => toggleType(type)}
@@ -177,17 +162,58 @@ export function FilterBar({
             {type}
           </Badge>
         ))}
+
+        {/* Search Button (green oval like Custom) */}
+        {!searchExpanded ? (
+          <Badge
+            variant="outline"
+            className="cursor-pointer hover:bg-[#F2F2F7] text-xs px-2 py-0.5 border-[#34C759] text-[#34C759]"
+            onClick={() => setSearchExpanded(true)}
+          >
+            Search
+          </Badge>
+        ) : null}
+
+        {/* Distance Sort Button (compact) */}
+        <Badge
+          variant="outline"
+          className={cn(
+            "cursor-pointer text-xs px-2 py-0.5 flex items-center gap-1",
+            distanceMi ? "bg-[#007AFF] text-white hover:bg-[#0051D5]" : "hover:bg-[#F2F2F7]"
+          )}
+          onClick={() => onDistanceChange(distanceMi ? undefined : 50)}
+        >
+          <ChevronDown className="h-3 w-3" />
+          Distance
+        </Badge>
       </div>
 
-      {/* Updates Filter */}
+      {/* Expanded Search Row (appears when Search clicked) */}
+      {searchExpanded && (
+        <div className="relative">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-[#6B7280]" />
+          <Input
+            placeholder="Search by keyword..."
+            value={keyword}
+            onChange={(e) => onKeywordChange(e.target.value)}
+            onBlur={() => {
+              if (!keyword) setSearchExpanded(false)
+            }}
+            className="pl-8 h-7 text-xs"
+            autoFocus
+          />
+        </div>
+      )}
+
+      {/* Row 3: Updates badges */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-sm font-medium text-[#6B7280]">Updates:</span>
+        <span className="text-xs font-medium text-[#6B7280] min-w-[60px]">Updates:</span>
         {UPDATES_OPTIONS.map((updates) => (
           <Badge
             key={updates}
             variant={minUpdates === updates ? "default" : "outline"}
             className={cn(
-              "cursor-pointer",
+              "cursor-pointer text-xs px-2 py-0.5",
               minUpdates === updates ? "bg-[#007AFF] hover:bg-[#0051D5]" : "hover:bg-[#F2F2F7]",
             )}
             onClick={() => onMinUpdatesChange(updates)}
@@ -196,7 +222,7 @@ export function FilterBar({
           </Badge>
         ))}
         {isCustomUpdates && (
-          <Badge variant="default" className="bg-[#007AFF]">
+          <Badge variant="default" className="bg-[#007AFF] text-xs px-2 py-0.5">
             {minUpdates}
           </Badge>
         )}
@@ -207,80 +233,25 @@ export function FilterBar({
               placeholder="Updates"
               value={customUpdates}
               onChange={(e) => setCustomUpdates(e.target.value)}
-              className="w-20 h-7 text-sm"
+              className="w-16 h-6 text-xs"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   handleCustomUpdates()
                 }
               }}
             />
-            <Button size="sm" onClick={handleCustomUpdates} className="h-7">
+            <Button size="sm" onClick={handleCustomUpdates} className="h-6 text-xs px-2">
               Set
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setShowCustomUpdates(false)
-                setCustomUpdates("")
-              }}
-              className="h-7 text-xs"
-            >
-              Cancel
             </Button>
           </div>
         ) : (
           <Badge
             variant="outline"
-            className="cursor-pointer hover:bg-[#F2F2F7]"
+            className="cursor-pointer hover:bg-[#F2F2F7] text-xs px-2 py-0.5"
             onClick={() => setShowCustomUpdates(true)}
           >
             Custom
           </Badge>
-        )}
-        {minUpdates && (
-          <Button variant="ghost" size="sm" onClick={() => onMinUpdatesChange(undefined)} className="h-7 text-xs">
-            Clear
-          </Button>
-        )}
-      </div>
-
-      {/* Keyword Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B7280]" />
-        <Input
-          placeholder="Search by keyword..."
-          value={keyword}
-          onChange={(e) => onKeywordChange(e.target.value)}
-          className="pl-10"
-        />
-      </div>
-
-      {/* High Alert Toggle */}
-      <div className="flex items-center justify-between p-3 bg-[#F2F2F7] rounded-lg">
-        <div className="flex items-center gap-3">
-          <Bell className="h-5 w-5 text-[#FF3B30]" />
-          <span className="text-sm font-medium">High Alert</span>
-          <Switch checked={highAlertEnabled} onCheckedChange={onHighAlertChange} />
-        </div>
-        {highAlertEnabled && (
-          <div className="flex items-center gap-2">
-            <Select value={highAlertSound} onValueChange={onHighAlertSoundChange}>
-              <SelectTrigger className="w-40 h-8">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {mockHighAlertSounds.map((sound) => (
-                  <SelectItem key={sound.id} value={sound.id}>
-                    {sound.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button variant="ghost" size="sm" onClick={() => onMutedChange(!muted)} className="h-8 w-8 p-0">
-              {muted ? <BellOff className="h-4 w-4 text-[#6B7280]" /> : <Bell className="h-4 w-4 text-[#007AFF]" />}
-            </Button>
-          </div>
         )}
       </div>
     </div>

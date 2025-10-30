@@ -173,26 +173,6 @@ export default function ChaserIncidentsPage() {
           onMinUpdatesChange={setMinUpdates}
         />
 
-        {/* Sort Options */}
-        {locationPermissionGranted && (
-          <div className="bg-white border-b border-[#E5E7EB] px-4 py-2 flex items-center justify-between">
-            <p className="text-sm text-[#6B7280]">
-              {sortByDistance 
-                ? `Showing ${safeIncidents.length} alerts from last 4 hours, sorted by distance`
-                : `Showing ${safeIncidents.length} alerts, sorted by time`
-              }
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSortByDistance(!sortByDistance)}
-              className={`gap-2 ${sortByDistance ? 'animate-flash-red-white border-2' : ''}`}
-            >
-              <ArrowUpDown className="h-4 w-4" />
-              {sortByDistance ? 'Sort by Time' : 'Sort by Distance'}
-            </Button>
-          </div>
-        )}
 
         {/* Hidden Incidents Banner - Subtle sliver */}
         {hiddenIncidents.size > 0 && (
