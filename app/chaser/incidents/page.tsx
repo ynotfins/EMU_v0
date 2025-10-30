@@ -106,26 +106,39 @@ export default function ChaserIncidentsPage() {
     <RoleLayout role="chaser">
       <div className="flex flex-col h-screen">
         {/* Header */}
-        <div className="bg-white border-b border-[#E5E7EB] px-4 py-3 flex items-center justify-between">
+        <div className="bg-white border-b border-[#E5E7EB] px-4 py-2 flex items-center justify-between">
           {/* Left: Helmet Icon + FIRE ALERTS */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <img 
               src="/app-icon.png" 
               alt="EMU Alerts" 
-              className="h-8 w-8"
+              className="h-10 w-10"
             />
             <h1 className="text-xl font-bold text-[#6B7280]">FIRE ALERTS</h1>
           </div>
           
-          {/* Right: High Alert Button (smaller) */}
-          <Button
-            variant={filters.highAlertOnly ? "destructive" : "outline"}
-            size="sm"
+          {/* Right: High Alert Button - Stacked Text */}
+          <button
             onClick={() => setHighAlertOnly(!filters.highAlertOnly)}
-            className="text-xs px-3 py-1 h-7"
+            className={`
+              relative px-4 py-2 rounded-md font-bold text-xs leading-tight transition-all
+              ${filters.highAlertOnly 
+                ? 'bg-[#FF3B30] text-white shadow-lg' 
+                : 'bg-gray-100 text-gray-600 border border-gray-300'
+              }
+            `}
           >
-            High Alert {filters.highAlertOnly ? "ON" : "OFF"}
-          </Button>
+            <div className="flex flex-col items-center">
+              <span>HIGH</span>
+              <span>ALERT</span>
+            </div>
+            {/* Squiggly lines when ON */}
+            {filters.highAlertOnly && (
+              <div className="absolute -top-2 -right-2 text-[#FF3B30] text-2xl animate-pulse">
+                ≈
+              </div>
+            )}
+          </button>
         </div>
 
         {/* Location Permission Banner */}
