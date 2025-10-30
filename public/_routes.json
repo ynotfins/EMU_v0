@@ -11,7 +11,8 @@
     "/placeholder.svg",
     "/manifest.json",
     "/firebase-messaging-sw.js",
-    "/_next/static/*"
+    "/_next/static/*",
+    "/_next/image*"
   ]
 }
 
