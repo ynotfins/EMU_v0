@@ -70,9 +70,6 @@ export function IncidentListItem({
         <div className="flex-1 space-y-1">
           {/* Badge Header */}
           <div className="flex items-center gap-2">
-            <Badge className="bg-[#007AFF] hover:bg-[#0051D5]">
-              NFA-{incident.incidentNumber}
-            </Badge>
             {incident.highAlert && (
               <Badge
                 variant="outline"

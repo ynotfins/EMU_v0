@@ -80,18 +80,63 @@ export default function Client({ id }: { id: string }) {
           <div className="flex-1 overflow-y-auto">
             <TabsContent value="details" className="m-0 h-full">
               {/* Map - Embedded Google Maps at CITY zoom level */}
-              <div className="w-full h-64 bg-gray-100 relative">
+              <div 
+                className="w-full h-64 bg-gray-100 relative cursor-pointer"
+                onClick={() => {
+                  // Open Google Maps navigation
+                  const address = encodeURIComponent(`${incident.address}, ${incident.city}, ${incident.state}`);
+                  window.open(`https://www.google.com/maps/dir/?api=1&destination=${address}`, '_blank');
+                  // TODO: Notify supes + add to responses list
+                  console.log('[Respond] User responded to alert:', incident.id);
+                }}
+              >
                 {/* Google Maps Embed showing CITY zoom (zoom=12) */}
                 <iframe
                   width="100%"
                   height="100%"
-                  style={{ border: 0 }}
+                  style={{ border: 0, pointerEvents: 'none' }}
                   loading="lazy"
-                  allowFullScreen
                   referrerPolicy="no-referrer-when-downgrade"
                   src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8'}&q=${encodeURIComponent(incident.address + ', ' + incident.city + ', ' + incident.state)}&zoom=12`}
                   title="Incident Location Map"
                 />
+
+                {/* Respond Button - Top Center */}
+                <Button
+                  size="sm"
+                  className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-[#34C759] hover:bg-[#2FB350] text-white px-3 py-1 text-xs z-10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const address = encodeURIComponent(`${incident.address}, ${incident.city}, ${incident.state}`);
+                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${address}`, '_blank');
+                    // TODO: Notify supes + add to responses list
+                    console.log('[Respond] User responded to alert:', incident.id);
+                  }}
+                >
+                  Respond to Alert
+                </Button>
+
+                {/* Respond Button - Bottom Center */}
+                <Button
+                  size="sm"
+                  className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-[#34C759] hover:bg-[#2FB350] text-white px-3 py-1 text-xs z-10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const address = encodeURIComponent(`${incident.address}, ${incident.city}, ${incident.state}`);
+                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${address}`, '_blank');
+                    // TODO: Notify supes + add to responses list
+                    console.log('[Respond] User responded to alert:', incident.id);
+                  }}
+                >
+                  Respond to Alert
+                </Button>
+
+                {/* Alert ID - Lower Left Corner (non-clickable) */}
+                <Badge 
+                  className="absolute bottom-2 left-2 bg-[#007AFF] hover:bg-[#007AFF] cursor-default z-10 pointer-events-none"
+                >
+                  #NFA-{incident.incidentNumber}
+                </Badge>
               </div>
 
               {/* Incident Header */}
@@ -128,16 +173,6 @@ export default function Client({ id }: { id: string }) {
                 <p className="text-gray-600 text-sm">
                   {incident.state}, {incident.county}, {incident.city}
                 </p>
-                <p className="text-gray-500 text-xs mt-2">
-                  Alert ID: #NFA-{incident.incidentNumber}
-                </p>
-              </div>
-
-              {/* Respond Button */}
-              <div className="px-4 py-3">
-                <Button className="w-full bg-[#FF3B30] hover:bg-[#FF2D1F] text-white h-12 text-base font-semibold">
-                  ⚡ Respond to Alert
-                </Button>
               </div>
 
               {/* Updates Section - Show initial message if no updates */}
