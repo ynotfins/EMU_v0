@@ -35,31 +35,18 @@ export default function ChaserChatPage() {
             in the next update
           </p>
 
-          {/* Emergency Communication Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
-            <Button
-              variant="destructive"
-              className="flex-1 py-8 text-lg font-semibold rounded-xl"
-              onClick={() => {
-                // In production, this would trigger the emergency call
-                window.location.href = "tel:911";
-              }}
-            >
-              <Phone className="h-6 w-6 mr-3" />
-              Emergency Call
-            </Button>
-            <Button
-              variant="destructive"
-              className="flex-1 py-8 text-lg font-semibold rounded-xl"
-              onClick={() => {
-                // In production, this would open push-to-talk
-                console.log("Push to Talk activated");
-              }}
-            >
-              <Radio className="h-6 w-6 mr-3" />
-              Push to Talk
-            </Button>
-          </div>
+          {/* Emergency Communication Button */}
+          <Button
+            variant="destructive"
+            className="py-8 px-12 text-lg font-semibold rounded-xl"
+            onClick={() => {
+              // Dial 911 on phone
+              window.location.href = "tel:911";
+            }}
+          >
+            <Phone className="h-6 w-6 mr-3" />
+            Emergency Call 911
+          </Button>
         </div>
       </div>
     </RoleLayout>

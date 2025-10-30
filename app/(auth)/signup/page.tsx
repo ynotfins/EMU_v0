@@ -8,55 +8,79 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { createUserWithEmailAndPassword } from "firebase/auth"
+import { doc, setDoc } from "firebase/firestore"
+import { auth, db } from "@/lib/firebase"
 
 export default function SignupPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [displayName, setDisplayName] = useState("")
-  const [verificationSent, setVerificationSent] = useState(false)
+  const [role, setRole] = useState<"chaser" | "supe">("chaser")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
   const router = useRouter()
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError("")
 
     if (password !== confirmPassword) {
-      alert("Passwords do not match")
+      setError("Passwords do not match")
       return
     }
 
-    // Stub: will be wired to Firebase Auth
-    console.log("[v0] Signup attempt:", email, displayName)
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters")
+      return
+    }
 
-    // Show verification message
-    setVerificationSent(true)
+    setLoading(true)
 
-    // Simulate email verification and redirect to chaser role
-    setTimeout(() => {
-      router.push("/chaser/incidents")
-    }, 2000)
-  }
+    try {
+      console.log("[Signup] Creating account:", email, "as", role)
 
-  if (verificationSent) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F2F2F7] p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center space-y-4">
-            <div className="flex justify-center">
-              <Logo width={280} height={84} />
-            </div>
-            <CardTitle className="text-2xl">Check Your Email</CardTitle>
-            <CardDescription>
-              We've sent a verification link to <strong>{email}</strong>. Click the link to verify your account and get
-              started.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-center text-[#6B7280]">Redirecting you to the app...</p>
-          </CardContent>
-        </Card>
-      </div>
-    )
+      // Create Firebase Auth user
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+      const user = userCredential.user
+
+      // Create Firestore user profile with selected role
+      await setDoc(doc(db, "users", user.uid), {
+        id: user.uid,
+        email: user.email,
+        name: displayName || email.split("@")[0],
+        role: role, // ← User-selected role!
+        settings: {
+          muted: false,
+          highAlertSound: "train",
+        },
+        createdAt: new Date().toISOString(),
+      })
+
+      console.log("[Signup] ✅ Account created successfully as", role.toUpperCase())
+
+      // Redirect based on role
+      if (role === "supe") {
+        router.push("/supe/incidents")
+      } else {
+        router.push("/chaser/incidents")
+      }
+    } catch (err: any) {
+      console.error("[Signup] ❌ Error:", err)
+
+      if (err.code === "auth/email-already-in-use") {
+        setError("Email already in use. Please sign in instead.")
+      } else if (err.code === "auth/invalid-email") {
+        setError("Invalid email address.")
+      } else if (err.code === "auth/weak-password") {
+        setError("Password is too weak. Use at least 6 characters.")
+      } else {
+        setError("Failed to create account. Please try again.")
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -71,6 +95,30 @@ export default function SignupPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignup} className="space-y-4">
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <label htmlFor="role" className="text-sm font-medium">
+                Account Type
+              </label>
+              <select
+                id="role"
+                value={role}
+                onChange={(e) => setRole(e.target.value as "chaser" | "supe")}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
+              >
+                <option value="chaser">🚒 Chaser (Field Responder)</option>
+                <option value="supe">👨‍💼 Supe (Supervisor)</option>
+              </select>
+              <p className="text-xs text-gray-500">
+                Choose your role. Supes manage chasers and see everything.
+              </p>
+            </div>
+
             <div className="space-y-2">
               <label htmlFor="displayName" className="text-sm font-medium">
                 Full Name
@@ -125,8 +173,19 @@ export default function SignupPage() {
                 minLength={6}
               />
             </div>
-            <Button type="submit" className="w-full bg-[#007AFF] hover:bg-[#0051D5]">
-              Create Account
+            <Button 
+              type="submit" 
+              className="w-full bg-[#007AFF] hover:bg-[#0051D5]"
+              disabled={loading}
+            >
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Creating account...</span>
+                </div>
+              ) : (
+                "Create Account"
+              )}
             </Button>
             <div className="text-center text-sm">
               <span className="text-[#6B7280]">Already have an account? </span>

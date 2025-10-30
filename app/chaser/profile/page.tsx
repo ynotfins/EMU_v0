@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation"
 import { signOut } from "firebase/auth"
 import { auth } from "@/lib/firebase"
+import { clearAuthState } from "@/lib/auth-persistence"
 import { RoleLayout } from "@/components/role-layout"
 import { ProfileHeader } from "@/components/profile-header"
 import { StatsCards } from "@/components/stats-cards"
@@ -21,8 +22,14 @@ export default function ChaserProfilePage() {
   const handleSignOut = async () => {
     try {
       console.log("[Profile] Signing out...")
+      
+      // Clear all auth persistence FIRST
+      clearAuthState()
+      
+      // Then sign out from Firebase
       await signOut(auth)
-      console.log("[Profile] ✅ Signed out successfully")
+      
+      console.log("[Profile] ✅ Signed out successfully - all auth cleared")
       router.push("/login")
     } catch (error) {
       console.error("[Profile] ❌ Sign out error:", error)

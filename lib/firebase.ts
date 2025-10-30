@@ -1,8 +1,9 @@
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
-import { getAuth, type Auth, setPersistence, browserLocalPersistence } from "firebase/auth";
+import { getAuth, type Auth, setPersistence, browserLocalPersistence, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getMessaging, type Messaging } from "firebase/messaging";
+import { saveAuthState, loadAuthState } from "./auth-persistence";
 
 // Firebase configuration from environment variables
 const firebaseConfig = {
@@ -48,6 +49,15 @@ if (typeof window !== "undefined") {
       console.warn("[Firebase] ⚠️ No user found after setting persistence - check browser settings");
     }
   }, 1000);
+
+  // BULLETPROOF FALLBACK: Save auth state to multiple locations
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // User is signed in - save their info to localStorage, sessionStorage, AND cookies
+      saveAuthState(user.uid, user.email || '');
+      console.log("[Firebase] 🔒 Auth state saved to 3 locations for maximum persistence");
+    }
+  });
 }
 
 // Messaging only available in browser context AND if browser supports it
