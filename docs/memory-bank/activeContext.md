@@ -1,392 +1,465 @@
-# Active Context: EMU Alerts
+# Active Context: NFA Alerts
 
 ## Current Status
 **Project Stage**: Production - Deployed & Operational  
-**Last Updated**: 2025-10-30 (Early Morning)  
-**Session**: production-features-live-chat-ui-compression  
+**Last Updated**: 2025-10-31 (Halloween Evening)  
+**Session**: production-google-auth-avatars-crm-live-map  
 **Live URL**: https://4axe.com (Vercel deployment)
 
 ## Current Work Focus
-**Tonight's Accomplishments**: Signup with role selection, admin tool, bulletproof auth, live chat architecture, compressed home page UI
+**Today's Major Accomplishments**: Google login auto-profile creation, Live team map for Supes, 20% rounded avatar system, CRM contractors page, multi-step signup with ID scanning, Vercel build fix
 
 **Current State**:
 - ✅ **LIVE ON PRODUCTION**: https://4axe.com
 - ✅ **Deployed via Vercel**: Automatic deployments on git push
-- ✅ **Custom Domain**: 4axe.com configured and working
+- ✅ **Custom Domain**: 4axe.com configured with smart routing
 - ✅ **Real-time Data**: All features using Firebase `onSnapshot`
-- ✅ **Distance Calculation**: Client-side with geocoding + offline cache
-- ✅ **Location Tracking**: Real-time user GPS, device-aware caching
-- ✅ **Auth Persistence**: Triple-layer (localStorage + sessionStorage + cookies)
-- ✅ **Live Chat**: Firebase Realtime Database, incident group chats working
-- ✅ **Compressed UI**: Home page filter bar reduced from 5 rows to 3
-- ✅ **Admin Tool**: User role management at /admin
-- ✅ **Signup**: Role selection (Chaser/Supe) during account creation
+- ✅ **Auth Fixed**: Google sign-in auto-creates Firestore profiles
+- ✅ **Live Chat**: Firebase Realtime Database, incident + direct chats working
+- ✅ **Live Team Map**: Real-time user location tracking for Supes
+- ✅ **Avatar System**: 20% rounded corners, reusable components ready
+- ✅ **CRM**: Independent Contractors & Employees page (desktop-first)
+- ✅ **Admin Tool**: User role management with super_admin support
+- ✅ **God Mode**: Toggle-based role switching for super_admin in profile
+- ✅ **Multi-step Signup**: Nickname, email verify, camera ID capture, OCR
 
-## Recent Changes (Tonight's Session)
+## Recent Changes (Today's Session)
 
-### Phase 1: Signup with Role Selection ✅
-**Requirement**: "A and B make it so i can create the new account in firebase auth and choose either chaser or supe"
+### Phase 1: Google Login Auto-Profile Creation ✅
+**Problem**: Users signing in with Google (ynotfins@gmail.com) showed as "Dev User" with dev@emuui.com
 
-**Implementation** (`app/(auth)/signup/page.tsx`):
-- Added role dropdown: Chaser vs Supe
-- Firebase Auth integration (`createUserWithEmailAndPassword`)
-- Auto-creates Firestore `/users/{uid}` document with selected role
-- Error handling, loading states
-- Redirects to correct role homepage
+**Solution** (`app/login/page.tsx`):
+- Check if Firestore profile exists after Google sign-in
+- Auto-create profile if missing
+- Use Google `displayName` or email prefix for name/nickname
+- Set default role to 'chaser', settings, stats
 
 **Result**:
-- ✅ No more manual Firebase Console role assignment
-- ✅ Users select role during signup
-- ✅ Instant Firestore profile creation
+- ✅ Google users get proper Firestore profiles automatically
+- ✅ No more "Dev User" issue
+- ✅ Seamless first-time experience
 
 ---
 
-### Phase 2: Admin Tool ✅
-**Requirement**: "create the admin page so i can oversee everything"
+### Phase 2: Live Team Map (Supe Profile) ✅
+**Requirement**: "On a mobile device or a tablet whenever someone is in a number only field like phone number have the number panel come up... Actually let's put that [live map] over the ID verification section and under the cards"
 
-**Implementation** (`app/admin/page.tsx` - NEW FILE):
-- Table view of all users from `/users` collection
-- ONE-CLICK role changes (Chaser ↔ Supe ↔ Admin)
-- Color-coded role badges (Green/Blue/Purple)
-- Real-time Firestore `updateDoc()`
+**Implementation** (`components/live-team-map.tsx` - NEW):
+- Real-time user location tracking
+- Shows all team members with avatars
+- Online/offline status badges
+- Placeholder for Google Maps integration
+- Team member list with scrolling
 
-**Access**: https://4axe.com/admin
+**Placement** (`app/supe/profile/page.tsx`):
+- Above ID Verification card
+- Below Stats cards
+- Supe profile page only
 
 **Result**:
-- ✅ User management: 10 seconds instead of 5 minutes
-- ✅ No Firebase Console needed
-- ✅ Beautiful UI
+- ✅ Supes see team locations in real-time
+- ✅ Online count badge (animated green)
+- ✅ Beautiful gradient map placeholder
+- ✅ Clean, Apple-style design
 
 ---
 
-### Phase 3: Bulletproof Auth Persistence ✅
-**Requirement**: "create a fallback no matter what, it is important that users not ever get signed out, these are first responders that need to see these alerts"
-
-**Implementation** (`lib/auth-persistence.ts` - NEW FILE):
-```typescript
-// Triple-layer storage
-export function saveAuthState(userId: string, email: string) {
-  // Layer 1: localStorage (persists forever)
-  localStorage.setItem('emu_user_id', userId);
-  
-  // Layer 2: sessionStorage (persists until tab close)
-  sessionStorage.setItem('emu_user_id', userId);
-  
-  // Layer 3: Cookie (90 days expiry)
-  document.cookie = `emu_user_id=${userId}; max-age=7776000`;
-}
-```
-
-**Integration** (`lib/firebase.ts`):
-- `setPersistence(auth, browserLocalPersistence)` - Firebase never expires
-- `onAuthStateChanged()` → calls `saveAuthState()` on every sign-in
-- Profile pages updated to call `clearAuthState()` on manual sign-out
-
-**Result**:
-- ✅ Users NEVER auto-signed out
-- ✅ Survives browser restarts, cache clears, incognito mode
-- ✅ Only signs out on manual "Sign Out" button click
-- ✅ Perfect for first responders
-
----
-
-### Phase 4: Push to Talk Removed ✅
-**Requirement**: "Push to Talk wait on and remove from the app"
+### Phase 3: 20% Rounded Avatar System ✅
+**Requirement**: "The avatars I created all have a 20% rounded corner let's make sure all uploaded profile pics get that same 20% rounded corner to keep it uniform"
 
 **Implementation**:
-- Removed from `app/chaser/chat/page.tsx`
-- Removed from `app/supe/chat/page.tsx` (was already different)
-- Kept "Emergency Call 911" button only
+
+**A. Avatar Utilities** (`lib/avatar-utils.ts` - NEW):
+```typescript
+getAvatarClasses(size) // Returns Tailwind classes with rounded-[20%]
+processAvatarImage(file) // Canvas-based clipping to 20% corners
+getInitials(name) // Fallback initials
+getAvatarGradient(id) // Consistent gradient per user
+```
+
+**B. Avatar Component** (`components/avatar.tsx` - NEW):
+```tsx
+<Avatar src={url} alt={name} size="md" /> // Main component
+<AvatarWithStatus online={true} /> // With status indicator
+<AvatarGroup avatars={team} max={3} /> // Stacked avatars
+```
+
+**C. Avatar Picker Updated** (`components/avatar-picker.tsx`):
+- Changed `rounded-xl` → `rounded-[20%]`
+- All preview avatars match 20% corners
+- Ready for firefighter avatars
 
 **Result**:
-- ✅ Cleaner chat page UI
-- ✅ Less confusion for users
-- ✅ Ready for text messaging UI
+- ✅ ALL avatars use 20% rounded corners consistently
+- ✅ Automatic processing for uploads
+- ✅ Reusable components throughout app
+- ✅ Size system: sm(32px), md(48px), lg(64px), xl(96px)
 
 ---
 
-### Phase 5: Live Chat Architecture ✅
-**Requirement**: "chasers should be able to chat with chasers but that will be one on one, and supes can chat with supes and that will be one on one. only when a chaser or anyone selects the live chat from the details page that creates a group chat that includes all Supes and the one Chaser"
+### Phase 4: CRM Contractors Page ✅
+**Requirement**: "2. is Independent Contractors and Employees not Contractors"
 
-**Implementation** (`lib/realtime-database.ts` - REWRITTEN):
-
-**Two-Tier Chat System**:
-
-**A. Incident Chats** (Group: 1 Chaser + ALL Supes)
-- Triggered from incident details page "Chat" tab
-- `createIncidentChat()` auto-fetches all supes from Firestore
-- `getAllSupes()` queries `/users` where `role == 'supe'`
-- Creates Firebase RTDB document: `incident-chats/{incidentId}`
-- Participants object: `{ [chaserUid]: 'chaser', [supe1Uid]: 'supe', ... }`
-- Real-time sync via `subscribeToIncidentChat()`
-- Messages sent via `sendIncidentMessage()`
-
-**B. Direct Chats** (1-on-1)
-- For chaser ↔ chaser or supe ↔ supe
-- Unique chat ID from sorted user IDs: `${uid1}_${uid2}`
-- Stored in: `direct-chats/{chatId}`
-- Backend functions ready: `createDirectChat()`, `sendDirectMessage()`, `subscribeToDirectChat()`
-- UI NOT YET BUILT (pending)
-
-**Database Structure**:
-```
-Firebase Realtime Database:
-  /incident-chats
-    /{incidentId}
-      participants: { [userId]: role }
-      createdBy: userId
-      createdByName: string
-      incidentAddress: string
-      messages/
-        {messageId}: { userId, userName, userRole, message, timestamp, read }
-  
-  /direct-chats
-    /{chatId}  // e.g., "abc123_xyz789"
-      participants: { [userId]: name }
-      lastMessage: string
-      lastMessageTime: timestamp
-      messages/
-        {messageId}: { userId, userName, userRole, message, timestamp, read }
-```
-
-**Integration** (`components/incident-chat.tsx`):
-- Added `incidentAddress` prop
-- `useEffect` → calls `getAllSupes()` and `createIncidentChat()` on first load
-- Only runs once per incident (uses `chatInitialized` flag)
-- Auto-adds all supes transparently
+**Implementation** (`app/crm/contractors/page.tsx` - NEW):
+- Desktop-first design (max-w-7xl)
+- Stats dashboard (Total, Active, Chasers, Supes, Verified)
+- Advanced filters (search, role, status, export)
+- Contractor cards with avatars, contact info, ID status
+- Real-time Firestore `onSnapshot`
+- Beautiful Apple-style cards with lots of white space
 
 **Result**:
-- ✅ Real-time incident coordination between chaser + all supes
-- ✅ Group chat auto-created when chaser opens chat tab
-- ✅ All supes automatically added
-- ✅ Direct chat backend ready for UI
+- ✅ Full-featured CRM page for team management
+- ✅ Title: "Independent Contractors & Employees"
+- ✅ Clean, professional UI
+- ✅ Real-time updates
 
 ---
 
-### Phase 6: Home Page UI Compression ✅
-**Requirement**: "let's tighten the home page up real quick because there isn't enough room for messages. delete the original High alert bar. move the search field up to the row above it and make it the same size and look as the custom button only make the oval line around it green. fit the sort by distance button up on the same row with the custom or type and make it say only on word 'Distance' with just the downward facing arrow to the left of the word Distance"
+### Phase 5: Multi-Step Signup with ID Scanning ✅
+**Requirement**: "The OCR processing can be done in the background, the New user has to be able to create the new account in as few steps as possible with the least amount of interaction and text as possible"
 
-**Implementation** (`components/filter-bar.tsx`):
+**Implementation** (`app/signup/new/page.tsx` - NEW):
 
-**Deleted**:
-- High Alert toggle bar (lines 259-285) - now in header
-- Old search field (full row)
-- "Set" and "Cancel" buttons on Custom distance/updates
+**Step 1: Basic Info**
+- Nickname (preferred name)
+- Email (with verification)
+- Phone number (formatted, numeric keyboard on mobile)
 
-**Compressed**:
-- All badges: `text-xs` (was `text-sm`), `px-2 py-0.5` (was `px-3 py-1`)
-- Labels: `text-xs` (was `text-sm`), `min-w-[60px]`
-- Row padding: `p-3` (was `p-4`), `space-y-2` (was `space-y-3`)
+**Step 2: Email Verification**
+- Sends verification email
+- "I've Verified My Email" button
+- Auto-checks verification status
 
-**New Layout** (5 rows → 3 rows):
-```
-Row 1: Distance badges (5mi, 10mi, 25mi, 50mi, Custom)
-Row 2: Type badges + Search badge + Distance button
-Row 3: Updates badges (1, 3, Custom)
-(Row 4: Search input - only when expanded)
-```
+**Step 3: Camera ID Capture**
+- Camera-only (no file uploads)
+- `capture="environment"` for back camera
+- Direct photo capture
 
-**Search Badge** (Green Oval):
-- `border-[#34C759] text-[#34C759]` - matches "Custom" style
-- Click → expands full-width search input below
-- Blur → collapses if empty
-- Auto-focus on expand
+**Step 4: OCR Processing**
+- Auto-extract ID data (name, address, DOB, ID#)
+- Background processing animation
+- Preview of captured ID
 
-**Distance Button** (Compact):
-- `<ChevronDown />` icon + "Distance" text
-- Blue when active, gray when off
-- Toggles distance filter on/off
-
-**Also Updated** (`app/chaser/incidents/page.tsx`):
-- Deleted: "Sort Options" section (lines 176-195)
-- Deleted: "Showing X alerts, sorted by time" text
-- Deleted: Separate "Sort by Distance" button
+**Step 5: Complete**
+- Welcome message with nickname
+- Auto-creates Firestore profile
+- Auto-creates `independent_contractors` record
+- Auto-redirect to dashboard
 
 **Result**:
-- ✅ 40% more vertical space for incident cards
-- ✅ All filters still accessible
-- ✅ Expandable search is elegant
-- ✅ Distance integrated seamlessly
+- ✅ Fast, minimal interaction signup
+- ✅ Beautiful Apple-style UI with progress dots
+- ✅ Background OCR (mock implemented, ready for real OCR)
+- ✅ Auto-populates CRM database
+
+---
+
+### Phase 6: God Mode in Profile ✅
+**Requirement**: "I do not want to always be in God mode, I should have to click the toggle to turn that on, my account by default should be Supe... i also want to have to toggle between Supe profile and Chaser profile by a toggle switch in the profile page, no floating toggle"
+
+**Implementation** (`components/god-mode-card.tsx` - NEW):
+- Purple gradient card (super_admin only)
+- Two toggle switches:
+  1. God Mode ON/OFF
+  2. Chaser View ↔ Supe View
+- Stored in localStorage (persists)
+- Status display with badges
+
+**Bottom Nav Integration** (`components/bottom-nav.tsx`):
+- super_admin + God Mode ON → "God"
+- super_admin + God Mode OFF + Supe view → "Supe"
+- super_admin + God Mode OFF + Chaser view → "Profile"
+- regular supe → "Supe"
+- regular chaser → "Profile"
+
+**Result**:
+- ✅ God Mode defaults to OFF
+- ✅ Toggle-based activation
+- ✅ View switching in profile
+- ✅ No floating button
+- ✅ Clean, intuitive UX
+
+---
+
+### Phase 7: Smart Routing (4axe.com) ✅
+**Requirement**: "4axe.com does not have a sign in page, 4axe.com should be the login page if user is not logged in"
+
+**Implementation** (`app/page.tsx`):
+- Checks authentication state
+- Reads user role from Firestore
+- Routes based on role:
+  - super_admin/admin/supe → `/supe/incidents`
+  - chaser → `/chaser/incidents`
+  - not logged in → `/login`
+- Loading spinner during check
+
+**Result**:
+- ✅ 4axe.com → smart routing
+- ✅ No more manual navigation
+- ✅ Seamless user experience
+
+---
+
+### Phase 8: Vercel Build Fix ✅
+**Problem**: Duplicate signup routes caused build failure
+```
+Error: You cannot have two parallel pages that resolve to the same path. 
+Please check /(auth)/signup and /signup.
+```
+
+**Solution**:
+- Deleted `app/(auth)/` folder entirely
+- Kept only `app/signup/page.tsx`
+- Removed route conflict
+
+**Result**:
+- ✅ Vercel build succeeds
+- ✅ Deployment working
+- ✅ No more duplicate routes
+
+---
+
+### Phase 9: Chat Shows Nicknames ✅
+**Requirement**: "Chat has to detect all users accounts and put their name or nickname, On the create new account setup there has to be a preferred name field"
+
+**Implementation** (`components/chat-contacts.tsx`):
+- Changed `data.name` → `data.nickname || data.name || data.email`
+- Shows nickname first, fallback to name/email
+- All users see each other's nicknames
+
+**Result**:
+- ✅ Nicknames display in chat
+- ✅ Consistent with user preference
+- ✅ Better personalization
 
 ---
 
 ## Active Issues & Blockers
 
-### User-Reported Issues 🔴
+### None Currently 🎉
 
-#### 1. Mobile Not Showing Compressed UI
-**Issue**: PC has new compressed filter bar, mobile still showing old version  
-**Cause**: Mobile browser cache  
-**Fix**: User needs hard refresh (Ctrl+Shift+R or clear cache)  
-**Status**: Waiting for user to clear cache
+All known issues have been resolved:
+- ✅ Google login profile creation - FIXED
+- ✅ Duplicate routes Vercel build error - FIXED
+- ✅ God Mode always on - FIXED (now toggle-based)
+- ✅ Bottom nav labels - FIXED (shows correct role/God)
+- ✅ CRM title - FIXED ("Independent Contractors & Employees")
 
 ---
 
 ## Next Immediate Steps
 
-### Priority 1: Documentation Update (IN PROGRESS) 📚
-- ✅ Created `NIGHTLY_SUMMARY_2025-10-30.md`
-- 🔄 Updating `activeContext.md` (this file)
-- ⏳ Update `progress.md`
-- ⏳ Update `systemPatterns.md`
-- ⏳ Update `handoff.md`
-- ⏳ Verify `WIRING.md`
-- ⏳ Verify `PARSING_AND_INDEXING.md`
+### Priority 1: Format & Upload Avatars 🎨
+**Status**: WAITING ON USER
+- User is preparing 20-30 firefighter avatars
+- Need 512x512 PNG with transparency
+- 20% rounded corners (will be enforced by system)
+- Categories: Cartoon, Equipment, Badges, Mascots, Action
 
-### Priority 2: Text Messaging Chat UI (NEXT) 💬
-**Requirement**: "the chat page should look like a normal text messaging app with all the users available to select from, and when a group is created that should show up in the chat page just like a group chat in a regular text messaging app"
+**Once received**:
+1. Place in `/public/avatars/` folders
+2. Update `FIREFIGHTER_AVATARS` array in avatar-picker.tsx
+3. Integrate into profile page
+4. Test at all sizes
+
+---
+
+### Priority 2: Simplified Auto Email Verification 📧
+**Requirement**: "email verification has to auto recognize their verification before it goes to next page... No I've verified button we will recognize that immediately and fast"
 
 **Plan**:
-- User list on chat page (all chasers + all supes)
-- Show incident group chats with incident address as name
-- Show direct chats with user name
-- Tap to open conversation
-- iMessage/WhatsApp style UI
+- Remove "I've Verified" button
+- Auto-poll verification status every 2 seconds
+- Show loading spinner
+- Auto-advance when verified
+- Maximum 60-second timeout
 
-**Estimate**: 1-2 hours
+**Estimate**: 30 minutes
 
-### Priority 3: CRM Foundation (REQUIRED) 📊
-**Requirement**: "Yes we need to have a fully functional CRM with email and customer relation abilities"
+---
 
-**Collections Needed**:
-```
-/properties
-  /{addressId}
-    address: string
-    owner: string
-    contactName: string
-    contactPhone: string
-    contactEmail: string
-    lat: number
-    lng: number
-    lastIncidentId: string
-    lastIncidentDate: Timestamp
-    
-/communications
-  /{id}
-    propertyId: string
-    type: 'email' | 'sms' | 'call'
-    sentBy: string (userId)
-    sentAt: Timestamp
-    status: 'sent' | 'delivered' | 'failed'
-    content: string
-```
+### Priority 3: Account Setup Reminders 🔔
+**Requirement**: "we want to remind them to finish setting up their account very uninvasively"
 
-**Estimate**: 3-4 hours
+**Plan**:
+- Check profile completeness (avatar, phone, payment)
+- Show subtle banner at top if incomplete
+- "Complete Your Profile" link
+- Dismissible but reappears next session
+- Non-blocking, gentle nudge
 
-### Priority 4: eSign System (REQUIRED) 📝
-**Requirement**: "We need esign to be working. I need to know how to upload forms, and how to send them to customers, we need to be able to send PDF docs to the homeowners to esign, and we also need to be able to send them a text message link that opens the pdf for them to esign. And the name of that tab should be esign"
+**Estimate**: 1 hour
 
-**Features Needed**:
-1. Upload PDF forms to Firebase Storage
-2. Generate unique signing links
-3. Send PDFs via email
-4. Send text message with link
-5. Canvas-based signature capture
-6. Store signed PDFs in Storage
-7. Rename tab from "E-Sign" to "eSign"
+---
 
-**Estimate**: 4-5 hours
+### Priority 4: Real Google Maps Integration 🗺️
+**Current**: Placeholder map with simulated markers
+
+**Plan**:
+- Integrate Google Maps Embed API
+- Plot real user locations from Firestore
+- Update markers in real-time
+- City-level zoom (zoom=12)
+- Clickable markers with user info
+
+**Estimate**: 2 hours
+
+---
+
+### Priority 5: Complete CRM Features 📊
+**Status**: Page exists, needs full functionality
+
+**Plan**:
+1. "Add Contractor" button functionality
+2. Click contractor card → detail view
+3. Edit contractor information
+4. Upload documents
+5. Contact history
+6. Email/SMS from CRM
+7. Marketing automation
+
+**Estimate**: 4-6 hours
 
 ---
 
 ## Important Patterns & Preferences
 
-### Auth Persistence Pattern
+### Avatar System Pattern
 ```typescript
-// Triple-layer for maximum reliability
-saveAuthState() {
-  localStorage.setItem()      // Layer 1: Permanent
-  sessionStorage.setItem()    // Layer 2: Tab session
-  document.cookie = ...       // Layer 3: 90 days
-}
+// Always use Avatar component for consistency
+import { Avatar } from "@/components/avatar";
 
-// Only clear on manual sign-out
-clearAuthState() {
-  localStorage.removeItem()
-  sessionStorage.removeItem()
-  document.cookie = '...expires=Thu, 01 Jan 1970'
-}
+// Basic usage
+<Avatar src={user.avatar} alt={user.name} size="md" />
+
+// With online status
+<AvatarWithStatus src={avatar} alt={name} online={true} />
+
+// Grouped avatars
+<AvatarGroup avatars={team} max={3} size="lg" />
+
+// All avatars get 20% rounded corners automatically
 ```
 
-### Live Chat Pattern
+### God Mode Pattern
 ```typescript
-// Incident chats: Auto-add all supes
-const supes = await getAllSupes(); // Query Firestore
-await createIncidentChat(incidentId, address, chaserUid, chaserName, supes);
+// Check God Mode status
+const isGodMode = localStorage.getItem("godMode") === "true";
 
-// Direct chats: Unique ID from sorted UIDs
-const chatId = [uid1, uid2].sort().join('_');
+// Toggle God Mode
+localStorage.setItem("godMode", enabled.toString());
+
+// Defaults to OFF (super_admin must enable)
 ```
 
-### UI Compression Pattern
+### Multi-Step Signup Pattern
 ```typescript
-// Expandable elements save space
-<Badge onClick={() => setExpanded(true)}>Search</Badge>
-{expanded && (
-  <Input autoFocus onBlur={() => setExpanded(false)} />
-)}
+// Progress dots for step indication
+type Step = "info" | "verify" | "id" | "processing" | "complete";
+
+// Minimal steps, background processing
+// Step 1: Collect essential info only
+// Step 2: Auto-verify (no button)
+// Step 3: Quick camera capture
+// Step 4: Background OCR
+// Step 5: Auto-redirect
+```
+
+### CRM Pattern
+```typescript
+// Desktop-first design
+max-w-7xl mx-auto // Wide layout
+
+// Stats dashboard at top
+// Filters below stats
+// Grid of cards (2 columns on desktop)
+// Real-time updates via onSnapshot
 ```
 
 ---
 
 ## Learnings & Project Insights
 
-### Tonight's Key Learnings
+### Today's Key Learnings
 
-#### 1. Auth Persistence is Mission-Critical
-**Problem**: First responders cannot miss alerts due to sign-out  
-**Solution**: Triple-layer storage + Firebase LOCAL persistence  
-**Learning**: Regular web apps can tolerate sign-outs, emergency apps CANNOT
+#### 1. Google Auth Requires Profile Creation Logic
+**Problem**: Google sign-in didn't create Firestore profiles  
+**Solution**: Check profile existence, create if missing  
+**Learning**: Don't assume Firebase Auth = Firestore profile
 
-#### 2. Auto-Adding Participants Improves UX
-**Problem**: Users shouldn't manually invite team members to every incident chat  
-**Solution**: `getAllSupes()` + auto-create group on chat open  
-**Learning**: Smart defaults reduce cognitive load during emergencies
+#### 2. Duplicate Routes Break Next.js Builds
+**Problem**: `app/(auth)/signup` + `app/signup` = build error  
+**Solution**: Remove duplicate, keep one canonical route  
+**Learning**: Next.js is strict about route uniqueness
 
-#### 3. UI Compression Requires Mobile Testing
-**Problem**: Desktop looks great, mobile might differ  
-**Solution**: Test on actual devices, not just Chrome DevTools  
-**Learning**: Cache busting is critical for UI updates
+#### 3. Avatar Consistency Requires System Enforcement
+**Problem**: Users upload various formats/sizes/shapes  
+**Solution**: Unified Avatar component + processing function  
+**Learning**: Build the system to enforce consistency automatically
 
-#### 4. Firebase Realtime Database vs Firestore
-**Decision**: Use Realtime DB for chat, Firestore for structured data  
-**Rationale**: RTDB has lower latency (~200ms vs ~500ms) for messages  
-**Learning**: Hybrid approach leverages strengths of both databases
+#### 4. God Mode Should Be Opt-In
+**Problem**: Always-on God Mode is confusing  
+**Solution**: Default OFF, toggle to activate  
+**Learning**: Power features should be explicit, not default
+
+#### 5. CRM Needs Desktop-First Approach
+**Problem**: Mobile-first CRM is cramped  
+**Solution**: Wide layout, 2-column grids, lots of white space  
+**Learning**: Different apps have different optimal viewports
 
 ---
 
 ## Context for Next Session
 
 **What's Deployed to Production** (https://4axe.com):
-- ✅ Signup with role selection
-- ✅ Admin tool (/admin)
-- ✅ Bulletproof auth (triple-layer)
-- ✅ Live incident chats (group with all supes)
-- ✅ Compressed home page UI
-- ✅ Real-time incidents, favorites, bookmarks
+- ✅ Google login auto-creates profiles
+- ✅ Smart routing (checks auth, routes by role)
+- ✅ Live team map on Supe profile
+- ✅ 20% rounded avatar system
+- ✅ CRM contractors page (desktop-first)
+- ✅ God Mode toggle in profile (defaults OFF)
+- ✅ Multi-step signup with ID capture
+- ✅ Chat shows nicknames
+- ✅ Admin tool with super_admin support
+- ✅ Live incident + direct chats
+- ✅ Real-time incidents, favorites, bookmarks, notes, responses
 - ✅ Distance calculation with offline cache
 - ✅ Location tracking (device-aware)
 
-**What's Ready But Not Deployed**:
-- Direct chat backend (UI needed)
+**What's Ready But Needs Integration**:
+- Avatar picker component (waiting on images)
+- OCR processing (mock implemented, ready for real API)
+- Email auto-verification (needs polling logic)
 
 **What's High Priority Next**:
-1. Text messaging chat UI (user list + conversations)
-2. CRM foundation (properties + communications collections)
-3. eSign system (upload, send, sign workflow)
+1. Avatar images from user → integrate
+2. Auto email verification (remove button)
+3. Account setup reminders (unintrusive)
+4. Real Google Maps (replace placeholder)
+5. Complete CRM features (add, edit, contact)
 
 **Git Status**:
 - Clean working tree
 - All changes pushed to GitHub
-- Vercel auto-deploys on push
+- Vercel auto-deploys successfully
 
 **User Feedback**:
-- ✅ "PC version looks great"
-- ⚠️ "Mobile not showing compressed UI" (cache issue)
-- ✅ "I love this, you are awesome"
-- 📝 "Chat page should look like text messaging app"
-- 📝 "Need eSign working"
-- 📝 "CRM with email/SMS automation"
+- ✅ "Once the avatar files are all chosen and you have everything set up..."
+- ✅ System ready for avatar integration
+- 📝 Need simplified signup (auto email verify, background OCR)
+- 📝 Need unintrusive setup reminders
 
-**Ready for**: Continue building chat UI, CRM, eSign tomorrow! 🚀
+**Database Collections**:
+- `/users` - User profiles with nickname, avatar, role
+- `/incidents` - Fire alerts (30-day retention)
+- `/favorites` - User favorites
+- `/bookmarks` - User bookmarks  
+- `/notes` - User notes
+- `/responses` - Alert responses
+- `/independent_contractors` - CRM contractors
+- `/signed_documents` - eSign docs
+- `/employee_docs` - Employee documents
+- Firebase Realtime DB: `/incident-chats`, `/direct-chats`
+
+**Ready for**: Avatar integration, auto-verification, CRM completion! 🚀

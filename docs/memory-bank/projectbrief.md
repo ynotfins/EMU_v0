@@ -1,9 +1,9 @@
-# Project Brief: EMU Alerts
+# Project Brief: NFA Alerts
 
-🔗 **Anchored Docs**: README.md, WIRING.md, EXTENSIONS.md, BUILD_REPORT.md, ROUTES.md, COMPONENTS.md, TESTPLAN.md, API_MAP.md
+🔗 **Anchored Docs**: README.md, WIRING.md, BUILD_REPORT.md, ROUTES.md, COMPONENTS.md, TESTPLAN.md, API_MAP.md, AVATAR_GUIDE.md, FIRESTORE_BACKUP_STRATEGY.md, ANDROID_APP_GUIDE.md
 
 ## Project Name
-**EMU Alerts** - Emergency Management Unit Alert System
+**NFA Alerts** (formerly EMU Alerts) - National Fire Alerts System
 
 ## Core Purpose
 A comprehensive emergency management system that enables real-time coordination between emergency responders (chasers), supervisors (supes), and administrators during emergency incidents.
@@ -19,16 +19,21 @@ A comprehensive emergency management system that enables real-time coordination 
 - **Chasers (Emergency Responders)**: Front-line workers responding to incidents
 - **Supes (Supervisors)**: Team leaders who coordinate and monitor responders
 - **Admins**: System administrators managing user accounts and permissions
+- **Super Admins**: God Mode users with full system access and role-switching capabilities
 
 ## Key Features
 - Incident management with real-time updates and high-alert notifications
-- Multi-channel chat system (team, incident, direct messages)
-- Live GPS tracking for supervisors
+- Multi-channel chat system (team chat, incident group chat, 1-on-1 direct messages)
+- Live GPS tracking and team map for supervisors
+- Alert response tracking with Google Maps navigation integration
 - Document upload and e-signature workflows
-- Favorites and bookmarks for quick access
-- Profile management with ID verification and payment info
-- Configurable audio alerts for high-priority incidents
-- Mobile-optimized with PWA capabilities
+- Favorites, bookmarks, notes, and responses tabs
+- Profile management with ID verification, avatars, and payment info
+- Configurable audio alerts for high-priority incidents (train horn + flash)
+- Mobile-first PWA with offline capabilities
+- Multi-step onboarding with camera ID capture and OCR
+- CRM integration for independent contractors & employees management
+- God Mode for super admins (role switching, full access)
 
 ## Success Criteria
 - Responders can view and respond to incidents within seconds
