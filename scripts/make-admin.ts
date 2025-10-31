@@ -3,8 +3,8 @@
  * Usage: npx ts-node scripts/make-admin.ts
  */
 
+// cspell:ignore firestore
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
 import {
   getFirestore,
   collection,
@@ -29,7 +29,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-async function makeAdmin(email: string) {
+async function _makeAdmin(email: string) {
   try {
     console.log(`🔍 Searching for user with email: ${email}`);
 
