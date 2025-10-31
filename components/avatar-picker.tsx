@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Check } from "lucide-react";
@@ -10,29 +16,99 @@ import { Check } from "lucide-react";
 // Will be populated with actual images once formatted
 export const FIREFIGHTER_AVATARS = [
   // Cartoon Firefighters
-  { id: "ff-hero-1", name: "Hero", category: "cartoon", path: "/avatars/hero-1.png" },
-  { id: "ff-hero-2", name: "Chief", category: "cartoon", path: "/avatars/hero-2.png" },
-  { id: "ff-hero-3", name: "Rookie", category: "cartoon", path: "/avatars/hero-3.png" },
-  { id: "ff-hero-4", name: "Veteran", category: "cartoon", path: "/avatars/hero-4.png" },
-  
+  {
+    id: "ff-hero-1",
+    name: "Hero",
+    category: "cartoon",
+    path: "/avatars/hero-1.png",
+  },
+  {
+    id: "ff-hero-2",
+    name: "Chief",
+    category: "cartoon",
+    path: "/avatars/hero-2.png",
+  },
+  {
+    id: "ff-hero-3",
+    name: "Rookie",
+    category: "cartoon",
+    path: "/avatars/hero-3.png",
+  },
+  {
+    id: "ff-hero-4",
+    name: "Veteran",
+    category: "cartoon",
+    path: "/avatars/hero-4.png",
+  },
+
   // Equipment
-  { id: "ff-helmet", name: "Helmet", category: "equipment", path: "/avatars/helmet.png" },
-  { id: "ff-axe", name: "Axe", category: "equipment", path: "/avatars/axe.png" },
-  { id: "ff-truck", name: "Truck", category: "equipment", path: "/avatars/truck.png" },
-  { id: "ff-hydrant", name: "Hydrant", category: "equipment", path: "/avatars/hydrant.png" },
-  
+  {
+    id: "ff-helmet",
+    name: "Helmet",
+    category: "equipment",
+    path: "/avatars/helmet.png",
+  },
+  {
+    id: "ff-axe",
+    name: "Axe",
+    category: "equipment",
+    path: "/avatars/axe.png",
+  },
+  {
+    id: "ff-truck",
+    name: "Truck",
+    category: "equipment",
+    path: "/avatars/truck.png",
+  },
+  {
+    id: "ff-hydrant",
+    name: "Hydrant",
+    category: "equipment",
+    path: "/avatars/hydrant.png",
+  },
+
   // Badges
-  { id: "ff-badge-1", name: "Badge", category: "badge", path: "/avatars/badge-1.png" },
-  { id: "ff-maltese", name: "Maltese", category: "badge", path: "/avatars/maltese.png" },
+  {
+    id: "ff-badge-1",
+    name: "Badge",
+    category: "badge",
+    path: "/avatars/badge-1.png",
+  },
+  {
+    id: "ff-maltese",
+    name: "Maltese",
+    category: "badge",
+    path: "/avatars/maltese.png",
+  },
   { id: "ff-star", name: "Star", category: "badge", path: "/avatars/star.png" },
-  
+
   // Mascots
-  { id: "ff-dalmatian", name: "Dalmatian", category: "mascot", path: "/avatars/dalmatian.png" },
-  { id: "ff-phoenix", name: "Phoenix", category: "mascot", path: "/avatars/phoenix.png" },
-  
+  {
+    id: "ff-dalmatian",
+    name: "Dalmatian",
+    category: "mascot",
+    path: "/avatars/dalmatian.png",
+  },
+  {
+    id: "ff-phoenix",
+    name: "Phoenix",
+    category: "mascot",
+    path: "/avatars/phoenix.png",
+  },
+
   // Action
-  { id: "ff-action-1", name: "Rescue", category: "action", path: "/avatars/action-1.png" },
-  { id: "ff-action-2", name: "Victory", category: "action", path: "/avatars/action-2.png" },
+  {
+    id: "ff-action-1",
+    name: "Rescue",
+    category: "action",
+    path: "/avatars/action-1.png",
+  },
+  {
+    id: "ff-action-2",
+    name: "Victory",
+    category: "action",
+    path: "/avatars/action-2.png",
+  },
 ];
 
 const CATEGORIES = [
@@ -50,14 +126,20 @@ interface AvatarPickerProps {
   onClose: () => void;
 }
 
-export function AvatarPicker({ currentAvatar, onSelect, onClose }: AvatarPickerProps) {
+export function AvatarPicker({
+  currentAvatar,
+  onSelect,
+  onClose,
+}: AvatarPickerProps) {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedAvatar, setSelectedAvatar] = useState(currentAvatar || "");
 
   const filteredAvatars =
     selectedCategory === "all"
       ? FIREFIGHTER_AVATARS
-      : FIREFIGHTER_AVATARS.filter((avatar) => avatar.category === selectedCategory);
+      : FIREFIGHTER_AVATARS.filter(
+          (avatar) => avatar.category === selectedCategory
+        );
 
   const handleSelect = () => {
     if (selectedAvatar) {
@@ -104,15 +186,16 @@ export function AvatarPicker({ currentAvatar, onSelect, onClose }: AvatarPickerP
             <button
               key={avatar.id}
               onClick={() => setSelectedAvatar(avatar.id)}
-              className={`relative w-full aspect-square rounded-xl transition-all hover:scale-105 ${
+              className={`relative w-full aspect-square rounded-[20%] transition-all hover:scale-105 ${
                 selectedAvatar === avatar.id
                   ? "ring-4 ring-blue-600 shadow-xl"
                   : "ring-2 ring-gray-200 hover:ring-blue-400"
               }`}
             >
               {/* Placeholder - will be replaced with actual image */}
-              <div className="w-full h-full bg-gradient-to-br from-blue-400 to-indigo-600 rounded-xl flex items-center justify-center text-4xl">
-                {CATEGORIES.find((c) => c.id === avatar.category)?.emoji || "🔥"}
+              <div className="w-full h-full bg-gradient-to-br from-blue-400 to-indigo-600 rounded-[20%] flex items-center justify-center text-4xl">
+                {CATEGORIES.find((c) => c.id === avatar.category)?.emoji ||
+                  "🔥"}
               </div>
 
               {/* Selected Check */}
@@ -133,8 +216,9 @@ export function AvatarPicker({ currentAvatar, onSelect, onClose }: AvatarPickerP
         {/* Info */}
         <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
           <p className="text-sm text-blue-900">
-            <strong>💡 Pro Tip:</strong> Your avatar will appear in chat, on your profile,
-            and in the team directory. Choose one that represents you!
+            <strong>💡 Pro Tip:</strong> Your avatar will appear in chat, on
+            your profile, and in the team directory. Choose one that represents
+            you!
           </p>
         </div>
 
@@ -159,4 +243,3 @@ export function AvatarPicker({ currentAvatar, onSelect, onClose }: AvatarPickerP
     </Card>
   );
 }
-
