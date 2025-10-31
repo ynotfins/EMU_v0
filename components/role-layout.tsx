@@ -20,8 +20,7 @@ export function RoleLayout({ role, children }: RoleLayoutProps) {
       <div className="min-h-screen bg-[#F2F2F7] pb-16">
         {children}
         <BottomNav role={role} />
-        {/* Role Switcher - Only shows for super_admin */}
-        {profile && <RoleSwitcher currentRole={profile.role} />}
+        {/* Role Switcher moved to profile page */}
       </div>
     </ProtectedRoute>
   );
