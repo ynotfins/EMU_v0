@@ -47,7 +47,7 @@ export function ChatContacts({
             // Don't show current user
             allUsers.push({
               id: doc.id,
-              name: data.name || data.email || "Unknown",
+              name: data.nickname || data.name || data.email || "Unknown", // Show nickname first!
               email: data.email,
               role: data.role || "chaser",
               lastSeen: data.lastSeen || Date.now(),
