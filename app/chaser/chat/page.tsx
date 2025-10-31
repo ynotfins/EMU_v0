@@ -32,9 +32,8 @@ export default function ChaserChatPage() {
       selectedContact.name
     );
     const unsubscribe = subscribeToDirectChat(
-      profile.id,
       selectedContact.id,
-      (updatedMessages) => {
+      (updatedMessages: ChatMessage[]) => {
         console.log(`[Chat] 📨 Received ${updatedMessages.length} messages`);
         setMessages(updatedMessages);
       }
@@ -48,14 +47,12 @@ export default function ChaserChatPage() {
 
     try {
       console.log("[Chat] 📤 Sending message to:", selectedContact.name);
-      await sendDirectMessage(profile.id, selectedContact.id, {
-        userId: profile.id,
-        userName: profile.name,
-        userRole: profile.role,
-        message: messageText.trim(),
-        timestamp: Date.now(),
-        read: false,
-      });
+      await sendDirectMessage(
+        selectedContact.id,
+        messageText.trim(),
+        profile.displayName,
+        profile.role as "admin" | "supe" | "chaser"
+      );
 
       setMessageText("");
     } catch (error) {
@@ -81,7 +78,7 @@ export default function ChaserChatPage() {
           {/* Contacts List */}
           <div className="flex-1 overflow-hidden">
             <ChatContacts
-              currentUserId={profile?.id || ""}
+              currentUserId={profile?.uid || ""}
               onSelectContact={(contactId, contactName) => {
                 console.log("[Chat] Selected contact:", contactName);
                 setSelectedContact({ id: contactId, name: contactName });
@@ -130,7 +127,7 @@ export default function ChaserChatPage() {
           )}
 
           {messages.map((msg) => {
-            const isOwnMessage = msg.userId === profile?.id;
+            const isOwnMessage = msg.userId === profile?.uid;
 
             return (
               <div
