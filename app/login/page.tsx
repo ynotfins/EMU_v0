@@ -46,8 +46,51 @@ export default function LoginPage() {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
+      const user = result.user;
 
-      console.log("[Login] ✅ Google sign-in successful:", result.user.email);
+      console.log("[Login] ✅ Google sign-in successful:", user.email);
+
+      // Check if user profile exists in Firestore
+      const { doc: docRef, getDoc } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+      
+      const userDocRef = docRef(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (!userDoc.exists()) {
+        console.log("[Login] 🆕 New Google user - creating profile...");
+        
+        // Create Firestore profile for new Google user
+        const { setDoc } = await import("firebase/firestore");
+        await setDoc(userDocRef, {
+          id: user.uid,
+          email: user.email,
+          name: user.displayName || user.email?.split("@")[0] || "User",
+          nickname: user.displayName || user.email?.split("@")[0] || "User",
+          phone: user.phoneNumber || "",
+          role: "chaser",
+          settings: {
+            pushEnabled: true,
+            trackingEnabled: true,
+            muted: false,
+            highAlertSound: "train",
+          },
+          payout: {
+            verified: false,
+            cashappHandle: "",
+            venmoHandle: "",
+          },
+          stats: {
+            responded: 0,
+            noted: 0,
+            daysActive: 1,
+          },
+          createdAt: new Date().toISOString(),
+        });
+
+        console.log("[Login] ✅ Firestore profile created for Google user");
+      }
+
       router.push("/chaser/incidents");
     } catch (err: any) {
       console.error("[Login] ❌ Google sign-in error:", err);

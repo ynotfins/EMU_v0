@@ -12,6 +12,7 @@ import { PreferencesCard } from "@/components/preferences-card";
 import { EmergencyPaymentCard } from "@/components/emergency-payment-card";
 import { HelpLegalCard } from "@/components/help-legal-card";
 import { GodModeCard } from "@/components/god-mode-card";
+import { LiveTeamMap } from "@/components/live-team-map";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useProfile } from "@/hooks/use-profile";
@@ -61,6 +62,9 @@ export default function SupeProfilePage() {
             noted={profile.stats.noted}
             daysActive={profile.stats.daysActive}
           />
+
+          {/* Live Team Map - Above ID Verification */}
+          <LiveTeamMap />
 
           <IDVerificationCard
             verified={profile.payout.verified}

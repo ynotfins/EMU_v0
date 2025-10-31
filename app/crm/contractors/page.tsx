@@ -90,7 +90,7 @@ export default function CRMContractorsPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              Independent Contractors
+              Independent Contractors & Employees
             </h1>
             <p className="text-gray-600">
               Manage your team of field responders and supervisors
