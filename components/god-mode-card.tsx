@@ -28,12 +28,13 @@ export function GodModeCard({ userRole }: GodModeCardProps) {
     return null;
   }
 
-  // Load God Mode state from localStorage
+  // Load God Mode state from localStorage (default OFF)
   useEffect(() => {
     const stored = localStorage.getItem("godMode");
+    // Default is FALSE - user must explicitly enable God Mode
     setGodMode(stored === "true");
 
-    // Detect current view
+    // Detect current view (super_admin defaults to SUPE view)
     if (pathname.startsWith("/chaser")) {
       setViewMode("chaser");
     } else if (pathname.startsWith("/supe")) {

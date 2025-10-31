@@ -249,9 +249,18 @@ export default function LoginPage() {
             </>
           )}
 
-          <div className="text-center text-sm text-gray-500">
+          <div className="text-center text-sm text-gray-500 space-y-2">
             <p className="text-xs">
               By signing in, you agree to our terms of service
+            </p>
+            <p className="text-sm">
+              Don't have an account?{" "}
+              <a
+                href="/signup"
+                className="font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+              >
+                Create Account
+              </a>
             </p>
           </div>
         </CardContent>

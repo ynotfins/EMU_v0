@@ -374,8 +374,8 @@ export default function RecoveryPage() {
 
 ### **Daily Backups**
 
-- Keep 30 days of daily backups
-- Auto-delete backups older than 30 days
+- Keep 365 days (12 months) of daily backups
+- Auto-delete backups older than 12 months
 - Cloud Function runs nightly
 
 ### **Monthly Archives**
@@ -383,11 +383,19 @@ export default function RecoveryPage() {
 - Keep 1st of month backups indefinitely
 - Stored in separate collection: `{collection}_archive_{YYYY_MM}`
 
+### **Access Control by App**
+
+- **CRM App**: Full access to all 12 months of backups
+- **NFA Alerts App**: Limited to last 3 months (90 days)
+- Implemented via Firestore security rules
+
 ### **Critical Document Backups**
 
 - Signed documents: **7 years** (legal requirement)
 - Employee docs: **3 years** (after termination)
-- User data: **30 days** (GDPR compliance)
+- User data: **12 months** (extended retention for CRM)
+- Incident data: **12 months** (accessible from CRM)
+- Chat history: **3 months** (NFA Alerts), **12 months** (CRM)
 
 ---
 
