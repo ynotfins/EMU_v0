@@ -16,7 +16,9 @@ export default function SignupPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [displayName, setDisplayName] = useState("")
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [phone, setPhone] = useState("")
   // Role is now always "chaser" - Supes created by admin only
   const role = "chaser"
   const [loading, setLoading] = useState(false)
@@ -26,6 +28,25 @@ export default function SignupPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+
+    // Validate first name
+    if (!firstName.trim()) {
+      setError("First name is required")
+      return
+    }
+
+    // Validate last name
+    if (!lastName.trim()) {
+      setError("Last name is required")
+      return
+    }
+
+    // Validate phone number (must be exactly 10 digits)
+    const phoneDigits = phone.replace(/\D/g, "")
+    if (phoneDigits.length !== 10) {
+      setError("Phone number must be exactly 10 digits")
+      return
+    }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match")
@@ -46,11 +67,14 @@ export default function SignupPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
       const user = userCredential.user
 
-      // Create Firestore user profile with selected role
+      // Create Firestore user profile with all required fields
       await setDoc(doc(db, "users", user.uid), {
         id: user.uid,
         email: user.email,
-        name: displayName || email.split("@")[0],
+        name: `${firstName} ${lastName}`,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        phone: phoneDigits, // Store as 10 digits
         role: role, // Always "chaser" - Supes created by admin
         settings: {
           muted: false,
@@ -110,22 +134,68 @@ export default function SignupPage() {
               </p>
             </div>
 
+            {/* First Name */}
             <div className="space-y-2">
-              <label htmlFor="displayName" className="text-sm font-medium">
-                Full Name
+              <label htmlFor="firstName" className="text-sm font-medium">
+                First Name <span className="text-red-500">*</span>
               </label>
               <Input
-                id="displayName"
+                id="firstName"
                 type="text"
-                placeholder="John Doe"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="John"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
                 required
               />
             </div>
+
+            {/* Last Name */}
+            <div className="space-y-2">
+              <label htmlFor="lastName" className="text-sm font-medium">
+                Last Name <span className="text-red-500">*</span>
+              </label>
+              <Input
+                id="lastName"
+                type="text"
+                placeholder="Doe"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+              />
+            </div>
+
+            {/* Phone Number */}
+            <div className="space-y-2">
+              <label htmlFor="phone" className="text-sm font-medium">
+                Phone Number <span className="text-red-500">*</span>
+              </label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="(555) 123-4567"
+                value={phone}
+                onChange={(e) => {
+                  // Format phone as user types
+                  const input = e.target.value.replace(/\D/g, "").slice(0, 10);
+                  let formatted = input;
+                  if (input.length > 6) {
+                    formatted = `(${input.slice(0, 3)}) ${input.slice(3, 6)}-${input.slice(6)}`;
+                  } else if (input.length > 3) {
+                    formatted = `(${input.slice(0, 3)}) ${input.slice(3)}`;
+                  } else if (input.length > 0) {
+                    formatted = `(${input}`;
+                  }
+                  setPhone(formatted);
+                }}
+                required
+              />
+              <p className="text-xs text-gray-500">10 digits required</p>
+            </div>
+
+            {/* Email */}
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">
-                Email
+                Email <span className="text-red-500">*</span>
               </label>
               <Input
                 id="email"
