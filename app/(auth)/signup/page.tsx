@@ -172,6 +172,7 @@ export default function SignupPage() {
               <Input
                 id="phone"
                 type="tel"
+                inputMode="numeric"
                 placeholder="(555) 123-4567"
                 value={phone}
                 onChange={(e) => {
