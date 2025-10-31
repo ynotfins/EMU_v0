@@ -17,7 +17,8 @@ export default function SignupPage() {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [displayName, setDisplayName] = useState("")
-  const [role, setRole] = useState<"chaser" | "supe">("chaser")
+  // Role is now always "chaser" - Supes created by admin only
+  const role = "chaser"
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
@@ -50,7 +51,7 @@ export default function SignupPage() {
         id: user.uid,
         email: user.email,
         name: displayName || email.split("@")[0],
-        role: role, // ← User-selected role!
+        role: role, // Always "chaser" - Supes created by admin
         settings: {
           muted: false,
           highAlertSound: "train",
@@ -58,14 +59,10 @@ export default function SignupPage() {
         createdAt: new Date().toISOString(),
       })
 
-      console.log("[Signup] ✅ Account created successfully as", role.toUpperCase())
+      console.log("[Signup] ✅ Chaser account created successfully")
 
-      // Redirect based on role
-      if (role === "supe") {
-        router.push("/supe/incidents")
-      } else {
-        router.push("/chaser/incidents")
-      }
+      // All signups go to chaser route
+      router.push("/chaser/incidents")
     } catch (err: any) {
       console.error("[Signup] ❌ Error:", err)
 
@@ -101,21 +98,15 @@ export default function SignupPage() {
               </div>
             )}
 
-            <div className="space-y-2">
-              <label htmlFor="role" className="text-sm font-medium">
-                Account Type
-              </label>
-              <select
-                id="role"
-                value={role}
-                onChange={(e) => setRole(e.target.value as "chaser" | "supe")}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
-              >
-                <option value="chaser">🚒 Chaser (Field Responder)</option>
-                <option value="supe">👨‍💼 Supe (Supervisor)</option>
-              </select>
-              <p className="text-xs text-gray-500">
-                Choose your role. Supes manage chasers and see everything.
+            {/* Role selection removed - all signups are chasers */}
+            {/* Supes and admins are created by super_admin in the admin panel */}
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-sm text-blue-800">
+                <strong>🚒 Creating Chaser Account</strong>
+                <br />
+                <span className="text-xs">
+                  Supervisors and admins are created by management. If you need elevated access, contact your administrator.
+                </span>
               </p>
             </div>
 
