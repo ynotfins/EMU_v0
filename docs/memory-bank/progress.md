@@ -8,8 +8,9 @@
 - **Custom Domain**: 4axe.com configured and working
 - **HTTPS**: Enabled (required for mobile GPS)
 - **Environment Variables**: All set in Vercel dashboard
-- **Auto-Deploy**: Git push → automatic deployment
+- **Auto-Deploy**: Git push → automatic deployment (~60 seconds)
 - **Firebase Project**: `emu-incidents` fully configured
+- **Vercel Project**: `emu-v0`
 
 ### Authentication - Complete ✅
 
@@ -46,7 +47,8 @@
   - Incident, IncidentLite, Profile, Thread, Message, File, Signature
   - Enums: IncidentStatus, IncidentType, ThreadType, MessageType, Role
 - **Type Safety**: Strict TypeScript configuration
-- **0 Type Errors**: All 38 errors fixed
+- **0 Type Errors**: All errors fixed (100% type-safe)
+- **ESLint**: 0 critical errors, 95 non-critical warnings
 
 ### Firebase Integration - Production-Ready ✅
 
@@ -62,10 +64,12 @@
 
 #### Firebase Realtime Database (Chat System)
 
-- ✅ **Incident Chats**: Group chats (1 chaser + ALL supes)
-- ✅ **Direct Chats**: 1-on-1 backend ready (UI pending)
-- ✅ **Real-Time Sync**: `onValue` listeners
-- ✅ **Auto-Add Participants**: `getAllSupes()` fetches supes from Firestore
+- ✅ **Incident Chats**: Group chats (1 chaser + ALL supes automatically added)
+- ✅ **Direct Chats**: 1-on-1 backend ready, UI at `/chaser/chat` and `/supe/chat`
+- ✅ **Real-Time Sync**: `onValue` listeners via `subscribeToIncidentChat()` and `subscribeToDirectChat()`
+- ✅ **Auto-Add Participants**: `getAllSupes()` fetches supes from Firestore `/users` collection
+- ✅ **Chat ID Generation**: Direct chats use sorted user IDs: `[userId1, userId2].sort().join("_")`
+- ✅ **Nicknames**: Shows preferred nickname or fallback to name/email
 
 #### Firebase Auth
 

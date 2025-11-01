@@ -9,6 +9,7 @@
   - Server and client components
   - Built-in optimization (images, fonts, scripts)
   - Edge-ready deployment on Vercel
+  - Production deployed at https://4axe.com
 
 ### Language
 

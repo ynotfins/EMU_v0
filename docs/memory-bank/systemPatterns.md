@@ -5,11 +5,11 @@
 ### Application Structure
 
 ```
-Next.js 14 App Router
+Next.js 16 App Router
 ├── Client Components (Interactive UI)
 ├── Server Components (Data fetching)
 ├── API Routes (Future: Custom endpoints)
-└── Firebase Backend (Firestore, Auth, Storage, FCM)
+└── Firebase Backend (Firestore, Auth, Storage, FCM, Realtime DB)
 ```
 
 ### Key Technical Decisions
@@ -104,12 +104,13 @@ Page (chaser/incidents)
 ### Chat System Flow
 
 ```
-Page (chaser/chat/[threadId])
-  ├── useThreads() hook
-  │     └── Firestore: /threads collection
-  ├── useMessages(threadId) hook
-  │     └── Firestore: /threads/{id}/messages subcollection
-  └── <ChatRoom />
+Page (chaser/chat/[threadId] or incident/[id] with Chat tab)
+  ├── Firebase Realtime Database (NOT Firestore)
+  │     ├── /incident-chats/{incidentId}/messages
+  │     └── /direct-chats/{chatId}/messages
+  ├── createIncidentChat() - Auto-adds chaser + all supes
+  ├── subscribeToIncidentChat() - Real-time listener
+  └── <IncidentChat /> or <ChatRoom />
         └── <MessageList /> + <MessageInput />
 ```
 
