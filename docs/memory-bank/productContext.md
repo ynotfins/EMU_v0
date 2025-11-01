@@ -45,9 +45,16 @@ Emergency responders need a fast, reliable way to coordinate during active incid
 5. **Track** → Same chaser capabilities plus oversight tools
 
 ### Core User Flow (Admin)
-1. **Login** → Select "Admin" role
-2. **Manage Users** → View all users, toggle roles, verify IDs
-3. **Oversight** → System-wide monitoring and configuration
+1. **Login** → Select "Admin" role  
+2. **Manage Users** → View all users in table format, one-click role changes
+3. **Oversight** → System-wide monitoring, user verification status
+
+### Core User Flow (Super Admin - God Mode)
+1. **Login** → Select "Supe" role (default)
+2. **Profile** → Toggle God Mode ON in profile settings
+3. **Switch Views** → Toggle between Chaser and Supe views
+4. **Full Access** → All features accessible with role override
+5. **Admin Tools** → Access admin dashboard at /admin
 
 ## User Experience Goals
 
