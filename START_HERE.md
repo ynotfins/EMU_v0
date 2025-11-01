@@ -55,21 +55,24 @@ firebase deploy --only storage
 
 ---
 
-### 3. **Deploy to Production** (5 minutes)
+### 3. **Deploy to Production** (Already Done! ✅)
+
+**LIVE NOW at:** https://4axe.com
+
+The app is already deployed to Vercel with automatic deployments enabled.
+
+Every `git push` to main branch automatically triggers a deployment:
 
 ```bash
-# Build the app
-npm run build
+# To deploy changes:
+git add .
+git commit -m "your changes"
+git push origin main
 
-# Deploy to Firebase Hosting
-firebase deploy --only hosting
+# Vercel automatically deploys and updates https://4axe.com
 ```
 
-**Your live URL:**
-
-```
-https://emu-incidents.web.app
-```
+**Vercel Dashboard:** https://vercel.com/dashboard
 
 ---
 

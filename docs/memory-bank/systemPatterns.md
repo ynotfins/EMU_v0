@@ -3,6 +3,7 @@
 ## Architecture Overview
 
 ### Application Structure
+
 ```
 Next.js 14 App Router
 ├── Client Components (Interactive UI)
@@ -14,23 +15,30 @@ Next.js 14 App Router
 ### Key Technical Decisions
 
 #### 1. **Next.js App Router**
+
 - **Why**: Modern React patterns, built-in routing, server components
 - **Pattern**: File-based routing with role-based directory structure
 - **Trade-off**: Learning curve for App Router patterns
 
 #### 2. **Role-Based Directory Structure**
+
 ```
 /app
-  /(auth)      # Public routes
+  /login       # Login page (public)
+  /signup      # Signup pages (public)
   /chaser      # Chaser-only routes
   /supe        # Supe-only routes (includes chaser features)
   /admin       # Admin-only routes
+  /crm         # CRM pages (contractors management)
+  /role        # Role selection page
 ```
-- **Why**: Clear separation, easier to secure with middleware
-- **Pattern**: Parallel route trees for each role
-- **Trade-off**: Some component duplication between roles
+
+- **Why**: Clear separation, easier to secure with protected routes
+- **Pattern**: Parallel route trees for each role, no route groups needed
+- **Trade-off**: Some component duplication between roles (e.g., incident pages)
 
 #### 3. **Component Architecture**
+
 - **Presentational Components**: UI-only, receive props
   - Example: `<IncidentListItem />`, `<MapCard />`, `<ProfileHeader />`
 - **Container Components**: Data fetching + logic
@@ -38,28 +46,47 @@ Next.js 14 App Router
 - **Shared UI Components**: shadcn/ui in `/components/ui`
 
 #### 4. **Custom Hooks Pattern**
+
 ```typescript
-// hooks/use-incidents.ts
+// hooks/use-incidents.ts - FULLY WIRED ✅
 export const useIncidents = () => {
-  const [incidents, setIncidents] = useState<IncidentLite[]>([])
-  const [loading, setLoading] = useState(true)
-  
-  // TODO: Replace with Firestore real-time listener
-  // const unsubscribe = onSnapshot(collection(db, 'incidents'), ...)
-  
-  return { incidents, loading, refetch: () => {} }
-}
+  const [incidents, setIncidents] = useState<IncidentLite[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Real-time Firestore listener
+    const unsubscribe = onSnapshot(
+      collection(db, 'incidents'),
+      (snapshot) => {
+        const data = snapshot.docs.map(doc => ({
+          ...doc.data(),
+          id: doc.id
+        }));
+        setIncidents(data);
+        setLoading(false);
+      }
+    );
+    return () => unsubscribe();
+  }, []);
+
+  return { incidents, loading };
+};
 ```
-- **Why**: Centralize data access, easy to swap mock → Firebase
-- **Current State**: Stub implementations with TODOs
-- **Next Step**: Implement Firestore queries
+
+- **Why**: Centralize data access, real-time updates with Firestore `onSnapshot`
+- **Current State**: 6 hooks fully wired, 4 hooks stubbed
+  - ✅ Wired: `useIncidents`, `useIncident`, `useProfile`, `useIncidentsWithDistance`, `useLocationDistance`, `useFilters`
+  - ⏳ Stubbed: `useThreads`, `useMessages`, `useFiles`, `useLiveLocations`
+- **Pattern**: Real-time listeners with proper cleanup, error handling, user-specific data derivation
 
 #### 5. **Type-First Development**
+
 ```typescript
 // types/domain.ts - Single source of truth
 export type Incident = { ... }
 export type Profile = { ... }
 ```
+
 - **Why**: TypeScript strict mode catches errors early
 - **Pattern**: All domain types in `/types/domain.ts`
 - **Trade-off**: Type errors must be fixed before deployment
@@ -67,6 +94,7 @@ export type Profile = { ... }
 ## Component Relationships
 
 ### Incident Management Flow
+
 ```
 Page (chaser/incidents)
   ├── useIncidents() hook
@@ -77,6 +105,7 @@ Page (chaser/incidents)
 ```
 
 ### Chat System Flow
+
 ```
 Page (chaser/chat/[threadId])
   ├── useThreads() hook
@@ -88,6 +117,7 @@ Page (chaser/chat/[threadId])
 ```
 
 ### Profile Management Flow
+
 ```
 Page (chaser/profile)
   ├── useProfile(uid) hook
@@ -103,6 +133,7 @@ Page (chaser/profile)
 ## Critical Implementation Paths
 
 ### Authentication & Authorization
+
 ```
 1. Login Page → Firebase Auth
 2. Get user UID → Fetch profile from /profiles/{uid}
@@ -112,6 +143,7 @@ Page (chaser/profile)
 ```
 
 ### Real-Time Incident Updates
+
 ```
 1. useIncidents() establishes Firestore listener
 2. onSnapshot triggers on any /incidents change
@@ -121,6 +153,7 @@ Page (chaser/profile)
 ```
 
 ### Live Location Tracking
+
 ```
 1. Chaser enables location in profile settings
 2. Geolocation API gets current position
@@ -130,6 +163,7 @@ Page (chaser/profile)
 ```
 
 ### Document Upload Flow
+
 ```
 1. User selects file(s) in incident details
 2. Upload to Firebase Storage: /incidents/{incidentId}/files/{filename}
@@ -139,6 +173,7 @@ Page (chaser/profile)
 ```
 
 ### E-Signature Flow
+
 ```
 1. User initiates signature request
 2. Create Firestore doc: /signatures collection
@@ -151,29 +186,34 @@ Page (chaser/profile)
 ## Design Patterns in Use
 
 ### 1. **Optimistic Updates**
+
 - Update UI immediately, sync to Firestore in background
 - Rollback if network request fails
 - Example: Toggling favorites, muting incidents
 
 ### 2. **Stale-While-Revalidate**
+
 - Show cached data immediately
 - Fetch fresh data in background
 - Update UI when fresh data arrives
 - Example: Incident list on page load
 
 ### 3. **Pub/Sub for Real-Time**
+
 - Components subscribe to Firestore collections
 - Automatic UI updates when data changes
 - Unsubscribe on component unmount
 - Example: Chat messages, incident updates
 
 ### 4. **Context for Cross-Cutting State**
+
 - Favorites stored in React Context
 - Persisted to localStorage and Firestore
 - Accessible from any component
 - Example: `FavoritesContext` in `/lib/context/favorites-context.tsx`
 
 ### 5. **Error Boundaries**
+
 - Catch component errors gracefully
 - Show fallback UI instead of crash
 - Log errors for debugging
@@ -182,6 +222,7 @@ Page (chaser/profile)
 ## Technology Integration Points
 
 ### Firebase Integration
+
 - **Firestore**: Primary database (NoSQL document store)
 - **Auth**: User authentication (email/password, eventually SSO)
 - **Storage**: File uploads (photos, documents, signatures)
@@ -189,12 +230,13 @@ Page (chaser/profile)
 - **Extensions**: Automated workflows (thumbnails, resize images)
 
 ### Google Maps Integration
+
 - **Maps JavaScript API**: Render maps in MapCard and LiveMap
 - **Geocoding API**: Convert addresses to coordinates
 - **Geolocation API**: Browser API for GPS coordinates
 
 ### Vercel Deployment
+
 - **Edge Functions**: Fast API routes globally distributed
 - **Environment Variables**: Secure credential storage
 - **Analytics**: Track performance and usage
-

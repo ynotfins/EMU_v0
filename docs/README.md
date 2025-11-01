@@ -2,7 +2,7 @@
 
 ## Overview
 
-EMU Alerts is a comprehensive emergency management system built with Next.js 14 (App Router), TypeScript, Tailwind CSS, and shadcn/ui. The application provides role-based interfaces for emergency responders (chasers), supervisors (supes), and administrators to manage incidents, communicate via chat, track locations, and handle documentation including e-signatures.
+EMU Alerts is a comprehensive emergency management system built with Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, and shadcn/ui. The application provides role-based interfaces for emergency responders (chasers), supervisors (supes), administrators, and super administrators (God Mode) to manage incidents, communicate via chat, track locations, and handle documentation including e-signatures. Currently deployed live at **https://4axe.com** on Vercel.
 
 ## Key Features
 
@@ -18,31 +18,44 @@ EMU Alerts is a comprehensive emergency management system built with Next.js 14 
 
 ## Tech Stack
 
-- **Framework**: Next.js 14 with App Router
-- **Language**: TypeScript (strict mode)
-- **Styling**: Tailwind CSS v4 with shadcn/ui components
-- **State Management**: React hooks with SWR for client-side caching
-- **Backend (Future)**: Firebase (Firestore, FCM, Storage, Extensions)
-- **Maps**: Google Maps API (placeholder ready)
+- **Framework**: Next.js 16.0.0 with App Router
+- **Runtime**: React 19.2.0 (RC)
+- **Language**: TypeScript 5.x (strict mode, 0 errors)
+- **Styling**: Tailwind CSS v4.1.9 with shadcn/ui components (57 components)
+- **State Management**: React hooks with real-time Firebase listeners
+- **Backend**: Firebase (Firestore + Realtime Database + Auth + Storage + FCM)
+  - **Firestore**: Real-time data with `onSnapshot`, offline persistence
+  - **Realtime DB**: Chat system (incident + direct messages)
+  - **Auth**: Email/password + Google Sign-In, `browserLocalPersistence`
+  - **Storage**: Initialized (not yet wired)
+  - **FCM**: Initialized (not yet wired)
+- **Maps**: Google Maps Geocoding API (address → coordinates) + planned map rendering
+- **Deployment**: Vercel (live at https://4axe.com)
 
 ## Project Structure
 
 \`\`\`
 /app                    # Next.js App Router pages
-  /(auth)              # Authentication routes
-  /admin               # Admin dashboard
-  /chaser              # Chaser role routes
-  /supe                # Supervisor role routes
+  /login               # Login page
+  /signup              # Signup pages (basic + new multi-step)
+  /role                # Role selection page
+  /admin               # Admin dashboard (user management)
+  /chaser              # Chaser role routes (incidents, favorites, profile, chat)
+  /supe                # Supervisor role routes (includes chaser features + map)
+  /crm                 # CRM pages (independent contractors)
   /docs                # Dev documentation viewer
 /components            # React components
-  /ui                  # shadcn/ui components
-/hooks                 # Custom React hooks
-/lib                   # Utilities and mock data
-  /mock                # Mock datasets for development
+  /ui                  # shadcn/ui components (57 components)
+/hooks                 # Custom React hooks (10 total, 6 fully wired)
+/lib                   # Utilities and Firebase integration
+  /actions             # Server actions (Firestore operations)
+  /context             # React context providers
+  /mock                # Mock data (legacy, mostly replaced)
 /types                 # TypeScript type definitions
-/scripts               # Verification and utility scripts
-/docs                  # Documentation files
-/public                # Static assets (logo, images)
+/scripts               # Admin scripts (make-admin, seed-roles, etc)
+/docs                  # Documentation files (30+ guides)
+  /memory-bank         # AI memory bank files (6 core files)
+/public                # Static assets (logo, avatars, manifest.json)
 \`\`\`
 
 ## How to Run
@@ -140,16 +153,20 @@ npm run check-env
 node scripts/check-env.ts
 \`\`\`
 
-### Firebase Wiring Status
+### Firebase Integration Status (Nov 1, 2025)
 
-The application is currently in **live-ready shell mode**:
-- ✅ Firebase SDK initialized (`lib/firebase.ts`, `lib/fcm.ts`)
-- ✅ All hooks converted to Firebase-ready stubs
-- ✅ Mock data removed from all hooks
-- ⏳ Firestore queries need to be implemented (see TODOs in hooks)
-- ⏳ Real-time listeners need to be added
-- ⏳ Firebase Extensions need to be configured
-- ⏳ Security rules need to be deployed
+The application is **LIVE and fully integrated with Firebase**:
+- ✅ Firebase SDK initialized (`lib/firebase.ts`, `lib/fcm.ts`, `lib/realtime-database.ts`)
+- ✅ Firestore fully wired with real-time listeners (`onSnapshot`)
+- ✅ 6 hooks fully implemented with Firebase
+- ✅ Real authentication (email/password + Google Sign-In)
+- ✅ Chat system using Firebase Realtime Database
+- ✅ Security rules deployed and active
+- ✅ Offline persistence enabled (IndexedDB)
+- ✅ Distance calculation with geocoding
+- ⏳ File upload to Storage (UI exists, backend pending)
+- ⏳ Push notifications (FCM SDK ready, flow pending)
+- ⏳ 4 hooks still stubbed (threads, messages, files, live locations)
 
 ### Integration Documentation
 
