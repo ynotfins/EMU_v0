@@ -35,27 +35,27 @@ EMU Alerts is a comprehensive emergency management system built with Next.js 16 
 ## Project Structure
 
 \`\`\`
-/app                    # Next.js App Router pages
-  /login               # Login page
-  /signup              # Signup pages (basic + new multi-step)
-  /role                # Role selection page
-  /admin               # Admin dashboard (user management)
-  /chaser              # Chaser role routes (incidents, favorites, profile, chat)
-  /supe                # Supervisor role routes (includes chaser features + map)
-  /crm                 # CRM pages (independent contractors)
-  /docs                # Dev documentation viewer
-/components            # React components
-  /ui                  # shadcn/ui components (57 components)
-/hooks                 # Custom React hooks (10 total, 6 fully wired)
-/lib                   # Utilities and Firebase integration
-  /actions             # Server actions (Firestore operations)
-  /context             # React context providers
-  /mock                # Mock data (legacy, mostly replaced)
-/types                 # TypeScript type definitions
-/scripts               # Admin scripts (make-admin, seed-roles, etc)
-/docs                  # Documentation files (30+ guides)
-  /memory-bank         # AI memory bank files (6 core files)
-/public                # Static assets (logo, avatars, manifest.json)
+/app # Next.js App Router pages
+/login # Login page
+/signup # Signup pages (basic + new multi-step)
+/role # Role selection page
+/admin # Admin dashboard (user management)
+/chaser # Chaser role routes (incidents, favorites, profile, chat)
+/supe # Supervisor role routes (includes chaser features + map)
+/crm # CRM pages (independent contractors)
+/docs # Dev documentation viewer
+/components # React components
+/ui # shadcn/ui components (57 components)
+/hooks # Custom React hooks (10 total, 6 fully wired)
+/lib # Utilities and Firebase integration
+/actions # Server actions (Firestore operations)
+/context # React context providers
+/mock # Mock data (legacy, mostly replaced)
+/types # TypeScript type definitions
+/scripts # Admin scripts (make-admin, seed-roles, etc)
+/docs # Documentation files (30+ guides)
+/memory-bank # AI memory bank files (6 core files)
+/public # Static assets (logo, avatars, manifest.json)
 \`\`\`
 
 ## How to Run
@@ -63,10 +63,13 @@ EMU Alerts is a comprehensive emergency management system built with Next.js 16 
 ### Development
 
 \`\`\`bash
+
 # Install dependencies (if needed)
+
 npm install
 
 # Run development server
+
 npm run dev
 \`\`\`
 
@@ -75,26 +78,35 @@ The app will be available at `http://localhost:3000`
 ### Build
 
 \`\`\`bash
+
 # Create production build
+
 npm run build
 
 # Run production server
+
 npm start
 \`\`\`
 
 ### Type Checking
 
 \`\`\`bash
+
 # Run TypeScript compiler without emitting files
+
 npm run type-check
+
 # or
+
 npx tsc --noEmit
 \`\`\`
 
 ### Linting
 
 \`\`\`bash
+
 # Run ESLint
+
 npm run lint
 \`\`\`
 
@@ -111,6 +123,7 @@ See `/docs/ENV.md` for detailed information about each variable and where they'r
 ## User Roles
 
 ### Chaser (Emergency Responder)
+
 - View and respond to incidents
 - Access incident details, homeowner forms, documents, and e-signatures
 - Chat with team and supervisors
@@ -118,12 +131,14 @@ See `/docs/ENV.md` for detailed information about each variable and where they'r
 - Update profile and preferences
 
 ### Supe (Supervisor)
+
 - All chaser capabilities
 - View live map of active responders
 - Delete files from incidents
 - Manage team communications
 
 ### Admin
+
 - User management dashboard
 - Toggle user roles and verification status
 - System-wide oversight
@@ -135,6 +150,7 @@ For development, the app uses mock authentication. After login, select a role to
 ## Mock Data
 
 The application includes comprehensive mock data in `/lib/mock/` for development:
+
 - 15 sample incidents with varied statuses and types
 - User profiles for all three roles
 - Chat threads and messages
@@ -147,15 +163,20 @@ The application includes comprehensive mock data in `/lib/mock/` for development
 Before wiring Firebase, verify all required environment variables are set:
 
 \`\`\`bash
+
 # Check if all Firebase env vars are configured
+
 npm run check-env
+
 # or
+
 node scripts/check-env.ts
 \`\`\`
 
 ### Firebase Integration Status (Nov 1, 2025)
 
 The application is **LIVE and fully integrated with Firebase**:
+
 - ✅ Firebase SDK initialized (`lib/firebase.ts`, `lib/fcm.ts`, `lib/realtime-database.ts`)
 - ✅ Firestore fully wired with real-time listeners (`onSnapshot`)
 - ✅ 6 hooks fully implemented with Firebase

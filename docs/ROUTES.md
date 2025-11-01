@@ -15,7 +15,9 @@ All routes use Next.js 14 App Router with file-based routing.
 
 | Route | File | Layout | Description | Params | Query |
 |-------|------|--------|-------------|--------|-------|
-| `/login` | `app/(auth)/login/page.tsx` | `app/layout.tsx` | Login page with logo and form | - | - |
+| `/login` | `app/login/page.tsx` | `app/layout.tsx` | Login page with logo and form | - | - |
+| `/signup` | `app/signup/page.tsx` | `app/layout.tsx` | Standard signup with role selection | - | - |
+| `/signup/new` | `app/signup/new/page.tsx` | `app/layout.tsx` | Multi-step new user signup (camera ID, OCR) | - | - |
 
 ### Chaser Routes
 
@@ -89,12 +91,24 @@ Tabs within pages persist via query parameters:
   - Chaser → `/chaser/incidents`
   - Supe → `/supe/incidents`
 
+### CRM Routes
+
+| Route | File | Layout | Description | Params | Query |
+|-------|------|--------|-------------|--------|-------|
+| `/crm/contractors` | `app/crm/contractors/page.tsx` | `app/layout.tsx` | Independent contractors & employees management | - | - |
+
+---
+
 ## Route Guards
 
-Currently, routes are not protected (mock auth). In production:
-- All routes except `/login` require authentication
-- Role-specific routes should verify user role matches route prefix
-- Admin routes require `role: 'admin'`
+**Status**: ✅ Fully Implemented
+
+- ✅ All routes except `/login` and `/signup` require authentication
+- ✅ Role-specific routes verify user role matches route prefix via `protected-route.tsx`
+- ✅ Admin routes require `role: 'admin'` or `role: 'super_admin'`
+- ✅ Super admin routes require `role: 'super_admin'`
+- ✅ Protected routes redirect unauthenticated users to `/login`
+- ✅ Auth persistence uses triple-layer storage (localStorage + sessionStorage + cookies)
 
 ## Merged Pages
 

@@ -151,69 +151,72 @@ createdAt: Timestamp
 **Status**: ✅ Fully wired and operational
 
 ### Path: `/incident-chats/{chatId}/messages`
+
 **Purpose**: Group chat for incidents (1 chaser + ALL supes)
 
 **Structure**:
 \`\`\`typescript
 {
-  "incident-chats": {
-    "{chatId}": { // chatId = incidentId
-      "participants": {
-        "{userId1}": "displayName1",
-        "{userId2}": "displayName2",
-        // ... all supes automatically added
-      },
-      "messages": {
-        "{messageId}": {
-          userId: string,
-          userName: string,
-          userRole: 'chaser' | 'supe' | 'admin',
-          message: string,
-          timestamp: number, // server timestamp
-          read: boolean
-        }
-      },
-      "lastMessage": string,
-      "lastMessageTime": number,
-      "createdAt": number
-    }
-  }
+"incident-chats": {
+"{chatId}": { // chatId = incidentId
+"participants": {
+"{userId1}": "displayName1",
+"{userId2}": "displayName2",
+// ... all supes automatically added
+},
+"messages": {
+"{messageId}": {
+userId: string,
+userName: string,
+userRole: 'chaser' | 'supe' | 'admin',
+message: string,
+timestamp: number, // server timestamp
+read: boolean
+}
+},
+"lastMessage": string,
+"lastMessageTime": number,
+"createdAt": number
+}
+}
 }
 \`\`\`
 
 ---
 
 ### Path: `/direct-chats/{chatId}/messages`
+
 **Purpose**: 1-on-1 direct messages between users
 
 **Structure**:
 \`\`\`typescript
 {
-  "direct-chats": {
-    "{chatId}": { // chatId = sorted user IDs joined with underscore
-      "participants": {
-        "{userId1}": "displayName1",
-        "{userId2}": "displayName2"
-      },
-      "messages": {
-        "{messageId}": {
-          userId: string,
-          userName: string,
-          userRole: 'chaser' | 'supe' | 'admin',
-          message: string,
-          timestamp: number, // server timestamp
-          read: boolean
-        }
-      },
-      "lastMessage": string,
-      "lastMessageTime": number,
-      "createdAt": number
-    }
-  }
+"direct-chats": {
+"{chatId}": { // chatId = sorted user IDs joined with underscore
+"participants": {
+"{userId1}": "displayName1",
+"{userId2}": "displayName2"
+},
+"messages": {
+"{messageId}": {
+userId: string,
+userName: string,
+userRole: 'chaser' | 'supe' | 'admin',
+message: string,
+timestamp: number, // server timestamp
+read: boolean
+}
+},
+"lastMessage": string,
+"lastMessageTime": number,
+"createdAt": number
+}
+}
 }
 \`\`\`
 
 **Backend Functions**: See `lib/realtime-database.ts`
+
 - `createIncidentChat()` - Creates group chat with all supes
 - `sendIncidentMessage()` - Sends message to incident chat
 - `subscribeToIncidentChat()` - Real-time listener for messages

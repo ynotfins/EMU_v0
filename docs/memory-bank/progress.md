@@ -1,19 +1,18 @@
 # Progress: EMU Alerts
 
-**Last Updated**: November 1, 2025  
-**Status**: Production - Live and Operational
-
 ## What Works (Production-Ready) ✅
 
 ### Infrastructure - Complete ✅
+
 - **Deployment**: Vercel hosting at https://4axe.com
 - **Custom Domain**: 4axe.com configured and working
-- **HTTPS**: Enabled (required for mobile GPS and PWA features)
+- **HTTPS**: Enabled (required for mobile GPS)
 - **Environment Variables**: All set in Vercel dashboard
-- **Auto-Deploy**: Git push → automatic deployment to production
-- **Firebase Project**: `emu-incidents` fully configured and operational
+- **Auto-Deploy**: Git push → automatic deployment
+- **Firebase Project**: `emu-incidents` fully configured
 
 ### Authentication - Complete ✅
+
 - ✅ **Email/Password Login**: Working
 - ✅ **Google Sign-In**: Working
 - ✅ **Signup with Role Selection**: Chaser or Supe during signup
@@ -24,6 +23,7 @@
 - ✅ **Protected Routes**: `ProtectedRoute` component wraps all role pages
 
 ### UI/UX Layer - Complete ✅
+
 - **Role-Based Routing**: Separate dashboards for chaser, supe, admin
 - **Bottom Navigation**: Mobile-optimized navigation (5 tabs per role)
 - **Responsive Design**: Mobile-first with desktop support
@@ -31,6 +31,7 @@
 - **Dark Mode**: Theme switching via next-themes
 
 ### Components - Complete ✅
+
 - **shadcn/ui Library**: 40+ UI components (buttons, forms, dialogs, etc.)
 - **Custom Components**: All domain-specific components implemented
   - IncidentListItem, IncidentChat, LiveMap, MapCard, ProfileHeader, FilterBar
@@ -40,6 +41,7 @@
 - **Component Documentation**: See `/docs/COMPONENTS.md`
 
 ### Types - Complete ✅
+
 - **Domain Types**: All entities typed in `/types/domain.ts`
   - Incident, IncidentLite, Profile, Thread, Message, File, Signature
   - Enums: IncidentStatus, IncidentType, ThreadType, MessageType, Role
@@ -49,6 +51,7 @@
 ### Firebase Integration - Production-Ready ✅
 
 #### Firestore (Primary Database)
+
 - ✅ **Real-Time Listeners**: `onSnapshot` for live updates
 - ✅ **Incidents Collection**: All fields normalized, user flags computed
 - ✅ **Users Collection**: Role-based profiles
@@ -58,52 +61,60 @@
 - ✅ **Geocoding Cache**: `lat`, `lng`, `geocodedAt` fields
 
 #### Firebase Realtime Database (Chat System)
+
 - ✅ **Incident Chats**: Group chats (1 chaser + ALL supes)
 - ✅ **Direct Chats**: 1-on-1 backend ready (UI pending)
 - ✅ **Real-Time Sync**: `onValue` listeners
 - ✅ **Auto-Add Participants**: `getAllSupes()` fetches supes from Firestore
 
 #### Firebase Auth
+
 - ✅ **Email/Password**: Fully wired
 - ✅ **Google Sign-In**: Fully wired
 - ✅ **Persistence**: `browserLocalPersistence` + triple-layer backup
 - ✅ **onAuthStateChanged**: Saves to 3 storage locations
 
 #### Firebase Storage
+
 - ⚠️ **Initialized**: `getStorage(app)` called
 - ❌ **Not Wired**: No file upload implementation yet
 
 #### Firebase Cloud Messaging
+
 - ⚠️ **Initialized**: `getMessaging(app)` with browser check
 - ❌ **Not Wired**: No push notification flow yet
 
 ### Custom Hooks - Production-Ready ✅
-| Hook | Status | Notes |
-|------|--------|-------|
-| `useIncidents()` | ✅ **LIVE** | Firestore `onSnapshot`, real-time updates, normalizes data |
-| `useIncident(id)` | ✅ **LIVE** | Firestore doc listener, error handling, notes saving |
-| `useIncidentsWithDistance()` | ✅ **LIVE** | Real-time distance calculation, geocoding, caching |
-| `useLocationDistance()` | ✅ **LIVE** | User GPS tracking, geocoding (Google + OSM), Haversine distance |
-| `useProfile(uid)` | ✅ **LIVE** | Real Firestore query, settings persist |
-| `useFilters()` | ✅ **Client-only** | Works (no Firebase needed) |
-| `useThreads(uid)` | ⚠️ **Stubbed** | TODO: Wire to `/threads` collection |
-| `useMessages(threadId)` | ⚠️ **Stubbed** | TODO: Wire to `/threads/{id}/messages` subcollection |
-| `useFiles(incidentId)` | ⚠️ **Stubbed** | TODO: Wire to `/files` collection |
-| `useLiveLocations()` | ⚠️ **Stubbed** | TODO: Wire to `/profiles` with location enabled |
+
+| Hook                         | Status             | Notes                                                           |
+| ---------------------------- | ------------------ | --------------------------------------------------------------- |
+| `useIncidents()`             | ✅ **LIVE**        | Firestore `onSnapshot`, real-time updates, normalizes data      |
+| `useIncident(id)`            | ✅ **LIVE**        | Firestore doc listener, error handling, notes saving            |
+| `useIncidentsWithDistance()` | ✅ **LIVE**        | Real-time distance calculation, geocoding, caching              |
+| `useLocationDistance()`      | ✅ **LIVE**        | User GPS tracking, geocoding (Google + OSM), Haversine distance |
+| `useProfile(uid)`            | ✅ **LIVE**        | Real Firestore query, settings persist                          |
+| `useFilters()`               | ✅ **Client-only** | Works (no Firebase needed)                                      |
+| `useThreads(uid)`            | ⚠️ **Stubbed**     | TODO: Wire to `/threads` collection                             |
+| `useMessages(threadId)`      | ⚠️ **Stubbed**     | TODO: Wire to `/threads/{id}/messages` subcollection            |
+| `useFiles(incidentId)`       | ⚠️ **Stubbed**     | TODO: Wire to `/files` collection                               |
+| `useLiveLocations()`         | ⚠️ **Stubbed**     | TODO: Wire to `/profiles` with location enabled                 |
 
 ### Firestore Actions - Production-Ready ✅
-| Action | Status | Implementation |
-|--------|--------|----------------|
-| `toggleFavorite(id)` | ✅ **LIVE** | `updateDoc` + `arrayUnion` with current user UID |
-| `unfavorite(id)` | ✅ **LIVE** | `updateDoc` + `arrayRemove` with current user UID |
-| `toggleBookmark(id)` | ✅ **LIVE** | `updateDoc` + `arrayUnion` with current user UID |
-| `unbookmark(id)` | ✅ **LIVE** | `updateDoc` + `arrayRemove` with current user UID |
-| `silenceAlert(id)` | ✅ **Local** | Uses `localStorage` (per-device) |
+
+| Action               | Status       | Implementation                                    |
+| -------------------- | ------------ | ------------------------------------------------- |
+| `toggleFavorite(id)` | ✅ **LIVE**  | `updateDoc` + `arrayUnion` with current user UID  |
+| `unfavorite(id)`     | ✅ **LIVE**  | `updateDoc` + `arrayRemove` with current user UID |
+| `toggleBookmark(id)` | ✅ **LIVE**  | `updateDoc` + `arrayUnion` with current user UID  |
+| `unbookmark(id)`     | ✅ **LIVE**  | `updateDoc` + `arrayRemove` with current user UID |
+| `silenceAlert(id)`   | ✅ **Local** | Uses `localStorage` (per-device)                  |
 
 ### Live Chat System - Production-Ready ✅
+
 **Files**: `lib/realtime-database.ts`, `components/incident-chat.tsx`
 
 #### Incident Chats (Group)
+
 - ✅ 1 chaser + ALL supes automatically added
 - ✅ Real-time message sync via Firebase Realtime Database
 - ✅ `getAllSupes()` queries Firestore `/users` where `role == 'supe'`
@@ -114,6 +125,7 @@
 - ✅ Accessible from incident details "Chat" tab
 
 #### Direct Chats (1-on-1)
+
 - ✅ Backend functions ready:
   - `createDirectChat()`
   - `sendDirectMessage()`
@@ -122,6 +134,7 @@
 - ❌ UI not yet built (text messaging style pending)
 
 ### Distance Calculation - Production-Ready ✅
+
 **Files**: `hooks/use-location-distance.ts`, `hooks/use-incidents-with-distance.ts`, `lib/offline-cache.ts`
 
 - ✅ **Client-Side Calculation**: Haversine formula in browser
@@ -138,6 +151,7 @@
 ### UI Features - Production-Ready ✅
 
 #### Home Page
+
 - ✅ **Compressed Filter Bar**: 3 rows (was 5 rows)
   - Row 1: Distance badges (5mi, 10mi, 25mi, 50mi, Custom)
   - Row 2: Type badges + Search badge + Distance button
@@ -151,6 +165,7 @@
 - ✅ **High Alert Button**: In header, red when active with squiggly lines
 
 #### Incident Details Page
+
 - ✅ **Chat Tab**: Opens group chat with all supes
 - ✅ **Notes Tab**: Auto-save on blur
 - ✅ **Updates Tab**: Deduplicated, numbered, with stage indicators
@@ -159,11 +174,13 @@
 - ✅ **eSign Tab**: Signature workflow UI (not wired)
 
 #### Chat Page
+
 - ⚠️ **Placeholder UI**: "Chat Feature Coming Soon"
 - ❌ **Text Messaging UI**: Not yet built (next priority)
 - ✅ **Emergency Call 911**: Working dial button
 
 #### Profile Page
+
 - ✅ **Preferences**: Toggles with green oval, orange knob
 - ✅ **Stats Cards**: Responded, Noted, Days Active
 - ✅ **Sign Out**: Red button with `clearAuthState()`
@@ -171,12 +188,14 @@
 - ✅ **Emergency Payment**: Cash App / Zelle fields
 
 #### Admin Page
+
 - ✅ **User Table**: All users from Firestore
 - ✅ **Role Management**: ONE-CLICK changes
 - ✅ **Color-Coded Badges**: Green (Chaser), Blue (Supe), Purple (Admin)
 - ✅ **Access**: https://4axe.com/admin
 
 ### Color Standardization - Complete ✅
+
 **Files**: `lib/colors.ts`, `docs/COLOR_STANDARDS.md`
 
 - ✅ **Red**: `#FF3B30` (hover: `#FF2D1F`)
@@ -187,6 +206,7 @@
 - ✅ **Consistent Usage**: All components use centralized colors
 
 ### Security - Production-Ready ✅
+
 - ✅ **Firestore Rules**: Deployed, production-grade
 - ✅ **Auth Required**: All routes except login/signup
 - ✅ **User-Specific Data**: Favorites/bookmarks per-user arrays
@@ -195,7 +215,9 @@
 - ⚠️ **Realtime DB Rules**: Open for testing (needs securing)
 
 ### Documentation - Complete ✅
+
 1. ✅ **Memory Banks**: All 6 files updated
+
    - projectbrief.md
    - productContext.md
    - activeContext.md (✅ UPDATED TONIGHT)
@@ -204,6 +226,7 @@
    - progress.md (✅ UPDATING NOW)
 
 2. ✅ **Technical Docs**:
+
    - API_MAP.md
    - AUTH_AND_REALTIME.md
    - COLOR_STANDARDS.md
@@ -223,6 +246,7 @@
    - WIRING.md (⏳ VERIFYING NEXT)
 
 3. ✅ **Deployment Docs**:
+
    - DEPLOY_TO_CLOUDFLARE_EXACT_STEPS.md
    - MCP_SETUP_COMPLETE.md
 
@@ -233,15 +257,18 @@
 ## What's In Progress (Partially Implemented) ⚡
 
 ### Text Messaging Chat UI - Backend Ready, UI Pending ⚡
+
 **Backend**: ✅ Complete  
 **UI**: ❌ Not started
 
 **What's Ready**:
+
 - Direct chat functions in `lib/realtime-database.ts`
 - Unique chat IDs generated from user IDs
 - Real-time message sync
 
 **What's Needed**:
+
 - User list view (all chasers + all supes)
 - Show incident group chats with incident address
 - Show direct chats with user name
@@ -257,10 +284,12 @@
 ### Critical Path (Must Have)
 
 #### 1. Text Messaging Chat UI ❌
+
 **Status**: Backend ready, UI not started  
 **Files**: `app/chaser/chat/page.tsx`, `app/supe/chat/page.tsx`
 
 **Requirements**:
+
 - User list (all users available to select from)
 - Incident group chats showing incident address as name
 - Direct chats showing user name
@@ -272,11 +301,14 @@
 ---
 
 #### 2. CRM Foundation ❌
+
 **Status**: Not started  
 **Priority**: HIGH
 
 **Requirements**:
-- **Properties Collection**: 
+
+- **Properties Collection**:
+
   ```typescript
   /properties/{addressId}
     address: string
@@ -291,6 +323,7 @@
   ```
 
 - **Communications Collection**:
+
   ```typescript
   /communications/{id}
     propertyId: string
@@ -309,10 +342,12 @@
 ---
 
 #### 3. eSign System ❌
+
 **Status**: UI exists, no backend  
 **Priority**: HIGH
 
 **Requirements**:
+
 1. Upload PDF forms to Firebase Storage
 2. Generate unique signing links
 3. Send PDFs via email
@@ -326,10 +361,12 @@
 ---
 
 #### 4. File Upload System ❌
+
 **Status**: UI exists, no backend  
 **Priority**: MEDIUM
 
 **Requirements**:
+
 - Firebase Storage integration
 - Upload photos/documents to `/incidents/{id}/files/`
 - Thumbnail generation (Firebase Extension)
@@ -342,10 +379,12 @@
 ### Important (Should Have)
 
 #### 5. Push Notifications (FCM) ❌
+
 **Status**: SDK initialized, no implementation  
 **Priority**: MEDIUM
 
 **Requirements**:
+
 - Request notification permission
 - Subscribe to topics (high alerts, chat)
 - Handle foreground/background messages
@@ -356,10 +395,12 @@
 ---
 
 #### 6. Google Maps Integration ❌
+
 **Status**: Placeholder UI  
 **Priority**: MEDIUM
 
 **Requirements**:
+
 - Integrate Google Maps JavaScript API
 - MapCard component (incident location)
 - LiveMap component (supervisor tracking)
@@ -370,10 +411,12 @@
 ---
 
 #### 7. Live Location Tracking ❌
+
 **Status**: User location works for distance, not tracking  
 **Priority**: MEDIUM
 
 **Requirements**:
+
 - Update Firestore every 5-10 seconds when active
 - Privacy controls (enable/disable in profile)
 - Battery optimization
@@ -386,24 +429,28 @@
 ### Nice to Have (Could Have)
 
 #### 8. Offline Support (PWA) ❌
+
 - Service worker for offline caching
 - IndexedDB for offline data
 - Sync when connection restored
 - **Estimate**: 3-4 hours
 
 #### 9. Command Palette ❌
+
 - Quick search for incidents, users, commands
 - Keyboard shortcuts
 - Uses cmdk package (already installed)
 - **Estimate**: 2-3 hours
 
 #### 10. Analytics ❌
+
 - Vercel Analytics integration
 - Track page views, user actions
 - Performance monitoring
 - **Estimate**: 1-2 hours
 
 #### 11. Error Tracking ❌
+
 - Sentry or similar integration
 - Automatic error reporting
 - User feedback on errors
@@ -416,6 +463,7 @@
 ### Active Issues 🔴
 
 #### 1. Mobile Not Showing Compressed UI
+
 **Reported**: Tonight  
 **Issue**: PC has new compressed filter bar, mobile still showing old version  
 **Cause**: Mobile browser cache  
@@ -423,6 +471,7 @@
 **Status**: Waiting for user action
 
 #### 2. Supe Incident Page Missing Chat Tab
+
 **Issue**: Only chaser incident page has chat tab  
 **Impact**: Supes can't see incident group chats  
 **Fix**: Mirror chat tab to `app/supe/incident/[id]/page.client.tsx`  
@@ -433,12 +482,14 @@
 ## Evolution of Project Decisions
 
 ### Session 1: Initial Setup (October 27)
+
 - Fixed all 38 TypeScript errors
 - Installed tooling (ESLint, tsx, dotenv)
 - Configured environment variables
 - Enabled YOLO mode for rapid iteration
 
 ### Session 2: Firebase Wiring (October 28)
+
 - Real-time Firestore listeners for incidents
 - Favorites/bookmarks with multi-user arrays
 - Data normalization for inconsistent fields
@@ -447,6 +498,7 @@
 - DEV_UID fallback for auth-less development
 
 ### Session 3: Distance Calculation (October 29)
+
 - Client-side distance calculation with Haversine formula
 - On-demand geocoding with Google Maps API + OpenStreetMap fallback
 - Smart caching in Firestore (lat/lng/geocodedAt)
@@ -455,6 +507,7 @@
 - Location permission persistence
 
 ### Session 4: Production Deployment (October 29)
+
 - Deployed to Cloudflare Pages (failed - Next.js 16 incompatibility)
 - Switched to Vercel deployment (success!)
 - Custom domain 4axe.com configured
@@ -462,6 +515,7 @@
 - HTTPS enabled for mobile GPS
 
 ### Session 5: UI Improvements (October 29)
+
 - Color standardization (#FF3B30, #34C759, #FF9500, #007AFF)
 - Toggle switch redesign (white knob, green→orange oval)
 - Sort by Distance button with flashing animation
@@ -469,6 +523,7 @@
 - Undo hide banner (light gray sliver)
 
 ### Session 6: Tonight - Production Features (October 30)
+
 - ✅ Signup with role selection
 - ✅ Admin tool for user management
 - ✅ Bulletproof auth persistence (triple-layer)
@@ -478,25 +533,27 @@
 
 ---
 
-## Metrics & Stats (Nov 1, 2025)
-- **Total Files**: ~130+ files
-- **Components**: 57 shadcn/ui components + 35+ custom components
-- **Pages**: 28+ pages across all roles (chaser, supe, admin, crm)
-- **Custom Hooks**: 10 hooks (6 fully wired with Firebase, 4 stubbed)
-- **Utilities**: 10+ libraries (firebase, auth-persistence, colors, diagnostics, logger, avatar-utils, etc.)
-- **Infrastructure**: firestore.rules, storage.rules, firebase.json, Realtime DB structure
-- **Type Definitions**: 10+ domain types in `/types/domain.ts` (Role, Profile, Incident, etc.)
-- **Documentation Files**: 80+ markdown files (including memory banks, guides, and summaries)
-- **Lines of Code**: ~10,000+ LOC (estimated)
-- **Git Commits**: 75+ commits total
-- **TypeScript Errors**: 0 (fully type-safe)
-- **Deployment**: Vercel at https://4axe.com (auto-deploy on push)
+## Metrics & Stats
+
+- **Total Files**: ~120+ files
+- **Components**: 40+ shadcn/ui + 20+ custom
+- **Pages**: 25+ pages across all roles
+- **Custom Hooks**: 10 hooks (6 fully wired, 4 stubbed)
+- **Utilities**: 6 libraries (dev, logger, silence, diagnostics, auth-persistence, colors)
+- **Infrastructure**: firestore.rules, storage.rules, firebase.json, wiring-test script
+- **Type Definitions**: 10+ domain types
+- **Documentation Files**: 30+ markdown files
+- **Lines of Code**: ~8,000+ LOC (estimated)
+- **Git Commits**: 50+ commits total
+- **TypeScript Errors**: 0 (all fixed)
+- **Deployment**: Vercel (https://4axe.com)
 
 ---
 
 ## Completion Estimate
 
 Based on remaining work:
+
 - **Critical Path**: 10-14 hours (chat UI, CRM, eSign, file upload)
 - **Important Features**: 9-13 hours (FCM, Maps UI, live tracking)
 - **Nice to Have**: 7-11 hours (PWA, command palette, analytics)
@@ -504,9 +561,8 @@ Based on remaining work:
 
 ---
 
-## Recent Progress (Oct 30-Nov 1, 2025) ✅
+## Progress Tonight ✅
 
-### October 30-31 Session:
 1. ✅ Implemented signup with role selection
 2. ✅ Built admin tool for user management
 3. ✅ Created bulletproof auth persistence (triple-layer)
@@ -516,19 +572,15 @@ Based on remaining work:
 7. ✅ Compressed home page UI (5 rows → 3 rows)
 8. ✅ Added expandable search with green badge
 9. ✅ Integrated distance button into filter bar
-
-### November 1 Session:
-10. ✅ Fixed TypeScript errors in chaser chat page (profile.id → profile.uid)
-11. ✅ Fixed spell checker warnings in make-admin script
-12. ✅ Comprehensive documentation audit across all files
-13. ✅ Updated all 6 memory bank files for accuracy
-14. ✅ Updated START_HERE.md, docs/README.md to reflect current state
-15. ✅ All changes committed and pushed to GitHub
-16. ✅ Production deployment updated at https://4axe.com
+10. ✅ Updated all memory banks and documentation
+11. ✅ Created comprehensive nightly summary
+12. ✅ All changes pushed to GitHub
+13. ✅ Deployed to production (https://4axe.com)
 
 ---
 
 ## Next Session Goals
+
 1. Build text messaging chat UI (user list + conversations)
 2. Design CRM foundation (properties + communications)
 3. Implement eSign system (upload + sign + send)

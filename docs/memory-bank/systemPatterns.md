@@ -55,17 +55,14 @@ export const useIncidents = () => {
 
   useEffect(() => {
     // Real-time Firestore listener
-    const unsubscribe = onSnapshot(
-      collection(db, 'incidents'),
-      (snapshot) => {
-        const data = snapshot.docs.map(doc => ({
-          ...doc.data(),
-          id: doc.id
-        }));
-        setIncidents(data);
-        setLoading(false);
-      }
-    );
+    const unsubscribe = onSnapshot(collection(db, "incidents"), (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
+      setIncidents(data);
+      setLoading(false);
+    });
     return () => unsubscribe();
   }, []);
 

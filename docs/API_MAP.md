@@ -77,9 +77,11 @@ const q = query(filesRef, orderBy('uploadedAt', 'desc'))
 
 ## Chat
 
-### `useThreads()`
-**Collection**: `threads`  
-**Query**:
+### `useThreads()` ⚠️ STUBBED
+**Collection**: `threads` (PLANNED - Not yet implemented)  
+**Status**: Stubbed, returns empty array
+
+**Future Implementation**:
 \`\`\`typescript
 const threadsRef = collection(db, 'threads')
 const q = query(
@@ -89,28 +91,104 @@ const q = query(
 )
 \`\`\`
 
-**Real-time**: Yes (onSnapshot)  
-**Returns**: `{ data: Thread[], isLoading, error }`
+**Note**: Chat is currently implemented using Firebase Realtime Database, not Firestore threads collection. See below.
 
 ---
 
-### `useMessages(threadId)`
-**Collection**: `threads/{threadId}/messages`  
-**Query**:
-\`\`\`typescript
-const messagesRef = collection(db, 'threads', threadId, 'messages')
-const q = query(messagesRef, orderBy('timestamp', 'asc'))
+### `useMessages(threadId)` ⚠️ STUBBED
+**Collection**: `threads/{threadId}/messages` (PLANNED - Not yet implemented)  
+**Status**: Stubbed, returns empty array
+
+**Note**: Chat messages are currently implemented using Firebase Realtime Database. See below.
+
+---
+
+### **ACTUAL IMPLEMENTATION: Firebase Realtime Database**
+
+Chat is implemented using Firebase Realtime Database (not Firestore) for better real-time performance.
+
+#### Incident Group Chats
+**Database Path**: `/incident-chats/{incidentId}`  
+**Implementation**: `lib/realtime-database.ts`
+
+**Structure**:
+\`\`\`json
+/incident-chats/{incidentId}
+  /metadata
+    {
+      "incidentId": "NFA-1834242",
+      "incidentAddress": "147-25 94th Ave, Queens, NY",
+      "createdAt": 1730250000000,
+      "createdBy": "userId123",
+      "participants": {
+        "chaserUserId": true,
+        "supeUserId1": true
+      }
+    }
+  
+  /messages/{pushId}
+    {
+      "userId": "chaserUserId",
+      "userName": "John Doe",
+      "message": "On scene, heavy smoke visible",
+      "timestamp": 1730250120000,
+      "role": "chaser"
+    }
 \`\`\`
 
-**Real-time**: Yes (onSnapshot)  
-**Returns**: `{ data: Message[], isLoading, error, send }`
+**Functions**:
+- `createIncidentChat(incidentId, incidentAddress, creatorId, creatorName)` → Creates chat room with all supes
+- `sendIncidentMessage(incidentId, senderId, senderName, message)` → Sends message to incident chat
+- `subscribeToIncidentChat(incidentId, callback)` → Real-time listener for messages
 
-**Actions**:
-- `send(text)` → Add doc to `threads/{threadId}/messages` + Update `threads/{threadId}` lastMessage fields
-- `sendMessage(threadId, text)` → Same as above
+**Component**: `components/incident-chat.tsx`
+
+#### Direct 1-on-1 Chats
+**Database Path**: `/direct-chats/{chatId}`  
+**Implementation**: `lib/realtime-database.ts`
+
+**Structure**:
+\`\`\`json
+/direct-chats/{chatId}
+  /metadata
+    {
+      "participants": {
+        "userId1": true,
+        "userId2": true
+      },
+      "createdAt": 1730250000000
+    }
+  
+  /messages/{pushId}
+    {
+      "userId": "userId1",
+      "userName": "Jane Smith",
+      "message": "Can you check the basement?",
+      "timestamp": 1730250150000,
+      "role": "supe"
+    }
+\`\`\`
+
+**Functions**:
+- `createDirectChat(userId1, userId2)` → Creates 1-on-1 chat room
+- `sendDirectMessage(otherUserId, message, userName, userRole)` → Sends message to direct chat
+- `subscribeToDirectChat(otherUserId, callback)` → Real-time listener for messages
+
+**Components**: `app/chaser/chat/page.tsx`, `components/chat-contacts.tsx`, `components/chat-room.tsx`
+
+**Chat ID Generation**: Chat IDs are deterministic (sorted user IDs joined by underscore) to ensure consistency:
+\`\`\`typescript
+const chatId = [userId1, userId2].sort().join('_');
+\`\`\`
+
+**Why Realtime Database?**
+- ✅ Optimized for high-frequency updates
+- ✅ Simpler structure for messaging
+- ✅ Lower latency than Firestore
+- ✅ Better suited for real-time chat
 
 **Firebase Extensions**:
-- FCM Notification (trigger on new message)
+- FCM Notification (to be implemented)
 
 ---
 
