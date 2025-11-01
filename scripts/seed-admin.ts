@@ -5,15 +5,14 @@
 
 import * as admin from 'firebase-admin';
 import * as dotenv from 'dotenv';
+import serviceAccount from '../firebase-admin-key.json' assert { type: 'json' };
 
 // Load environment
 dotenv.config({ path: '.env.local' });
 
 // Initialize Admin SDK
-const serviceAccount = require('../firebase-admin-key.json');
-
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
   projectId: 'emu-incidents',
 });
 

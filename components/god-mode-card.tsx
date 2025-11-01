@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import {
   Card,
@@ -20,26 +20,22 @@ interface GodModeCardProps {
 export function GodModeCard({ userRole }: GodModeCardProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [godMode, setGodMode] = useState(false);
-  const [viewMode, setViewMode] = useState<"chaser" | "supe">("supe");
-
-  // Only show for super_admin
-  if (userRole !== "super_admin") {
-    return null;
-  }
-
-  // Load God Mode state from localStorage (default OFF)
-  useEffect(() => {
-    const stored = localStorage.getItem("godMode");
-    // Default is FALSE - user must explicitly enable God Mode
-    setGodMode(stored === "true");
-
-    // Detect current view (super_admin defaults to SUPE view)
-    if (pathname.startsWith("/chaser")) {
-      setViewMode("chaser");
-    } else if (pathname.startsWith("/supe")) {
-      setViewMode("supe");
+  
+  // Initialize God Mode from localStorage (default OFF)
+  const [godMode, setGodMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem("godMode");
+      return stored === "true";
     }
+    return false;
+  });
+  
+  // Derive view mode from pathname (no useState needed)
+  const viewMode = useMemo<"chaser" | "supe">(() => {
+    if (pathname.startsWith("/chaser")) {
+      return "chaser";
+    }
+    return "supe";
   }, [pathname]);
 
   const handleGodModeToggle = (enabled: boolean) => {
@@ -61,6 +57,11 @@ export function GodModeCard({ userRole }: GodModeCardProps) {
     console.log(`[ViewMode] Switching to ${newView} view`);
     router.push(newPath);
   };
+
+  // Only show for super_admin
+  if (userRole !== "super_admin") {
+    return null;
+  }
 
   return (
     <Card className="border-2 border-purple-500 bg-gradient-to-br from-purple-50 to-pink-50">

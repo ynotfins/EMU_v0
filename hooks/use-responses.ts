@@ -18,11 +18,11 @@ export interface Response {
 
 export function useResponses(userId: string | undefined) {
   const [responses, setResponses] = useState<Response[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!userId ? false : true);
 
   useEffect(() => {
     if (!userId) {
-      setLoading(false);
+      // Early return if no user ID - state already set above
       return;
     }
 

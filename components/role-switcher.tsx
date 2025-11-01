@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -13,20 +13,13 @@ interface RoleSwitcherProps {
 export function RoleSwitcher({ currentRole }: RoleSwitcherProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [currentView, setCurrentView] = useState<"chaser" | "supe">("supe");
-
-  // Only show for super_admin
-  if (currentRole !== "super_admin") {
-    return null;
-  }
-
-  // Detect current view from URL
-  useEffect(() => {
+  
+  // Derive current view from pathname (no useState needed)
+  const currentView = useMemo<"chaser" | "supe">(() => {
     if (pathname.startsWith("/chaser")) {
-      setCurrentView("chaser");
-    } else if (pathname.startsWith("/supe")) {
-      setCurrentView("supe");
+      return "chaser";
     }
+    return "supe";
   }, [pathname]);
 
   const switchRole = () => {
@@ -40,6 +33,11 @@ export function RoleSwitcher({ currentRole }: RoleSwitcherProps) {
     
     router.push(newPath);
   };
+
+  // Only show for super_admin
+  if (currentRole !== "super_admin") {
+    return null;
+  }
 
   return (
     <div className="fixed bottom-20 right-4 z-50">

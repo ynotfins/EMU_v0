@@ -32,18 +32,22 @@
 ## 1. Project Overview
 
 ### What is EMU Alerts?
+
 **EMU Alerts** (Emergency Management Unit), also known as the **National Fire Alerts (NFA) System**, is a real-time emergency incident coordination system designed for first responders (Chasers), supervisors (Supes), and administrators.
 
 ### Core Purpose
+
 Enable emergency responders to quickly view, respond to, and coordinate incidents in the field with real-time updates, location tracking, chat communication, and document management.
 
 ### Target Users
+
 - **Chasers (Emergency Responders)**: ~2-4 users, front-line incident response
 - **Supes (Supervisors)**: ~2 users, team coordination and oversight
 - **Admins**: System management and user administration
 - **Super Admins**: Full system control (God Mode)
 
 ### Key Differentiators
+
 - ✅ **Mobile-First**: Optimized for field use on smartphones
 - ✅ **Real-Time**: Firebase Firestore + Realtime Database for instant updates
 - ✅ **Offline-Capable**: LocalStorage caching for geocoding and user location
@@ -58,6 +62,7 @@ Enable emergency responders to quickly view, respond to, and coordinate incident
 ### ✅ What's Working (Production - Deployed Nov 1, 2025)
 
 #### Authentication & Users
+
 - ✅ **Email/Password Login**: Fully functional at `/login`
 - ✅ **Google Sign-In**: OAuth integration with automatic profile creation
 - ✅ **Role-Based Access Control**: Chaser, Supe, Admin, Super Admin (God Mode)
@@ -68,6 +73,7 @@ Enable emergency responders to quickly view, respond to, and coordinate incident
 - ✅ **God Mode Toggle**: Super admins can toggle God Mode and switch between Supe/Chaser views from profile page
 
 #### Incident Management
+
 - ✅ **Real-Time Incident List**: Firestore `onSnapshot` for live updates
 - ✅ **Filtering by Distance**: 5mi, 10mi, 25mi, 50mi, Custom (last 4 hours only)
 - ✅ **Filtering by Type**: All Hands, Fire Damage, Smoke Condition, Working Fire, etc.
@@ -85,6 +91,7 @@ Enable emergency responders to quickly view, respond to, and coordinate incident
 - ✅ **Auto-Saving Notes**: Notes save onBlur, persist to Firestore
 
 #### UI/UX Features
+
 - ✅ **Ultra-Compact Filter Bar**: Reduced from 5 rows to 3 for mobile optimization
 - ✅ **Collapsible Filters**: 🤏 pinching hand button to hide/show filters
 - ✅ **Embedded City-Zoom Map**: Google Maps iframe at zoom=12 on incident details
@@ -97,6 +104,7 @@ Enable emergency responders to quickly view, respond to, and coordinate incident
 - ✅ **Multi-Step Signup**: Beautiful Apple-style UI with progress dots, camera ID capture, OCR processing
 
 #### Chat System
+
 - ✅ **Firebase Realtime Database**: Live chat infrastructure
 - ✅ **Incident-Specific Group Chats**: One chaser + ALL supes automatically added
 - ✅ **1-on-1 Direct Chats**: Chaser-to-chaser, Supe-to-supe (backend ready, UI at `/chaser/chat` and `/supe/chat`)
@@ -106,11 +114,13 @@ Enable emergency responders to quickly view, respond to, and coordinate incident
 - ✅ **Chat Contacts**: All/Supes/Chasers tabs for easy filtering
 
 #### Document Management
+
 - ✅ **Homeowner Form**: Name, phone, email, address, insurance (UI complete)
 - ✅ **Docs Manager UI**: Upload interface (backend not yet wired to Firebase Storage)
 - ✅ **eSign Manager UI**: Send for eSign, Sign Live, Signature History (backend not fully wired)
 
 #### Maps & Location
+
 - ✅ **Real-Time User Location**: Geolocation API with permission persistence
 - ✅ **Location Permission Persistence**: Only asks once, saves to localStorage
 - ✅ **Distance Displayed on Incident Cards**: When location enabled
@@ -120,17 +130,20 @@ Enable emergency responders to quickly view, respond to, and coordinate incident
 ### ⚠️ What's In Progress
 
 #### High Priority
+
 - 🔄 **Custom Alert Groups**: User-defined filters with train horn notifications
 - 🔄 **CRM Database**: Properties and communications collections for homeowner data
 - 🔄 **eSign Full Integration**: Upload PDFs, send via email/SMS for signature
 - 🔄 **Firestore Geocoding Cache**: Permanent storage for lat/lng by address (currently localStorage only)
 
 #### Medium Priority
+
 - 🔄 **Live Map for Supes**: Real-time responder GPS tracking on map (component exists, not fully wired)
 - 🔄 **Push Notifications (FCM)**: Web push for high-alert incidents (SDK initialized, not wired)
 - 🔄 **30-Day Retention Policy**: Auto-delete old incidents
 
 ### ❌ What's Not Started
+
 - ❌ **Command Palette**: Search across app (Cmd+K)
 - ❌ **Analytics Dashboard**: Usage tracking, response times
 - ❌ **Error Tracking**: Sentry integration
@@ -163,6 +176,7 @@ Enable emergency responders to quickly view, respond to, and coordinate incident
 ### Technology Stack
 
 #### Frontend
+
 - **Next.js 16.0.0**: App Router, React Server Components, file-based routing
 - **React 19.2.0**: Hooks, Context API, concurrent features
 - **TypeScript 5.x**: Strict mode, comprehensive type safety
@@ -171,6 +185,7 @@ Enable emergency responders to quickly view, respond to, and coordinate incident
 - **Lucide Icons**: Icon library
 
 #### Backend & Services
+
 - **Firebase Firestore**: Real-time NoSQL database, primary data store
 - **Firebase Authentication**: Email/password + Google Sign-In, browser local persistence
 - **Firebase Realtime Database**: Live chat messages (incident + direct chats)
@@ -178,11 +193,13 @@ Enable emergency responders to quickly view, respond to, and coordinate incident
 - **Firebase Cloud Messaging (FCM)**: Push notifications (initialized, not yet wired)
 
 #### APIs & Integrations
+
 - **Google Maps Embed API**: Embedded maps on incident details (zoom=12)
 - **Google Geocoding API**: Address → lat/lng conversion with fallback to OpenStreetMap
 - **Browser Geolocation API**: User location tracking with device-aware caching
 
 #### Deployment & Hosting
+
 - **Vercel**: Production hosting with automatic deployments on `git push`
 - **Custom Domain**: https://4axe.com (DNS configured via Vercel)
 - **Environment Variables**: Secure credential storage in Vercel dashboard
@@ -198,6 +215,7 @@ Enable emergency responders to quickly view, respond to, and coordinate incident
 **What it does**: Real-time list of fire alerts with filtering, sorting, and user-specific actions.
 
 **User Flow**:
+
 1. User lands on `/chaser/incidents` or `/supe/incidents`
 2. Filter bar shows distance, type, keyword, and update count filters
 3. Incidents auto-update via Firestore `onSnapshot`
@@ -209,12 +227,14 @@ Enable emergency responders to quickly view, respond to, and coordinate incident
    - **Silence**: Click 🔔 → mutes notifications for this incident
 
 **Technical Implementation**:
+
 - **Hook**: `hooks/use-incidents-with-distance.ts`
 - **Component**: `app/chaser/incidents/page.tsx`, `app/supe/incidents/page.tsx`
 - **Filter Bar**: `components/filter-bar.tsx`
 - **Incident Card**: `components/incident-list-item.tsx`
 
 **Firestore Structure**:
+
 ```typescript
 /incidents/{incidentId}
   - id: string (NFA-XXXXXXX)
@@ -229,7 +249,7 @@ Enable emergency responders to quickly view, respond to, and coordinate incident
   - favoritedBy: string[] (array of user IDs)
   - bookmarkedBy: string[]
   - notes: Note[] (employee notes)
-  
+
   /updates/{updateId}
     - ts: Timestamp
     - stage: string ("new", "update")
@@ -239,18 +259,21 @@ Enable emergency responders to quickly view, respond to, and coordinate incident
 ```
 
 **Filters**:
+
 - **Distance**: 5mi, 10mi, 25mi, 50mi, Custom (only shows incidents from last 4 hours)
 - **Type**: All, All Hands, Fire Damage, Smoke Condition, Working Fire
 - **Keyword**: Text search across message content
 - **Updates**: Minimum update count (1, 3, Custom)
 
 **Distance Calculation**:
+
 - Uses Haversine formula to calculate distance between user location and incident address
 - Geocodes addresses using Google Geocoding API with OpenStreetMap fallback
 - Caches geocoded addresses in `localStorage` (key: `emu_geocode_cache`)
 - Only processes visible incidents (8 + 4 preload) for performance
 
 **Deduplication**:
+
 - **Location**: `hooks/use-incident.ts` (lines 149-166)
 - **Strategy**: Normalizes message (trim, lowercase, remove extra whitespace) and uses as unique key
 - **Why**: Prevents duplicate updates with slightly different timestamps
@@ -264,6 +287,7 @@ Enable emergency responders to quickly view, respond to, and coordinate incident
 **What it does**: Tracks user location, calculates distances, embeds maps on incident details.
 
 **User Flow**:
+
 1. App requests location permission on first load
 2. Browser Geolocation API starts tracking
 3. Location cached in `localStorage` (device-aware duration)
@@ -271,11 +295,13 @@ Enable emergency responders to quickly view, respond to, and coordinate incident
 5. Click incident → Embedded map shows incident location at city zoom
 
 **Technical Implementation**:
+
 - **Hook**: `hooks/use-location-distance.ts`
 - **Cache**: `lib/offline-cache.ts`
 - **Map Embed**: `app/chaser/incident/[id]/page.client.tsx` (lines 82-95)
 
 **Device-Aware Caching**:
+
 ```typescript
 DESKTOP   → Permanent cache, manual reset button
 LAPTOP    → 6-hour cache
@@ -284,17 +310,20 @@ PHONE     → 30-minute cache, 50m movement threshold
 ```
 
 **Embedded Map**:
+
 ```html
 <iframe
   src="https://www.google.com/maps/embed/v1/place?
     key=YOUR_API_KEY&
     q=ADDRESS&
     zoom=12"
-  width="100%" height="256px"
+  width="100%"
+  height="256px"
 />
 ```
 
 **Location Permission Persistence**:
+
 - **Location**: `lib/offline-cache.ts` (lines 88-93)
 - **Key**: `emu_location_permission`
 - **Strategy**: Save `true` to `localStorage` after first successful location retrieval
@@ -309,10 +338,12 @@ PHONE     → 30-minute cache, 50m movement threshold
 **What it does**: Real-time chat for incident coordination and 1-on-1 messaging.
 
 **Chat Types**:
+
 1. **Incident Group Chat**: One chaser + ALL supes (auto-added)
 2. **1-on-1 Direct Chat**: Chaser-to-chaser or Supe-to-supe
 
 **User Flow (Incident Chat)**:
+
 1. Chaser opens incident details → Clicks "Chat" tab
 2. **First message creates chat room**:
    - Fetches all supes from Firestore `/users` collection
@@ -322,6 +353,7 @@ PHONE     → 30-minute cache, 50m movement threshold
 4. Supes see all incident chats they're part of
 
 **Technical Implementation**:
+
 - **Database**: Firebase Realtime Database (NOT Firestore)
 - **Component**: `components/incident-chat.tsx`
 - **Chat Contacts**: `components/chat-contacts.tsx`
@@ -335,6 +367,7 @@ PHONE     → 30-minute cache, 50m movement threshold
   - `subscribeToDirectChat(otherUserId, callback)`
 
 **Realtime Database Structure**:
+
 ```json
 /incident-chats/{incidentId}
   /metadata
@@ -349,7 +382,7 @@ PHONE     → 30-minute cache, 50m movement threshold
         "supeUserId2": true
       }
     }
-  
+
   /messages/{pushId}
     {
       "senderId": "chaserUserId",
@@ -367,7 +400,7 @@ PHONE     → 30-minute cache, 50m movement threshold
       },
       "createdAt": 1730250000000
     }
-  
+
   /messages/{pushId}
     {
       "senderId": "userId1",
@@ -378,13 +411,15 @@ PHONE     → 30-minute cache, 50m movement threshold
 ```
 
 **Chat ID Generation (Direct Chats)**:
+
 ```typescript
 // Always sort user IDs alphabetically for consistent chat ID
-const chatId = [userId1, userId2].sort().join('_');
+const chatId = [userId1, userId2].sort().join("_");
 // Example: "abc123_def456"
 ```
 
 **Why Realtime Database?**
+
 - ✅ Optimized for high-frequency updates (chat messages)
 - ✅ Simpler data structure (JSON tree)
 - ✅ Lower latency than Firestore for frequent writes
@@ -399,12 +434,14 @@ const chatId = [userId1, userId2].sort().join('_');
 **What it does**: Secure user authentication with role-based access control.
 
 **User Roles**:
+
 - **Chaser**: Front-line responder (view incidents, chat, upload docs)
 - **Supe**: Supervisor (all chaser features + live map, oversight)
 - **Admin**: System admin (user management, role changes)
 - **Super Admin**: Full system control (God Mode, all features)
 
 **Authentication Flow**:
+
 ```
 1. User visits /login or /signup
 2. Firebase Auth creates account (email/password or Google)
@@ -417,6 +454,7 @@ const chatId = [userId1, userId2].sort().join('_');
 ```
 
 **Bulletproof Auth Persistence**:
+
 - **File**: `lib/auth-persistence.ts`
 - **Strategy**:
   ```typescript
@@ -429,6 +467,7 @@ const chatId = [userId1, userId2].sort().join('_');
 - **Result**: Users NEVER auto-signed out (perfect for first responders)
 
 **Signup with Role Selection**:
+
 - **File**: `app/signup/page.tsx`
 - **Flow**:
   1. User enters email, password, name
@@ -438,6 +477,7 @@ const chatId = [userId1, userId2].sort().join('_');
   5. Redirects to role-specific homepage
 
 **Multi-Step Signup (New Users)**:
+
 - **File**: `app/signup/new/page.tsx`
 - **Steps**:
   1. Basic Info (nickname, email, phone)
@@ -447,6 +487,7 @@ const chatId = [userId1, userId2].sort().join('_');
   5. Complete (auto-creates profile)
 
 **Admin Tool**:
+
 - **URL**: https://4axe.com/admin
 - **File**: `app/admin/page.tsx`
 - **Features**:
@@ -456,6 +497,7 @@ const chatId = [userId1, userId2].sort().join('_');
   - Real-time Firestore updates
 
 **God Mode (Super Admin)**:
+
 - **Component**: `components/god-mode-card.tsx`
 - **Features**:
   - Toggle God Mode ON/OFF (defaults to OFF)
@@ -472,11 +514,13 @@ const chatId = [userId1, userId2].sort().join('_');
 **What it does**: Handle homeowner forms, document uploads, and e-signatures.
 
 **Status**:
+
 - ✅ **UI Complete**: Homeowner form, Docs manager, eSign manager
 - ⚠️ **Backend Partial**: File upload not yet wired to Firebase Storage
 - ❌ **eSign Not Wired**: Needs PDF generation and email/SMS integration
 
 **User Flow (Planned)**:
+
 1. Chaser opens incident details → "Homeowner" tab
 2. Fills in homeowner info (name, phone, email, address, insurance)
 3. Saves to Firestore `/incidents/{id}/homeowner_forms` (or embedded in incident doc)
@@ -484,6 +528,7 @@ const chatId = [userId1, userId2].sort().join('_');
 5. "eSign" tab: Send PDF to homeowner for signature via email/SMS link
 
 **Technical Implementation (Planned)**:
+
 - **Storage Path**: `/incidents/{incidentId}/files/{filename}`
 - **Firestore Metadata**: `/files` collection
   ```typescript
@@ -499,6 +544,7 @@ const chatId = [userId1, userId2].sort().join('_');
   ```
 
 **eSign Requirements**:
+
 - Upload PDF forms to Storage
 - Generate unique signing link
 - Send link via email or SMS
@@ -513,6 +559,7 @@ const chatId = [userId1, userId2].sort().join('_');
 ## 5. Technical Stack
 
 ### Core Framework
+
 ```json
 "next": "^16.0.0",
 "react": "^19.2.0",
@@ -521,12 +568,14 @@ const chatId = [userId1, userId2].sort().join('_');
 ```
 
 ### Firebase
+
 ```json
 "firebase": "^11.0.1",
 "firebase-admin": "^13.0.0"
 ```
 
 ### UI & Styling
+
 ```json
 "tailwindcss": "^4.1.9",
 "@radix-ui/react-*": "various",
@@ -537,6 +586,7 @@ const chatId = [userId1, userId2].sort().join('_');
 ```
 
 ### Forms & Validation
+
 ```json
 "react-hook-form": "^7.54.2",
 "zod": "^3.24.1",
@@ -544,11 +594,13 @@ const chatId = [userId1, userId2].sort().join('_');
 ```
 
 ### Charts & Visualization
+
 ```json
 "recharts": "^2.15.0"
 ```
 
 ### Notable Details
+
 - ⚠️ **React 19 Compatibility**: Some packages require `--legacy-peer-deps`
 - ⚠️ **Vaul Drawer**: Not officially React 19 compatible, but works
 - ⚠️ **Next.js 16**: Very new, ensure compatibility when adding packages
@@ -733,6 +785,7 @@ EMU_v0/
 ### Firestore Collections
 
 #### `/incidents` (Main Alerts)
+
 ```typescript
 {
   id: string                  // "NFA-1834242" or auto-generated doc ID
@@ -747,22 +800,22 @@ EMU_v0/
   lastSeenAt?: Timestamp      // Alternate field name
   updateCount: number         // Total number of updates
   stage: string               // "new", "active", "closed"
-  
+
   // User-specific arrays (multi-user support)
   favoritedBy: string[]       // [userId1, userId2, ...]
   bookmarkedBy: string[]
   silencedBy?: string[]       // Optional, may use localStorage instead
-  
+
   // Notes (added by users)
   notes?: Note[]              // [{text, createdAt, createdBy}, ...]
-  
+
   // Optional fields
   lat?: number                // Geocoded latitude
   lng?: number                // Geocoded longitude
   highAlert?: boolean         // High alert flag
   message?: string            // May be same as lastMessage
   updatedAt?: Timestamp       // May be same as lastTs
-  
+
   // Updates array (embedded, not subcollection)
   updates?: Array<{
     id: string
@@ -776,6 +829,7 @@ EMU_v0/
 ```
 
 #### `/incidents/{id}/updates` (Subcollection - if used separately)
+
 ```typescript
 {
   id: string                  // Auto-generated
@@ -790,6 +844,7 @@ EMU_v0/
 ```
 
 #### `/users` (User Profiles)
+
 ```typescript
 {
   id: string                  // Firebase Auth UID (use uid in code, not id)
@@ -802,7 +857,7 @@ EMU_v0/
   role: "super_admin" | "admin" | "supe" | "chaser"
   createdAt: Timestamp
   updatedAt?: Timestamp
-  
+
   // Profile settings
   settings?: {
     muted?: boolean
@@ -810,14 +865,14 @@ EMU_v0/
     highAlertSound?: string    // "train" | "siren" | "bell"
     locationEnabled?: boolean
   }
-  
+
   // Stats (computed)
   stats?: {
     responsesCount: number
     favoritesCount: number
     bookmarksCount: number
   }
-  
+
   // Location (for live map)
   location?: {
     lat: number
@@ -825,7 +880,7 @@ EMU_v0/
     accuracy: number
     updatedAt: Timestamp
   }
-  
+
   // God Mode (super admin only)
   godModeEnabled?: boolean
   viewAs?: "supe" | "chaser"  // When God Mode is ON
@@ -833,6 +888,7 @@ EMU_v0/
 ```
 
 #### `/responses` (Alert Responses)
+
 ```typescript
 {
   id: string                  // Auto-generated
@@ -850,6 +906,7 @@ EMU_v0/
 ```
 
 #### `/independent_contractors` (CRM - Contractors)
+
 ```typescript
 {
   id: string
@@ -866,21 +923,23 @@ EMU_v0/
 ```
 
 #### `/favorites` (User Favorites - May use array in incidents instead)
+
 ```typescript
 {
-  userId: string
-  incidentId: string
-  createdAt: Timestamp
+  userId: string;
+  incidentId: string;
+  createdAt: Timestamp;
 }
 // Composite index: userId + incidentId
 ```
 
 #### `/bookmarks` (User Bookmarks - May use array in incidents instead)
+
 ```typescript
 {
-  userId: string
-  incidentId: string
-  createdAt: Timestamp
+  userId: string;
+  incidentId: string;
+  createdAt: Timestamp;
 }
 // Composite index: userId + incidentId
 ```
@@ -888,6 +947,7 @@ EMU_v0/
 ### Firebase Realtime Database Structure
 
 #### Incident Group Chats
+
 ```json
 /incident-chats/{incidentId}
   /metadata
@@ -902,7 +962,7 @@ EMU_v0/
         "supeUserId2": true
       }
     }
-  
+
   /messages/{pushId}
     {
       "userId": "chaserUserId",      // Note: API uses senderId
@@ -915,6 +975,7 @@ EMU_v0/
 ```
 
 #### Direct Chats
+
 ```json
 /direct-chats/{chatId}
   /metadata
@@ -925,7 +986,7 @@ EMU_v0/
       },
       "createdAt": 1730250000000
     }
-  
+
   /messages/{pushId}
     {
       "userId": "userId1",
@@ -937,15 +998,17 @@ EMU_v0/
 ```
 
 **Chat ID Generation (Direct Chats)**:
+
 ```typescript
 // Always sort user IDs alphabetically for consistent chat ID
-const chatId = [userId1, userId2].sort().join('_');
+const chatId = [userId1, userId2].sort().join("_");
 // Example: "abc123_def456"
 ```
 
 ### localStorage Cache Structure
 
 #### Geocode Cache
+
 ```typescript
 // Key: "emu_geocode_cache" (note: uses hyphen, not underscore)
 {
@@ -963,6 +1026,7 @@ const chatId = [userId1, userId2].sort().join('_');
 ```
 
 #### User Location Cache
+
 ```typescript
 // Key: "emu_user_location"
 {
@@ -975,12 +1039,14 @@ const chatId = [userId1, userId2].sort().join('_');
 ```
 
 #### Location Permission
+
 ```typescript
 // Key: "emu_location_permission"
 // Value: "true"
 ```
 
 #### Auth Persistence
+
 ```typescript
 // Keys:
 // - "emu_user_id" (localStorage)
@@ -1004,7 +1070,7 @@ sequenceDiagram
     participant FirebaseAuth
     participant Firestore
     participant IncidentsPage
-    
+
     User->>SignupPage: Enter email, password, name, select role
     SignupPage->>FirebaseAuth: createUserWithEmailAndPassword()
     FirebaseAuth-->>SignupPage: User UID
@@ -1018,6 +1084,7 @@ sequenceDiagram
 ```
 
 **Files Involved**:
+
 - `app/signup/page.tsx`
 - `lib/firebase.ts`
 - `lib/auth-persistence.ts`
@@ -1035,7 +1102,7 @@ sequenceDiagram
     participant IncidentChat
     participant RealtimeDB
     participant Firestore
-    
+
     User->>DetailsPage: Click incident card
     DetailsPage->>Firestore: useIncident(id) - onSnapshot
     Firestore-->>DetailsPage: Incident data + updates
@@ -1054,6 +1121,7 @@ sequenceDiagram
 ```
 
 **Files Involved**:
+
 - `app/chaser/incident/[id]/page.client.tsx` or `app/supe/incident/[id]/page.client.tsx`
 - `components/incident-chat.tsx`
 - `lib/realtime-database.ts`
@@ -1071,11 +1139,11 @@ sequenceDiagram
     participant GeocodeCache
     participant GoogleAPI
     participant Haversine
-    
+
     User->>IncidentsPage: Open incidents page
     IncidentsPage->>useIncidentsWithDistance: Load incidents
     useIncidentsWithDistance->>GeocodeCache: Check localStorage
-    
+
     alt Address cached
         GeocodeCache-->>useIncidentsWithDistance: Return lat/lng
     else Address not cached
@@ -1083,7 +1151,7 @@ sequenceDiagram
         GoogleAPI-->>useIncidentsWithDistance: lat/lng
         useIncidentsWithDistance->>GeocodeCache: Save to localStorage
     end
-    
+
     useIncidentsWithDistance->>useIncidentsWithDistance: Get user location
     useIncidentsWithDistance->>Haversine: Calculate distance
     Haversine-->>useIncidentsWithDistance: Distance in miles
@@ -1092,6 +1160,7 @@ sequenceDiagram
 ```
 
 **Files Involved**:
+
 - `hooks/use-incidents-with-distance.ts`
 - `lib/offline-cache.ts`
 - `hooks/use-location-distance.ts`
@@ -1105,7 +1174,7 @@ sequenceDiagram
     participant Admin
     participant AdminPage
     participant Firestore
-    
+
     Admin->>AdminPage: Visit /admin
     AdminPage->>Firestore: onSnapshot(/users)
     Firestore-->>AdminPage: List of all users
@@ -1118,6 +1187,7 @@ sequenceDiagram
 ```
 
 **Files Involved**:
+
 - `app/admin/page.tsx`
 
 ---
@@ -1131,6 +1201,7 @@ sequenceDiagram
 **Root Cause**: Deduplication by `timestamp|message|stage` missed near-duplicates (e.g., timestamps 1 second apart).
 
 **Fix** (Oct 30, 2025):
+
 - **File**: `hooks/use-incident.ts` (lines 149-166)
 - **Strategy**: Normalize message (trim, lowercase, remove extra whitespace) and use ONLY message as unique key
 - **Result**: Aggressive deduplication catches ALL duplicate messages
@@ -1140,8 +1211,10 @@ sequenceDiagram
 const uniqueKey = `${update.ts}|${update.message}|${update.stage}`;
 
 // After
-const normalizedMsg = update.message.trim().toLowerCase().replace(/\s+/g, ' ');
-if (seenMessages.has(normalizedMsg)) { return false; }
+const normalizedMsg = update.message.trim().toLowerCase().replace(/\s+/g, " ");
+if (seenMessages.has(normalizedMsg)) {
+  return false;
+}
 seenMessages.set(normalizedMsg, update);
 ```
 
@@ -1154,6 +1227,7 @@ seenMessages.set(normalizedMsg, update);
 **Root Cause**: Using a button that opened Google Maps URL, but no control over initial zoom level.
 
 **Fix** (Oct 30, 2025):
+
 - **File**: `app/chaser/incident/[id]/page.client.tsx` (lines 82-95)
 - **Strategy**: Replaced `MapCard` button with embedded Google Maps iframe at `zoom=12`
 - **Result**: Interactive map shows at city level
@@ -1164,7 +1238,8 @@ seenMessages.set(normalizedMsg, update);
     key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&
     q=147-25%2094th%20Ave%2C%20Queens%2C%20NY&
     zoom=12"
-  width="100%" height="256px"
+  width="100%"
+  height="256px"
 />
 ```
 
@@ -1175,6 +1250,7 @@ seenMessages.set(normalizedMsg, update);
 **Problem**: Filter bar taking 5-6 rows, leaving no room for incident list.
 
 **Fixes** (Oct 29-30, 2025):
+
 - **Phase 1**: Removed labels (Distance:, Type:, Updates:) → Saved 1 row
 - **Phase 2**: Moved Search and Distance buttons to Type row → Saved 1 row
 - **Phase 3**: Added collapse button (🤏) → Optional full collapse
@@ -1189,6 +1265,7 @@ seenMessages.set(normalizedMsg, update);
 **Problem**: Different shades of red across profile page, details page, buttons.
 
 **Fix** (Oct 29, 2025):
+
 - **File**: `app/globals.css` (lines 12-20)
 - **Strategy**: Standardized `--destructive` CSS variable to `oklch(0.626 0.257 27.31)` = `#FF3B30`
 - **Also Fixed**: Direct hex codes in various components for error text and heart icon
@@ -1203,6 +1280,7 @@ seenMessages.set(normalizedMsg, update);
 **Root Cause**: Not saving permission status in persistent storage.
 
 **Fix** (Oct 29, 2025):
+
 - **File**: `lib/offline-cache.ts` (lines 88-93)
 - **Strategy**: Save `true` to `localStorage` (`emu_location_permission`) after first successful location retrieval
 - **Result**: Permission only asked once, persists forever
@@ -1216,6 +1294,7 @@ seenMessages.set(normalizedMsg, update);
 **Root Cause**: Firebase Auth default persistence not aggressive enough.
 
 **Fix** (Oct 30, 2025):
+
 - **File**: `lib/auth-persistence.ts` (NEW)
 - **Strategy**: Triple-layer storage:
   1. `localStorage` (persists forever)
@@ -1233,6 +1312,7 @@ seenMessages.set(normalizedMsg, update);
 **Root Cause**: HTTPS required for Geolocation API, but testing on `http://192.168.1.156:3000`.
 
 **Fix** (Oct 29, 2025):
+
 - **Action**: Deployed to Vercel (https://4axe.com)
 - **Result**: Geolocation works perfectly on mobile over HTTPS
 
@@ -1245,6 +1325,7 @@ seenMessages.set(normalizedMsg, update);
 **Root Cause**: Distance filter applied BEFORE distances were calculated.
 
 **Fix** (Oct 29, 2025):
+
 - **File**: `hooks/use-incidents-with-distance.ts`
 - **Strategy**: Move distance filtering to AFTER enrichment step
 - **Result**: Distance filter now works correctly, showing alerts within 50mi from last 4 hours
@@ -1258,6 +1339,7 @@ seenMessages.set(normalizedMsg, update);
 **Root Cause**: Next.js 16 not officially supported on Cloudflare Pages.
 
 **Fix** (Oct 29, 2025):
+
 - **Action**: Switched deployment to **Vercel**
 - **Result**: Instant success, automatic deployments, full Next.js 16 support
 
@@ -1270,6 +1352,7 @@ seenMessages.set(normalizedMsg, update);
 **Root Cause**: Assumed Firebase Auth = Firestore profile (incorrect assumption).
 
 **Fix** (Oct 30, 2025):
+
 - **File**: `app/login/page.tsx`
 - **Strategy**: Check if Firestore profile exists after Google sign-in, auto-create if missing
 - **Result**: Google users get proper Firestore profiles automatically
@@ -1283,6 +1366,7 @@ seenMessages.set(normalizedMsg, update);
 **Root Cause**: Next.js is strict about route uniqueness.
 
 **Fix** (Oct 30, 2025):
+
 - **Action**: Deleted `app/(auth)/` folder entirely, kept only `app/signup/page.tsx`
 - **Result**: Vercel build succeeds, deployment working
 
@@ -1295,6 +1379,7 @@ seenMessages.set(normalizedMsg, update);
 **Root Cause**: Using `profile.id` instead of `profile.uid`, `profile.name` instead of `profile.displayName`, incorrect function signatures.
 
 **Fix** (Nov 1, 2025):
+
 - **File**: `app/chaser/chat/page.tsx`
 - **Changes**:
   - Changed `profile.id` to `profile.uid`
@@ -1370,6 +1455,7 @@ git push origin main
 ### Testing Workflow
 
 **Local Testing**:
+
 ```bash
 # Desktop browser
 http://localhost:3000
@@ -1382,6 +1468,7 @@ http://192.168.1.XXX:3000
 ```
 
 **Production Testing**:
+
 ```bash
 # Always test on https://4axe.com after deployment
 # Especially for:
@@ -1394,6 +1481,7 @@ http://192.168.1.XXX:3000
 ### Debugging Tips
 
 **Firebase Console Logs**:
+
 ```typescript
 // All Firebase operations are logged
 console.log("[useIncident] Loading incident:", incidentId);
@@ -1402,12 +1490,14 @@ console.log("[Chat] Message sent:", message);
 ```
 
 **Browser DevTools**:
+
 - **Console**: Check for Firebase errors, authentication issues
 - **Network Tab**: Verify Firestore queries, API calls
 - **Application Tab**: Check localStorage cache, service workers
 - **Performance Tab**: Monitor real-time listener overhead
 
 **Common Error Patterns**:
+
 ```typescript
 // Firebase permission denied
 // → Check firestore.rules
@@ -1504,6 +1594,7 @@ git push origin main
 **Status**: ❌ Not used (difficult with Next.js SSR + dynamic routes)
 
 **Why Vercel Instead**:
+
 - ✅ Native Next.js support (built by Next.js team)
 - ✅ Automatic deployments
 - ✅ Edge functions globally distributed
@@ -1515,11 +1606,13 @@ git push origin main
 **Status**: ❌ Abandoned (Next.js 16 not supported)
 
 **Why Not**:
+
 - ❌ Next.js 16 not officially supported
 - ❌ `@cloudflare/next-on-pages` deprecated
 - ❌ 404 errors despite successful builds
 
 **Cloudflare Support Response**:
+
 > "Next.js 16 is not yet officially supported on Cloudflare Pages. Please use Next.js 13-15 or deploy to Vercel."
 
 **📚 Reference**: `VERCEL_DEPLOYMENT.md`, `docs/memory-bank/activeContext.md`
@@ -1532,37 +1625,38 @@ git push origin main
 
 All memory bank files are in `docs/memory-bank/`:
 
-| File | Purpose | Cross-References |
-|------|---------|------------------|
-| **projectbrief.md** | Project overview, goals, success criteria | → README.md, WIRING.md, ROUTES.md, API_MAP.md |
-| **productContext.md** | User problems, solutions, UX goals | → projectbrief.md, progress.md |
-| **systemPatterns.md** | Architecture, component relationships, design patterns | → techContext.md, WIRING.md, API_MAP.md |
-| **techContext.md** | Tech stack, dependencies, dev setup | → systemPatterns.md, package.json, tsconfig.json |
-| **activeContext.md** | Current work focus, recent changes, session history | → progress.md |
-| **progress.md** | Detailed status tracking, what's done, what's left | → activeContext.md, projectbrief.md |
+| File                  | Purpose                                                | Cross-References                                 |
+| --------------------- | ------------------------------------------------------ | ------------------------------------------------ |
+| **projectbrief.md**   | Project overview, goals, success criteria              | → README.md, WIRING.md, ROUTES.md, API_MAP.md    |
+| **productContext.md** | User problems, solutions, UX goals                     | → projectbrief.md, progress.md                   |
+| **systemPatterns.md** | Architecture, component relationships, design patterns | → techContext.md, WIRING.md, API_MAP.md          |
+| **techContext.md**    | Tech stack, dependencies, dev setup                    | → systemPatterns.md, package.json, tsconfig.json |
+| **activeContext.md**  | Current work focus, recent changes, session history    | → progress.md                                    |
+| **progress.md**       | Detailed status tracking, what's done, what's left     | → activeContext.md, projectbrief.md              |
 
 ### Key Documentation Files
 
-| File | Purpose | Related Memory Bank Files |
-|------|---------|---------------------------|
-| **HANDOFF.md** (this file) | Comprehensive project handoff | → ALL memory bank files |
-| **WIRING.md** | Data flow diagrams, Firebase structure | → systemPatterns.md, API_MAP.md, FIRESTORE_SCHEMA.md |
-| **API_MAP.md** | Hooks → Firebase mapping | → systemPatterns.md, WIRING.md |
-| **ROUTES.md** | Route documentation, navigation | → projectbrief.md |
-| **FIRESTORE_SCHEMA.md** | Database schema reference | → WIRING.md, API_MAP.md |
-| **COLOR_STANDARDS.md** | Official color palette | → systemPatterns.md |
-| **FILTER_SYSTEM.md** | Filter implementation details | → systemPatterns.md, API_MAP.md |
-| **AVATAR_GUIDE.md** | Avatar specifications and guidelines | → systemPatterns.md |
-| **OFFLINE_CACHE_SYSTEM.md** | Cache implementation details | → systemPatterns.md, techContext.md |
-| **AUTH_AND_REALTIME.md** | Authentication & real-time updates | → techContext.md, systemPatterns.md |
-| **LIVE_CHAT_TESTING_GUIDE.md** | Chat testing procedures | → AUTH_AND_REALTIME.md, WIRING.md |
-| **docs/README.md** | Project README | → projectbrief.md, techContext.md |
+| File                           | Purpose                                | Related Memory Bank Files                            |
+| ------------------------------ | -------------------------------------- | ---------------------------------------------------- |
+| **HANDOFF.md** (this file)     | Comprehensive project handoff          | → ALL memory bank files                              |
+| **WIRING.md**                  | Data flow diagrams, Firebase structure | → systemPatterns.md, API_MAP.md, FIRESTORE_SCHEMA.md |
+| **API_MAP.md**                 | Hooks → Firebase mapping               | → systemPatterns.md, WIRING.md                       |
+| **ROUTES.md**                  | Route documentation, navigation        | → projectbrief.md                                    |
+| **FIRESTORE_SCHEMA.md**        | Database schema reference              | → WIRING.md, API_MAP.md                              |
+| **COLOR_STANDARDS.md**         | Official color palette                 | → systemPatterns.md                                  |
+| **FILTER_SYSTEM.md**           | Filter implementation details          | → systemPatterns.md, API_MAP.md                      |
+| **AVATAR_GUIDE.md**            | Avatar specifications and guidelines   | → systemPatterns.md                                  |
+| **OFFLINE_CACHE_SYSTEM.md**    | Cache implementation details           | → systemPatterns.md, techContext.md                  |
+| **AUTH_AND_REALTIME.md**       | Authentication & real-time updates     | → techContext.md, systemPatterns.md                  |
+| **LIVE_CHAT_TESTING_GUIDE.md** | Chat testing procedures                | → AUTH_AND_REALTIME.md, WIRING.md                    |
+| **docs/README.md**             | Project README                         | → projectbrief.md, techContext.md                    |
 
 ### How Memory Bank Works
 
 **Purpose**: Persistent context for AI agents across sessions.
 
 **Reading Order** (for new agent):
+
 1. **projectbrief.md** → Understand what this project is
 2. **productContext.md** → Understand why it exists and who uses it
 3. **systemPatterns.md** → Understand how it's architected
@@ -1572,12 +1666,14 @@ All memory bank files are in `docs/memory-bank/`:
 7. **HANDOFF.md** → Deep dive into everything (you are here)
 
 **Updating Memory Bank**:
+
 - Update **activeContext.md** after every session with new work
 - Update **progress.md** when features are completed or status changes
 - Update **techContext.md** when dependencies are added/removed
 - Update **systemPatterns.md** when architecture changes
 
 **Cross-Referencing Rules**:
+
 - 🔗 Always link to related docs with `📚 Reference: filename.md`
 - ✅ Keep line numbers accurate when referencing code
 - 🔄 Update all related docs when making changes
@@ -1592,10 +1688,12 @@ All memory bank files are in `docs/memory-bank/`:
 ### 🔥 High Priority (Week 1)
 
 #### 1. Custom Alert Groups with Train Horn Notifications
+
 **Status**: Not started  
 **User Requirement**: "users can save specific searches... if the high alert button is selected... then the high alert alarm will sound"
 
 **Implementation Plan**:
+
 1. Create Firestore collection: `/users/{uid}/alertGroups/{groupId}`
    ```typescript
    {
@@ -1619,6 +1717,7 @@ All memory bank files are in `docs/memory-bank/`:
 7. Add vibration + screen flash (similar to current High Alert)
 
 **Files to Create**:
+
 - `hooks/use-alert-groups.ts`
 - `app/chaser/alert-groups/page.tsx`
 - `app/chaser/alert-groups/[id]/page.tsx` (edit group)
@@ -1630,11 +1729,14 @@ All memory bank files are in `docs/memory-bank/`:
 ---
 
 #### 2. CRM Database for Homeowner Data
+
 **Status**: Not started  
 **User Requirement**: "we are going to need more backend processing... pull up the owner of the address and put that into the homeowner fields"
 
 **Implementation Plan**:
+
 1. Create Firestore collections:
+
    ```typescript
    /properties/{propertyId}
    {
@@ -1643,18 +1745,18 @@ All memory bank files are in `docs/memory-bank/`:
      state: string,
      lat: number,
      lng: number,
-     
+
      owner: {
        name: string,
        email: string,
        phone: string
      },
-     
+
      incidentIds: string[],
      lastContactedAt: Timestamp,
      contactCount: number
    }
-   
+
    /communications/{communicationId}
    {
      propertyId: string,
@@ -1668,6 +1770,7 @@ All memory bank files are in `docs/memory-bank/`:
      status: "sent" | "delivered" | "failed"
    }
    ```
+
 2. Create homeowner lookup page: `app/chaser/properties/[propertyId]/page.tsx`
 3. Add "Lookup Homeowner" button on incident details page
 4. Integrate with public property records API (e.g., Zillow, Attom Data Solutions)
@@ -1675,11 +1778,13 @@ All memory bank files are in `docs/memory-bank/`:
 6. Track communication history
 
 **External APIs Needed**:
+
 - Property data: Attom Data API or Zillow API
 - SMS: Twilio
 - Email: SendGrid or AWS SES
 
 **Files to Create**:
+
 - `lib/actions/properties.ts`
 - `lib/actions/communications.ts`
 - `hooks/use-property.ts`
@@ -1691,14 +1796,15 @@ All memory bank files are in `docs/memory-bank/`:
 ---
 
 #### 3. eSign Full Integration
+
 **Status**: UI complete, backend not wired  
 **User Requirement**: "I need to know how to upload forms, and how to send them to customers... send PDF docs to the homeowners to esign... send them a text message link that opens the pdf for them to esign"
 
 **Implementation Plan**:
+
 1. **Upload PDFs to Firebase Storage**:
    - Path: `/forms/{formTemplateId}.pdf`
    - Metadata in Firestore: `/formTemplates/{id}`
-   
 2. **Generate Signature Requests**:
    - Create `/signatureRequests/{requestId}`:
      ```typescript
@@ -1715,11 +1821,9 @@ All memory bank files are in `docs/memory-bank/`:
        signedPdfUrl?: string
      }
      ```
-   
 3. **Send Notification**:
    - Email: SendGrid template with unique link
    - SMS: Twilio with shortened link
-   
 4. **Signing Page**:
    - Public route: `/sign/[requestId]`
    - Render PDF with signature canvas overlay
@@ -1727,17 +1831,18 @@ All memory bank files are in `docs/memory-bank/`:
    - Merge signature into PDF using pdf-lib
    - Upload signed PDF to Storage
    - Update request status
-   
 5. **Notification to Requester**:
    - FCM push notification: "John Doe signed your form"
    - Email: "Your document has been signed"
 
 **Dependencies to Add**:
+
 ```bash
 npm install pdf-lib @sendgrid/mail twilio
 ```
 
 **Files to Create**:
+
 - `app/sign/[requestId]/page.tsx` (public signing page)
 - `lib/actions/esign.ts`
 - `lib/sendgrid.ts`
@@ -1751,10 +1856,12 @@ npm install pdf-lib @sendgrid/mail twilio
 ### ⚙️ Medium Priority (Week 2)
 
 #### 4. Firestore Geocoding Cache
+
 **Status**: Client-side cache working, Firestore cache not implemented  
 **Why**: Permanent storage, multi-user benefit, reduce Google Maps API costs
 
 **Implementation Plan**:
+
 1. Create Firestore collection: `/geocodedAddresses/{addressHash}`
    ```typescript
    {
@@ -1778,10 +1885,12 @@ npm install pdf-lib @sendgrid/mail twilio
 ---
 
 #### 5. Live Map for Supes
+
 **Status**: Component exists, not fully wired  
 **Current File**: `app/supe/map/page.tsx`, `components/live-team-map.tsx`
 
 **Implementation Plan**:
+
 1. Subscribe to all `/users` where `role === "chaser"` and `location` exists
 2. Render Google Maps with markers for each chaser
 3. Update markers in real-time as locations change
@@ -1789,11 +1898,13 @@ npm install pdf-lib @sendgrid/mail twilio
 5. Click marker → Show chaser name, last update time, current incident
 
 **Dependencies to Add**:
+
 ```bash
 npm install @react-google-maps/api @googlemaps/markerclusterer
 ```
 
 **Files to Update**:
+
 - `app/supe/map/page.tsx`
 - `hooks/use-live-locations.ts`
 - `components/live-team-map.tsx`
@@ -1803,10 +1914,12 @@ npm install @react-google-maps/api @googlemaps/markerclusterer
 ---
 
 #### 6. Push Notifications (FCM)
+
 **Status**: VAPID key configured, FCM setup stubbed  
 **Current File**: `lib/fcm.ts` (stubbed)
 
 **Implementation Plan**:
+
 1. Complete `lib/fcm.ts`:
    - Request notification permission
    - Register service worker
@@ -1828,10 +1941,12 @@ npm install @react-google-maps/api @googlemaps/markerclusterer
 ### 🔮 Future Enhancements (Week 3+)
 
 #### 7. 30-Day Retention Policy
+
 **Status**: Not started  
 **Goal**: Auto-delete incidents older than 30 days
 
 **Implementation Plan**:
+
 - Use Firebase Extensions: "Delete Collections"
 - Schedule: Daily at 2 AM
 - Query: `WHERE lastTs < 30 days ago`
@@ -1842,10 +1957,12 @@ npm install @react-google-maps/api @googlemaps/markerclusterer
 ---
 
 #### 8. Advanced Search & Saved Searches
+
 **Status**: Not started  
 **Goal**: Command palette (Cmd+K) for app-wide search
 
 **Implementation Plan**:
+
 1. Add `cmdk` component (already installed)
 2. Implement search across:
    - Incidents (by address, type, message)
@@ -1859,10 +1976,12 @@ npm install @react-google-maps/api @googlemaps/markerclusterer
 ---
 
 #### 9. Analytics Dashboard
+
 **Status**: Not started  
 **Goal**: Track usage, response times, popular incidents
 
 **Implementation Plan**:
+
 1. Use Vercel Analytics (already enabled)
 2. Add custom events:
    - `incident_opened`
@@ -1877,10 +1996,12 @@ npm install @react-google-maps/api @googlemaps/markerclusterer
 ---
 
 #### 10. Error Tracking
+
 **Status**: Not started  
 **Goal**: Catch and report errors automatically
 
 **Implementation Plan**:
+
 1. Add Sentry:
    ```bash
    npm install @sentry/nextjs
@@ -1899,16 +2020,19 @@ npm install @react-google-maps/api @googlemaps/markerclusterer
 ## 14. Support & Contact
 
 ### Project Owner
+
 **Name**: ynotfins  
 **GitHub**: https://github.com/ynotfins  
 **Repository**: https://github.com/ynotfins/EMU_v0
 
 ### Production Environment
+
 **Live URL**: https://4axe.com  
 **Firebase Project**: `emu-incidents`  
 **Vercel Project**: `emu-v0`
 
 ### Quick Reference Links
+
 - **Firebase Console**: https://console.firebase.google.com/project/emu-incidents
 - **Vercel Dashboard**: https://vercel.com/dashboard
 - **Google Cloud Console**: https://console.cloud.google.com/
@@ -1926,7 +2050,7 @@ npm install @react-google-maps/api @googlemaps/markerclusterer
 ✅ **Maps & Location**: Embedded maps, user location tracking, offline caching  
 ✅ **UI/UX**: Ultra-compact filters, collapsible sections, mobile-optimized, 20% rounded avatars  
 ✅ **Admin Tools**: User management, role changes, God Mode toggle  
-✅ **Deployment**: Vercel automatic deployments, custom domain  
+✅ **Deployment**: Vercel automatic deployments, custom domain
 
 **Next priorities**: Custom Alert Groups, CRM database, eSign integration, Live Map for supes, Push Notifications.
 
@@ -1936,6 +2060,6 @@ This handoff document provides everything a new developer or AI agent needs to u
 
 ---
 
-*Last Updated: November 1, 2025*  
-*Document Version: 2.0*  
-*Maintained by: ynotfins + AI Agent*
+_Last Updated: November 1, 2025_  
+_Document Version: 2.0_  
+_Maintained by: ynotfins + AI Agent_

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { MessageCircle, Users, Phone } from "lucide-react";
@@ -28,7 +28,6 @@ export function ChatContacts({
   onSelectGroup,
 }: ChatContactsProps) {
   const [contacts, setContacts] = useState<UserContact[]>([]);
-  const [filteredContacts, setFilteredContacts] = useState<UserContact[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -76,21 +75,19 @@ export function ChatContacts({
     fetchContacts();
   }, [currentUserId]);
 
-  // Filter contacts based on search
-  useEffect(() => {
+  // Filter contacts based on search (using useMemo for derived state)
+  const filteredContacts = useMemo(() => {
     if (!searchQuery.trim()) {
-      setFilteredContacts(contacts);
-      return;
+      return contacts;
     }
 
     const query = searchQuery.toLowerCase();
-    const filtered = contacts.filter(
+    return contacts.filter(
       (contact) =>
         contact.name.toLowerCase().includes(query) ||
         contact.email.toLowerCase().includes(query) ||
         contact.role.toLowerCase().includes(query)
     );
-    setFilteredContacts(filtered);
   }, [searchQuery, contacts]);
 
   const getRoleBadgeColor = (role: string) => {

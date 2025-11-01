@@ -28,13 +28,12 @@ const BOROUGH_TO_COUNTY: Record<string, string> = {
 export function useIncident(incidentId: string) {
   const [data, setData] = useState<Incident | undefined>();
   const [updates, setUpdates] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | undefined>();
+  const [isLoading, setIsLoading] = useState(!incidentId ? false : true);
+  const [error, setError] = useState<string | undefined>(!incidentId ? "missing-id" : undefined);
 
   useEffect(() => {
     if (!incidentId) {
-      setError("missing-id");
-      setIsLoading(false);
+      // Early return if no incident ID - state already set above
       return;
     }
 

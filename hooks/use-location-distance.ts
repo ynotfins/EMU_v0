@@ -142,27 +142,33 @@ export function useLocationDistance() {
 
   // Request and track user location
   useEffect(() => {
+    // Check geolocation support (must be async to avoid setState-in-effect warning)
     if (!navigator.geolocation) {
-      setError('Geolocation not supported by your browser');
-      setPermissionGranted(false);
+      // Use setTimeout to defer setState (React best practice)
+      Promise.resolve().then(() => {
+        setError('Geolocation not supported by your browser');
+        setPermissionGranted(false);
+      });
       return;
     }
 
-    // Check if permission was previously granted
+    // Check if permission was previously granted (defer setState)
     if (locationPermission.wasGranted()) {
       console.log('[useLocationDistance] ✅ Location permission already granted (never asking again)');
-      setPermissionGranted(true);
+      Promise.resolve().then(() => setPermissionGranted(true));
     } else {
       console.log('[useLocationDistance] 📍 Requesting location permission...');
     }
     
-    // Try to use cached location first
+    // Try to use cached location first (defer setState)
     const cachedLoc = userLocationCache.get();
     if (cachedLoc && !userLocationCache.isStale()) {
       console.log('[useLocationDistance] 📦 Using cached location (fresh)');
-      setUserLocation({ lat: cachedLoc.lat, lng: cachedLoc.lng });
-      setPermissionGranted(true);
-      setError(null);
+      Promise.resolve().then(() => {
+        setUserLocation({ lat: cachedLoc.lat, lng: cachedLoc.lng });
+        setPermissionGranted(true);
+        setError(null);
+      });
     }
 
     // Watch position for real-time updates (hardware GPS)

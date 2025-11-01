@@ -47,12 +47,16 @@ export function useProfile() {
     if (settings.pushEnabled !== undefined) {
       try {
         localStorage.setItem("emu.push", JSON.stringify(settings.pushEnabled))
-      } catch {}
+      } catch (err) {
+        console.error("[useProfile] Failed to save push setting to localStorage:", err)
+      }
     }
     if (settings.trackingEnabled !== undefined) {
       try {
         localStorage.setItem("emu.tracking", JSON.stringify(settings.trackingEnabled))
-      } catch {}
+      } catch (err) {
+        console.error("[useProfile] Failed to save tracking setting to localStorage:", err)
+      }
     }
     
     // TODO: Update Firestore: user_profiles/{currentUserId} merge settings field
