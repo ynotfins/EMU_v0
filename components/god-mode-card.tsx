@@ -20,16 +20,16 @@ interface GodModeCardProps {
 export function GodModeCard({ userRole }: GodModeCardProps) {
   const router = useRouter();
   const pathname = usePathname();
-  
+
   // Initialize God Mode from localStorage (default OFF)
   const [godMode, setGodMode] = useState(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const stored = localStorage.getItem("godMode");
       return stored === "true";
     }
     return false;
   });
-  
+
   // Derive view mode from pathname (no useState needed)
   const viewMode = useMemo<"chaser" | "supe">(() => {
     if (pathname.startsWith("/chaser")) {

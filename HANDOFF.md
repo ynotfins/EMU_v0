@@ -1406,6 +1406,7 @@ seenMessages.set(normalizedMsg, update);
 **Problem**: 9 critical ESLint errors causing cascading renders, React hooks violations, and code quality issues.
 
 **Errors Found**:
+
 1. Conditional React hooks (2 errors) - `god-mode-card.tsx`, `role-switcher.tsx`
 2. setState in effect (4 errors) - `chat-contacts.tsx`, `use-incident.ts`, `use-location-distance.ts`, `use-responses.ts`
 3. Empty catch blocks (2 errors) - `use-profile.ts`
@@ -1414,6 +1415,7 @@ seenMessages.set(normalizedMsg, update);
 **Fix** (Nov 1, 2025):
 
 **Files Modified**:
+
 - `components/god-mode-card.tsx`:
   - Moved early return AFTER all hooks (React rules)
   - Converted `viewMode` to `useMemo` (derived from pathname)
@@ -1439,7 +1441,8 @@ seenMessages.set(normalizedMsg, update);
   - Converted `require()` to ES6 `import` with JSON assertion
   - Modern import style
 
-**Result**: 
+**Result**:
+
 - **Before**: 103 problems (9 errors ❌, 94 warnings)
 - **After**: 95 problems (0 errors ✅, 95 warnings)
 - **Performance**: Improved rendering performance with useMemo
