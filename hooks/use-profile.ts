@@ -38,6 +38,7 @@ export function useProfile(uid?: string | null) {
             email: userData.email || "",
             displayName: userData.displayName || userData.name || userData.nickname || userData.email?.split("@")[0] || "User",
             role: userData.role || "chaser",
+            viewMode: userData.viewMode || "chaser",
             agency: userData.agency,
             stats: {
               responded: userData.stats?.responded || 0,
@@ -141,7 +142,27 @@ export function useProfile(uid?: string | null) {
     }
   }
 
-  return { data, isLoading, error, updateSettings, updatePayout }
+  const setViewMode = async (mode: "chaser" | "supe") => {
+    if (!userId) return
+    
+    console.log("[useProfile] setViewMode:", mode)
+    
+    // Update local state immediately (optimistic update)
+    setData((prev) => (prev ? { ...prev, viewMode: mode } : null))
+    
+    // Update Firestore
+    try {
+      const userDocRef = doc(db, "users", userId)
+      await updateDoc(userDocRef, {
+        viewMode: mode,
+      })
+      console.log("[useProfile] ✅ ViewMode updated in Firestore")
+    } catch (err) {
+      console.error("[useProfile] ❌ Failed to update viewMode in Firestore:", err)
+    }
+  }
+
+  return { data, isLoading, error, updateSettings, updatePayout, setViewMode }
 }
 
 // Action stubs

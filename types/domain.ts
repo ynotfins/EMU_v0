@@ -97,6 +97,7 @@ export interface Profile {
   email: string
   displayName: string
   role: Role
+  viewMode?: "chaser" | "supe"
   agency?: string
   stats: {
     responded: number
