@@ -61,7 +61,7 @@ export function SupeControlsCard({ userRole }: SupeControlsCardProps) {
   };
 
   const handleViewModeToggle = (isSupe: boolean) => {
-    const newView = isSupe ? "supe" : "chaser";
+    const newView = isSupe ? "supe" : "chaser"
 
     // Replace route based on current pathname
     let newPath = pathname;
@@ -74,8 +74,18 @@ export function SupeControlsCard({ userRole }: SupeControlsCardProps) {
       newPath = `/${newView}/incidents`;
     }
 
-    console.log(`[SupeControls] Switching from ${viewMode} to ${newView} view`);
+    console.log(`[SupeControls] Switching from ${viewMode} to ${newView} view, navigating to: ${newPath}`);
+    
+    // Force navigation and reload to ensure UI updates
     router.push(newPath);
+    
+    // Small delay to ensure navigation completes, then reload if needed
+    setTimeout(() => {
+      if (window.location.pathname === pathname) {
+        // If still on same path, force reload
+        window.location.href = newPath;
+      }
+    }, 100);
   };
 
   // Only show for supe users (including those who can toggle to super_admin)
