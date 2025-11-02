@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { logger } from "@/lib/logger";
+import type { IncidentLite, IncidentUpdate } from "@/types/domain";
 import {
   collection,
   onSnapshot,
@@ -27,8 +28,42 @@ const BOROUGH_TO_COUNTY: Record<string, string> = {
   "Staten Island": "Richmond",
 };
 
+// Type for raw Firestore document data (before normalization)
+interface FirestoreIncidentData {
+  incidentId?: string | number;
+  incidentNumber?: string | number;
+  firestoreDocId?: string;
+  updatedAt?: string | { seconds: number };
+  lastSeenAt?: string | { seconds: number };
+  lastTs?: string | { seconds: number };
+  timestamp?: string | { seconds: number };
+  ts?: string | { seconds: number };
+  state?: string;
+  county?: string;
+  city?: string;
+  address?: string;
+  addr?: string;
+  street?: string;
+  type?: string;
+  lastType?: string;
+  alertType?: string;
+  message?: string;
+  lastMessage?: string;
+  alertMessage?: string;
+  highAlert?: boolean;
+  isSilenced?: boolean;
+  updates?: IncidentUpdate[];
+  favoritedBy?: string[];
+  bookmarkedBy?: string[];
+  distanceMi?: number;
+  lat?: number;
+  lng?: number;
+  geocodedAt?: string;
+  [key: string]: unknown; // Allow other fields
+}
+
 // Normalize inconsistent Firestore data into IncidentLite type
-function normalize(docId: string, data: any): IncidentLite {
+function normalize(docId: string, data: FirestoreIncidentData): IncidentLite {
   // Handle timestamp variations - try multiple fields and handle Firestore Timestamp objects
   let updatedAt =
     data.updatedAt ||
@@ -78,8 +113,8 @@ function normalize(docId: string, data: any): IncidentLite {
     favoritedBy: data.favoritedBy || [],
     bookmarkedBy: data.bookmarkedBy || [],
     // CRITICAL: Store the actual firestoreDocId field for routing/querying
-    incidentId: data.firestoreDocId || data.incidentId,
-    } as IncidentLite;
+    incidentId: data.firestoreDocId || String(data.incidentId || docId),
+  } satisfies IncidentLite;
 
   // DEBUG: Log what we're storing for routing (only in development)
   if (
