@@ -4,20 +4,31 @@ import { MapPin, Users } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import type { LocationMarker } from "@/hooks/use-live-locations"
+import type { IncidentLite } from "@/types/domain"
 
 interface LiveMapProps {
   markers: LocationMarker[]
+  incidents?: IncidentLite[]
 }
 
-export function LiveMap({ markers }: LiveMapProps) {
+export function LiveMap({ markers, incidents = [] }: LiveMapProps) {
   return (
     <div className="relative h-full w-full bg-[#E5E7EB] rounded-lg overflow-hidden">
+      {/* 4 Hours Text - Small and unintrusive */}
+      <div className="absolute top-4 right-4 z-10">
+        <p className="text-xs text-[#6B7280] bg-white/80 backdrop-blur-sm px-2 py-1 rounded">
+          Last 4 hours
+        </p>
+      </div>
+
       {/* Map Placeholder */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="text-center space-y-3">
           <MapPin className="h-16 w-16 text-[#6B7280] mx-auto" />
           <p className="text-[#6B7280] font-medium">Live Map View</p>
-          <p className="text-sm text-[#6B7280]">Google Maps integration placeholder</p>
+          <p className="text-sm text-[#6B7280]">
+            {incidents.length} alert{incidents.length !== 1 ? 's' : ''} from last 4 hours
+          </p>
         </div>
       </div>
 

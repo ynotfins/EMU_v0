@@ -47,7 +47,13 @@ export function ChatContacts({
             // Don't show current user
             allUsers.push({
               id: doc.id,
-              name: data.nickname || data.name || data.email || "Unknown", // Show nickname first!
+              name: (() => {
+                // Special handling for Lightning Joe
+                if (data.email === "j.snap11@yahoo.com") {
+                  return "⚡⚡⚡ Lightning Joe ⚡⚡⚡";
+                }
+                return data.nickname || data.name || data.email || "Unknown";
+              })(),
               email: data.email,
               role: data.role || "chaser",
               lastSeen: data.lastSeen || Date.now(),

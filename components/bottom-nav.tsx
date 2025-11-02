@@ -88,7 +88,11 @@ export function BottomNav({ role }: BottomNavProps) {
               )}
             >
               {item.label === "Favorites" ? (
-                <Icon className={cn("h-6 w-6 fill-[#FF3B30] text-[#FF3B30]")} />
+                item.active ? (
+                  <Icon className={cn("h-6 w-6 fill-[#FF3B30] text-[#FF3B30]")} />
+                ) : (
+                  <Icon className={cn("h-6 w-6 text-[#FF3B30] stroke-[#FF3B30]")} />
+                )
               ) : (
                 <Icon className="h-6 w-6" />
               )}

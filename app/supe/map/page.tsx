@@ -3,11 +3,30 @@
 import { RoleLayout } from "@/components/role-layout"
 import { LiveMap } from "@/components/live-map"
 import { useLiveLocations } from "@/hooks/use-live-locations"
+import { useIncidents } from "@/hooks/use-incidents"
 import { Button } from "@/components/ui/button"
 import { RefreshCw } from "lucide-react"
+import { useMemo } from "react"
 
 export default function SupeMapPage() {
   const { markers } = useLiveLocations()
+  const { data: allIncidents } = useIncidents()
+
+  // Filter incidents from last 4 hours
+  const recentIncidents = useMemo(() => {
+    const fourHoursAgo = Date.now() - (4 * 60 * 60 * 1000)
+    return (allIncidents || []).filter((inc) => {
+      const incidentTime = new Date(inc.updatedAt).getTime()
+      // Include if incident updated in last 4 hours OR has updates in last 4 hours
+      if (incidentTime >= fourHoursAgo) return true
+      if (inc.updates && inc.updates.length > 0) {
+        const latestUpdate = inc.updates[0]
+        const updateTime = latestUpdate.ts || incidentTime
+        return updateTime >= fourHoursAgo
+      }
+      return false
+    })
+  }, [allIncidents])
 
   const handleRefresh = () => {
     console.log("[v0] Refresh live locations")
@@ -30,7 +49,7 @@ export default function SupeMapPage() {
 
         {/* Map */}
         <div className="flex-1 p-4 pb-20 overflow-y-auto">
-          <LiveMap markers={markers} />
+          <LiveMap markers={markers} incidents={recentIncidents} />
         </div>
       </div>
     </RoleLayout>

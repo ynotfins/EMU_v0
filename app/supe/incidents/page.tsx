@@ -25,7 +25,7 @@ export default function SupeIncidentsPage() {
   const { toggleSilence } = useFavoritesContext()
   const [sortByDistance, setSortByDistance] = useState(false)
   const [hiddenIncidents, setHiddenIncidents] = useState<Set<string>>(new Set())
-  const [filtersCollapsed, setFiltersCollapsed] = useState(false)
+  const [filtersCollapsed, setFiltersCollapsed] = useState(true)
 
   // Handle favorite/bookmark with Firestore toggle logic
   const handleToggleFavorite = async (id: string) => {
@@ -175,6 +175,20 @@ export default function SupeIncidentsPage() {
           </div>
         )}
 
+        {/* Sort Options - Moved up and hidden by default */}
+        {locationPermissionGranted && !filtersCollapsed && (
+          <div className="bg-white border-b border-[#E5E7EB] px-4 py-2 flex items-center justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSortByDistance(!sortByDistance)}
+              className={`gap-2 ${sortByDistance ? 'animate-flash-red-white border-2' : ''}`}
+            >
+              <ArrowUpDown className="h-4 w-4" />
+              {sortByDistance ? 'Sort by Time' : 'Sort by Distance'}
+            </Button>
+          </div>
+        )}
 
         {/* Filters - Collapsible */}
         {!filtersCollapsed && (
@@ -194,27 +208,6 @@ export default function SupeIncidentsPage() {
             minUpdates={filters.minUpdates}
             onMinUpdatesChange={setMinUpdates}
           />
-        )}
-
-        {/* Sort Options */}
-        {locationPermissionGranted && (
-          <div className="bg-white border-b border-[#E5E7EB] px-4 py-2 flex items-center justify-between">
-            <p className="text-sm text-[#6B7280]">
-              {sortByDistance 
-                ? `Showing ${safeIncidents.length} alerts from last 4 hours, sorted by distance`
-                : `Showing ${safeIncidents.length} alerts, sorted by time`
-              }
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSortByDistance(!sortByDistance)}
-              className={`gap-2 ${sortByDistance ? 'animate-flash-red-white border-2' : ''}`}
-            >
-              <ArrowUpDown className="h-4 w-4" />
-              {sortByDistance ? 'Sort by Time' : 'Sort by Distance'}
-            </Button>
-          </div>
         )}
 
         {/* Hidden Incidents Banner - Subtle sliver */}

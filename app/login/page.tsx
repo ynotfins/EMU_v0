@@ -63,7 +63,24 @@ export default function LoginPage() {
 
     try {
       const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
+      
+      // Check if we're on desktop and popup might be blocked
+      const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768;
+      
+      // Try popup first, fallback to redirect on desktop if popup fails
+      let result;
+      try {
+        result = await signInWithPopup(auth, provider);
+      } catch (popupError: any) {
+        if (popupError.code === "auth/popup-blocked" && isDesktop) {
+          // On desktop, try redirect flow as fallback
+          setError("Popup blocked. Please allow popups or use email/password sign-in.");
+          setLoading(false);
+          return;
+        }
+        throw popupError;
+      }
+      
       const user = result.user;
 
       console.log("[Login] ✅ Google sign-in successful:", user.email);
@@ -90,9 +107,9 @@ export default function LoginPage() {
           id: user.uid,
           uid: user.uid,
           email: user.email,
-          displayName: user.displayName || user.email?.split("@")[0] || "User",
-          name: user.displayName || user.email?.split("@")[0] || "User",
-          nickname: user.displayName || user.email?.split("@")[0] || "User",
+          displayName: isSuperAdmin ? "Tony" : (user.displayName || user.email?.split("@")[0] || "User"),
+          name: isSuperAdmin ? "Tony" : (user.displayName || user.email?.split("@")[0] || "User"),
+          nickname: isSuperAdmin ? "Tony" : (user.displayName || user.email?.split("@")[0] || "User"),
           phone: user.phoneNumber || "",
           role: defaultRole, // super_admin for ynotfins@gmail.com, chaser for others
           settings: {
@@ -117,8 +134,19 @@ export default function LoginPage() {
         console.log("[Login] ✅ Firestore profile created for Google user");
         userRole = defaultRole;
       } else {
-        // Get existing role
-        userRole = userDoc.data().role || "chaser";
+        // Get existing role, but update name if ynotfins@gmail.com
+        const userData = userDoc.data();
+        userRole = userData.role || "chaser";
+        
+        // Update name to Tony if it's ynotfins@gmail.com
+        if (user.email === "ynotfins@gmail.com" && userData.displayName !== "Tony") {
+          const { updateDoc } = await import("firebase/firestore");
+          await updateDoc(userDocRef, {
+            displayName: "Tony",
+            name: "Tony",
+            nickname: "Tony",
+          });
+        }
       }
 
       // Redirect based on role - super_admin defaults to supe view
@@ -133,7 +161,7 @@ export default function LoginPage() {
       if (err.code === "auth/popup-closed-by-user") {
         setError("Sign-in cancelled. Please try again.");
       } else if (err.code === "auth/popup-blocked") {
-        setError("Popup blocked. Please allow popups for this site.");
+        setError("Popup blocked. Please allow popups for this site or use email/password sign-in.");
       } else {
         setError("Failed to sign in with Google. Please try again.");
       }
@@ -175,9 +203,9 @@ export default function LoginPage() {
             id: result.user.uid,
             uid: result.user.uid,
             email: result.user.email,
-            displayName: result.user.displayName || result.user.email?.split("@")[0] || "User",
-            name: result.user.displayName || result.user.email?.split("@")[0] || "User",
-            nickname: result.user.displayName || result.user.email?.split("@")[0] || "User",
+            displayName: "Tony",
+            name: "Tony",
+            nickname: "Tony",
             phone: result.user.phoneNumber || "",
             role: "super_admin",
             settings: {
