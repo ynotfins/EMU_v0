@@ -12,6 +12,7 @@ interface TeamMember {
   id: string;
   name: string;
   nickname: string;
+  email?: string;
   role: string;
   location?: {
     lat: number;
@@ -30,13 +31,17 @@ export function LiveTeamMap() {
     const q = query(collection(db, "users"));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const members = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        name: doc.data().name || "Unknown",
-        nickname: doc.data().nickname || doc.data().name || "Unknown",
-        role: doc.data().role || "chaser",
-        location: doc.data().location,
-      })) as TeamMember[];
+      const members = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          name: data.name || "Unknown",
+          nickname: data.nickname || data.name || "Unknown",
+          email: data.email || "",
+          role: data.role || "chaser",
+          location: data.location,
+        };
+      }) as TeamMember[];
 
       logger.info(`Loaded ${members.length} team members`, {
         code: 'LiveTeamMap',
@@ -141,7 +146,13 @@ export function LiveTeamMap() {
                     </div>
                     <div>
                       <p className="font-semibold text-sm text-gray-900">
-                        {member.nickname}
+                        {(() => {
+                          // Special handling for Lightning Joe
+                          if (member.email === "j.snap11@yahoo.com") {
+                            return "⚡⚡⚡ Lightning Joe ⚡⚡⚡";
+                          }
+                          return member.nickname;
+                        })()}
                       </p>
                       <p className="text-xs text-gray-500 capitalize">
                         {member.role}
