@@ -23,7 +23,7 @@ export function BottomNav({ role }: BottomNavProps) {
 
   // Profile label logic:
   // - super_admin in God Mode → "God"
-  // - super_admin NOT in God Mode → "Supe" or "Profile" based on current view
+  // - super_admin NOT in God Mode → "Supe" (always, since default is supe)
   // - supe → "Supe"
   // - chaser → "Profile"
   let profileLabel = "Profile";
@@ -31,10 +31,9 @@ export function BottomNav({ role }: BottomNavProps) {
   if (role === "super_admin") {
     if (isGodMode) {
       profileLabel = "God";
-    } else if (pathname.startsWith("/supe")) {
-      profileLabel = "Supe";
     } else {
-      profileLabel = "Profile";
+      // Super admin defaults to Supe view
+      profileLabel = "Supe";
     }
   } else if (role === "supe") {
     profileLabel = "Supe";

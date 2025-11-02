@@ -3,22 +3,22 @@
 ## Current Status
 
 **Project Stage**: Production - Deployed & Operational  
-**Last Updated**: 2025-11-01 (Memory bank update + maintenance schedule)  
-**Session**: memory-bank-sync-and-maintenance-planning  
+**Last Updated**: 2025-11-02 (Authentication and profile fixes)  
+**Session**: authentication-profile-fixes  
 **Live URL**: https://4axe.com (Vercel deployment)
 
 ## Current Work Focus
 
-**Latest Session (Nov 1, 2025)**:
+**Latest Session (Nov 2, 2025)**:
 
-- ✅ Synced memory bank files with HANDOFF.md
-- ✅ Updated techContext.md (Next.js 16, production deployment)
-- ✅ Updated systemPatterns.md (Chat system architecture, Realtime DB)
-- ✅ Updated progress.md (Chat system details, infrastructure updates)
-- ✅ Created MAINTENANCE_SCHEDULE.md (comprehensive maintenance plan)
-- ✅ Fixed TypeScript errors in chaser chat page
-- ✅ Fixed all 9 critical linting errors (React hooks, setState-in-effect, empty catches)
-- ✅ Codebase now 100% error-free (95 warnings remaining, non-critical)
+- ✅ Fixed useProfile hook to fetch from Firestore instead of hardcoded DEV_PROFILE
+- ✅ Fixed login redirects to default to Supe for super_admin/admin/supe users
+- ✅ Fixed Google sign-in to default new users to "supe" role (was "chaser")
+- ✅ Fixed God Mode card view toggle bug (removed setViewMode reference)
+- ✅ Fixed favorites page header/footer sticky positioning
+- ✅ Fixed bottom nav to show "Supe" for super_admin when not in God Mode
+- ✅ Fixed profile.id → profile.uid references in favorites page
+- ✅ Wired updateSettings and updatePayout to Firestore
 
 **Previous Session (Oct 30-31, 2025)**: Google login auto-profile creation, Live team map for Supes, 20% rounded avatar system, CRM contractors page, multi-step signup with ID scanning, Vercel build fix
 
@@ -39,7 +39,107 @@
 
 ## Recent Changes (Today's Session)
 
-### Phase 1: Google Login Auto-Profile Creation ✅
+### Phase 1: Fixed useProfile Hook - Fetches from Firestore ✅
+
+**Problem**: Profile showing "Dev User" and incorrect role because `useProfile` hook was using hardcoded `DEV_PROFILE`.
+
+**Solution** (`hooks/use-profile.ts`):
+- Removed hardcoded DEV_PROFILE
+- Implemented Firestore `onSnapshot` listener to `/users/{uid}` collection
+- Maps Firestore data to Profile type with proper field mapping
+- Real-time updates when profile changes
+- Handles missing profiles gracefully
+
+**Result**:
+- ✅ Profile now loads from Firestore
+- ✅ Shows correct displayName, role, and all profile data
+- ✅ Real-time updates when profile changes
+- ✅ No more "Dev User" issue
+
+---
+
+### Phase 2: Fixed Login Redirects - Default to Supe ✅
+
+**Problem**: Login always redirected to `/chaser/incidents` even for super_admin users.
+
+**Solution** (`app/login/page.tsx`):
+- After Google sign-in, check user role from Firestore
+- Default new Google users to "supe" role (was "chaser")
+- Redirect super_admin/admin/supe to `/supe/incidents`
+- Redirect chaser to `/chaser/incidents`
+- Same logic for email/password sign-in
+
+**Result**:
+- ✅ Super admin defaults to Supe view on login
+- ✅ New Google users default to Supe role
+- ✅ Correct redirects based on user role
+
+---
+
+### Phase 3: Fixed God Mode Card View Toggle ✅
+
+**Problem**: God Mode card tried to call `setViewMode()` which doesn't exist (viewMode is useMemo, not useState).
+
+**Solution** (`components/god-mode-card.tsx`):
+- Removed `setViewMode()` call
+- Fixed route replacement logic to properly switch between `/chaser/` and `/supe/` routes
+- Handles edge cases (fallback to incidents page)
+
+**Result**:
+- ✅ View toggle works correctly
+- ✅ Routes switch properly between Chaser and Supe views
+- ✅ No more undefined function errors
+
+---
+
+### Phase 4: Fixed Favorites Page Layout ✅
+
+**Problem**: Header and footer not locked in place, tabs don't fit properly on mobile.
+
+**Solution** (`app/chaser/favorites/page.tsx`, `app/supe/favorites/page.tsx`):
+- Header: Added `sticky top-0 z-10` classes
+- Tabs bar: Added `sticky top-14 z-10` classes (below header)
+- Tab content: Added `pb-20` padding to account for fixed footer
+- Footer: Already fixed at bottom with `z-50`
+
+**Result**:
+- ✅ Header stays fixed at top when scrolling
+- ✅ Tabs bar stays fixed below header
+- ✅ Footer stays fixed at bottom
+- ✅ Content scrolls properly without overlapping header/footer
+- ✅ 4 tabs fit properly in footer
+
+---
+
+### Phase 5: Fixed Bottom Nav Profile Label ✅
+
+**Problem**: Bottom nav showing incorrect label for super_admin users.
+
+**Solution** (`components/bottom-nav.tsx`):
+- Super admin defaults to "Supe" label (not "Profile")
+- Only shows "God" when God Mode is ON
+- Supe users show "Supe"
+- Chaser users show "Profile"
+
+**Result**:
+- ✅ Correct labels for all user roles
+- ✅ Super admin sees "Supe" by default
+- ✅ God Mode shows "God" when enabled
+
+---
+
+### Phase 6: Wired Profile Updates to Firestore ✅
+
+**Solution** (`hooks/use-profile.ts`):
+- `updateSettings()` now writes to Firestore `/users/{uid}/settings`
+- `updatePayout()` now writes to Firestore `/users/{uid}/payout`
+- Optimistic updates (UI updates immediately)
+- Error handling with console logging
+
+**Result**:
+- ✅ Profile settings persist to Firestore
+- ✅ Payout info persists to Firestore
+- ✅ Real-time sync across devices
 
 **Problem**: Users signing in with Google (ynotfins@gmail.com) showed as "Dev User" with dev@emuui.com
 
@@ -289,13 +389,14 @@ Please check /(auth)/signup and /signup.
 
 ### None Currently 🎉
 
-All known issues have been resolved:
+All reported issues have been resolved:
 
-- ✅ Google login profile creation - FIXED
-- ✅ Duplicate routes Vercel build error - FIXED
-- ✅ God Mode always on - FIXED (now toggle-based)
-- ✅ Bottom nav labels - FIXED (shows correct role/God)
-- ✅ CRM title - FIXED ("Independent Contractors & Employees")
+- ✅ "Dev User" profile issue - FIXED (useProfile now fetches from Firestore)
+- ✅ Login defaults to Chaser - FIXED (defaults to Supe for super_admin)
+- ✅ Profile showing wrong role - FIXED (loads from Firestore)
+- ✅ God Mode toggle bug - FIXED (view toggle works correctly)
+- ✅ Favorites page layout - FIXED (header/footer sticky, tabs fit)
+- ✅ Bottom nav incorrect labels - FIXED (shows "Supe" for super_admin)
 
 ---
 

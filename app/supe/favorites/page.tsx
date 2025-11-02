@@ -56,14 +56,14 @@ export default function SupeFavoritesPage() {
   return (
     <RoleLayout role="supe">
       <div className="flex flex-col h-screen">
-        {/* Header */}
-        <div className="bg-white border-b border-[#E5E7EB] p-4">
+        {/* Header - Fixed at top */}
+        <div className="bg-white border-b border-[#E5E7EB] p-4 sticky top-0 z-10">
           <h1 className="text-2xl font-bold text-foreground">Favorites</h1>
         </div>
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-          <TabsList className="w-full bg-white border-b border-[#E5E7EB] rounded-none h-12 justify-start px-4">
+          <TabsList className="w-full bg-white border-b border-[#E5E7EB] rounded-none h-12 justify-start px-4 sticky top-14 z-10">
             <TabsTrigger value="favorites" className="gap-2">
               <Star className="h-4 w-4" />
               Favorites
@@ -78,7 +78,7 @@ export default function SupeFavoritesPage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="favorites" className="flex-1 overflow-y-auto p-4 space-y-3 mt-0">
+          <TabsContent value="favorites" className="flex-1 overflow-y-auto p-4 space-y-3 mt-0 pb-20">
             {favoritedIncidents.length === 0 ? (
               <EmptyState icon={Star} message="No favorited incidents yet" />
             ) : (
@@ -95,7 +95,7 @@ export default function SupeFavoritesPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="bookmarks" className="flex-1 overflow-y-auto p-4 space-y-3 mt-0">
+          <TabsContent value="bookmarks" className="flex-1 overflow-y-auto p-4 space-y-3 mt-0 pb-20">
             {bookmarkedIncidents.length === 0 ? (
               <EmptyState icon={Bookmark} message="No bookmarked incidents yet" />
             ) : (
@@ -112,7 +112,7 @@ export default function SupeFavoritesPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="notes" className="flex-1 overflow-y-auto p-4 space-y-3 mt-0">
+          <TabsContent value="notes" className="flex-1 overflow-y-auto p-4 space-y-3 mt-0 pb-20">
             {notedIncidents.length === 0 ? (
               <EmptyState icon={FileText} message="No incidents with notes yet" />
             ) : (

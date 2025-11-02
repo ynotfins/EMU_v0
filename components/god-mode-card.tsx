@@ -49,12 +49,19 @@ export function GodModeCard({ userRole }: GodModeCardProps) {
 
   const handleViewModeToggle = (isSupe: boolean) => {
     const newView = isSupe ? "supe" : "chaser";
-    setViewMode(newView);
 
-    // Replace route
-    const newPath = pathname.replace(`/${viewMode}/`, `/${newView}/`);
+    // Replace route based on current pathname
+    let newPath = pathname;
+    if (pathname.startsWith("/chaser/")) {
+      newPath = pathname.replace("/chaser/", `/${newView}/`);
+    } else if (pathname.startsWith("/supe/")) {
+      newPath = pathname.replace("/supe/", `/${newView}/`);
+    } else {
+      // Fallback: just navigate to incidents page
+      newPath = `/${newView}/incidents`;
+    }
 
-    console.log(`[ViewMode] Switching to ${newView} view`);
+    console.log(`[ViewMode] Switching from ${viewMode} to ${newView} view`);
     router.push(newPath);
   };
 

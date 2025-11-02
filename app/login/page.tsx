@@ -29,10 +29,28 @@ export default function LoginPage() {
 
   // Redirect if already logged in
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        console.log("[Login] User already authenticated, redirecting...");
-        router.push("/chaser/incidents");
+        console.log("[Login] User already authenticated, checking role...");
+        
+        // Check user role and redirect accordingly
+        const { doc: docRef, getDoc } = await import("firebase/firestore");
+        const { db } = await import("@/lib/firebase");
+        
+        const userDocRef = docRef(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        
+        let userRole = "supe"; // Default to supe
+        if (userDoc.exists()) {
+          userRole = userDoc.data().role || "supe";
+        }
+
+        // Redirect based on role - super_admin defaults to supe view
+        if (userRole === "super_admin" || userRole === "admin" || userRole === "supe") {
+          router.push("/supe/incidents");
+        } else {
+          router.push("/chaser/incidents");
+        }
       }
     });
 
@@ -57,6 +75,8 @@ export default function LoginPage() {
       const userDocRef = docRef(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
 
+      let userRole = "supe"; // Default to supe for super admin
+
       if (!userDoc.exists()) {
         console.log("[Login] 🆕 New Google user - creating profile...");
         
@@ -64,11 +84,13 @@ export default function LoginPage() {
         const { setDoc } = await import("firebase/firestore");
         await setDoc(userDocRef, {
           id: user.uid,
+          uid: user.uid,
           email: user.email,
+          displayName: user.displayName || user.email?.split("@")[0] || "User",
           name: user.displayName || user.email?.split("@")[0] || "User",
           nickname: user.displayName || user.email?.split("@")[0] || "User",
           phone: user.phoneNumber || "",
-          role: "chaser",
+          role: "supe", // Default to supe for super admin account
           settings: {
             pushEnabled: true,
             trackingEnabled: true,
@@ -89,9 +111,17 @@ export default function LoginPage() {
         });
 
         console.log("[Login] ✅ Firestore profile created for Google user");
+      } else {
+        // Get existing role
+        userRole = userDoc.data().role || "supe";
       }
 
-      router.push("/chaser/incidents");
+      // Redirect based on role - super_admin defaults to supe view
+      if (userRole === "super_admin" || userRole === "admin" || userRole === "supe") {
+        router.push("/supe/incidents");
+      } else {
+        router.push("/chaser/incidents");
+      }
     } catch (err: any) {
       console.error("[Login] ❌ Google sign-in error:", err);
 
@@ -121,7 +151,25 @@ export default function LoginPage() {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       console.log("[Login] ✅ Email sign-in successful:", result.user.email);
-      router.push("/chaser/incidents");
+      
+      // Check user role and redirect accordingly
+      const { doc: docRef, getDoc } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+      
+      const userDocRef = docRef(db, "users", result.user.uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      let userRole = "supe"; // Default to supe
+      if (userDoc.exists()) {
+        userRole = userDoc.data().role || "supe";
+      }
+
+      // Redirect based on role - super_admin defaults to supe view
+      if (userRole === "super_admin" || userRole === "admin" || userRole === "supe") {
+        router.push("/supe/incidents");
+      } else {
+        router.push("/chaser/incidents");
+      }
     } catch (err: any) {
       console.error("[Login] ❌ Email sign-in error:", err);
 

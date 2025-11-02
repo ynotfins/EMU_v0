@@ -15,13 +15,15 @@
 ### Authentication - Complete ✅
 
 - ✅ **Email/Password Login**: Working
-- ✅ **Google Sign-In**: Working
+- ✅ **Google Sign-In**: Working with auto-profile creation
 - ✅ **Signup with Role Selection**: Chaser or Supe during signup
 - ✅ **Auth Persistence**: Triple-layer (localStorage + sessionStorage + cookies)
 - ✅ **Firebase LOCAL Persistence**: `browserLocalPersistence` - never expires
 - ✅ **Manual Sign-Out**: Only way to sign out
 - ✅ **Admin Tool**: Role management at `/admin`
 - ✅ **Protected Routes**: `ProtectedRoute` component wraps all role pages
+- ✅ **Default Login Redirect**: Super admin/admin/supe → `/supe/incidents`, Chaser → `/chaser/incidents`
+- ✅ **Profile Loading**: Real-time Firestore listener fetches from `/users/{uid}`
 
 ### UI/UX Layer - Complete ✅
 
@@ -152,7 +154,7 @@
 - ✅ **Sort by Distance**: Filter last 4 hours + sort by proximity
 - ✅ **Cost**: $0-7/month (mostly free tier)
 
-### UI Features - Production-Ready ✅
+#### UI Features - Production-Ready ✅
 
 #### Home Page
 
@@ -167,6 +169,14 @@
 - ✅ **Hide Button**: Orange eye-off icon on every alert
 - ✅ **Undo Hide Banner**: Light gray sliver at top
 - ✅ **High Alert Button**: In header, red when active with squiggly lines
+
+#### Favorites Page
+
+- ✅ **Sticky Header**: Fixed at top (`sticky top-0 z-10`)
+- ✅ **Sticky Tabs Bar**: Fixed below header (`sticky top-14 z-10`)
+- ✅ **Fixed Footer**: Bottom nav fixed at bottom (`fixed bottom-0 z-50`)
+- ✅ **Content Padding**: `pb-20` on tab content to prevent footer overlap
+- ✅ **4 Tabs Fit Properly**: Incidents, Favorites, Chat, Profile/Supe
 
 #### Incident Details Page
 
@@ -190,6 +200,10 @@
 - ✅ **Sign Out**: Red button with `clearAuthState()`
 - ✅ **ID Verification**: Upload UI (not wired)
 - ✅ **Emergency Payment**: Cash App / Zelle fields
+- ✅ **God Mode Card**: Toggle God Mode ON/OFF, switch Chaser/Supe views (super_admin only)
+- ✅ **Profile Loading**: Real-time Firestore listener, no more "Dev User"
+- ✅ **Settings Updates**: Wired to Firestore (persists immediately)
+- ✅ **Payout Updates**: Wired to Firestore (persists immediately)
 
 #### Admin Page
 

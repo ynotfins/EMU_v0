@@ -1,47 +1,89 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore"
+import { db, auth } from "@/lib/firebase"
 import type { Profile } from "@/types/domain"
 
-const DEV_PROFILE: Profile = {
-  uid: "dev-user-1",
-  displayName: "Dev User",
-  email: "dev@emuui.com",
-  role: "chaser",
-  agency: "EMU Response Team",
-  stats: {
-    responded: 0,
-    noted: 0,
-    daysActive: 1,
-  },
-  settings: {
-    pushEnabled: true,
-    trackingEnabled: true,
-    highAlertSound: "default",
-    muted: false,
-  },
-  payout: {
-    verified: false,
-    cashappHandle: "",
-    venmoHandle: "",
-  },
-}
+export function useProfile(uid?: string | null) {
+  const [data, setData] = useState<Profile | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
 
-export function useProfile() {
-  const [data, setData] = useState<Profile | null>(DEV_PROFILE)
-  const [isLoading] = useState(false)
-  const [error] = useState<Error | null>(null)
+  // Use provided uid or get from auth.currentUser
+  const userId = uid || auth.currentUser?.uid
 
-  // TODO: Replace with Firestore query to 'user_profiles/{currentUserId}' document
-  // const docRef = doc(db, 'user_profiles', currentUserId)
-  // Use onSnapshot for real-time updates
-  // REMOVE DEV_PROFILE when Firebase Auth is integrated
+  useEffect(() => {
+    if (!userId) {
+      console.log("[useProfile] No user ID, setting to null")
+      setData(null)
+      setIsLoading(false)
+      return
+    }
 
-  const updateSettings = (settings: Partial<Profile["settings"]>) => {
-    console.debug("[useProfile] updateSettings:", settings)
+    console.log("[useProfile] Loading profile for user:", userId)
+
+    const userDocRef = doc(db, "users", userId)
+
+    // Set up real-time listener
+    const unsubscribe = onSnapshot(
+      userDocRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const userData = docSnap.data()
+          
+          // Map Firestore data to Profile type
+          const profile: Profile = {
+            uid: userId,
+            email: userData.email || "",
+            displayName: userData.displayName || userData.name || userData.nickname || userData.email?.split("@")[0] || "User",
+            role: userData.role || "chaser",
+            agency: userData.agency,
+            stats: {
+              responded: userData.stats?.responded || 0,
+              noted: userData.stats?.noted || 0,
+              daysActive: userData.stats?.daysActive || 1,
+            },
+            settings: {
+              pushEnabled: userData.settings?.pushEnabled !== false,
+              trackingEnabled: userData.settings?.trackingEnabled !== false,
+              highAlertSound: userData.settings?.highAlertSound || "train",
+              muted: userData.settings?.muted || false,
+            },
+            payout: {
+              verified: userData.payout?.verified || false,
+              cashappHandle: userData.payout?.cashappHandle || "",
+              venmoHandle: userData.payout?.venmoHandle || "",
+            },
+          }
+
+          console.log("[useProfile] ✅ Profile loaded:", profile.displayName, profile.role)
+          setData(profile)
+          setError(null)
+        } else {
+          console.warn("[useProfile] ⚠️ User document not found:", userId)
+          setData(null)
+          setError(new Error("User profile not found"))
+        }
+        setIsLoading(false)
+      },
+      (err) => {
+        console.error("[useProfile] ❌ Error loading profile:", err)
+        setError(err)
+        setIsLoading(false)
+      }
+    )
+
+    return () => unsubscribe()
+  }, [userId])
+
+  const updateSettings = async (settings: Partial<Profile["settings"]>) => {
+    if (!userId) return
     
-    // Update local state
-    setData((prev) => (prev ? { ...prev, settings: { ...prev.settings, ...settings } } : prev))
+    console.log("[useProfile] updateSettings:", settings)
+    
+    // Update local state immediately (optimistic update)
+    setData((prev) => (prev ? { ...prev, settings: { ...prev.settings, ...settings } } : null))
     
     // Persist key settings to localStorage
     if (settings.pushEnabled !== undefined) {
@@ -59,16 +101,44 @@ export function useProfile() {
       }
     }
     
-    // TODO: Update Firestore: user_profiles/{currentUserId} merge settings field
+    // Update Firestore
+    try {
+      const userDocRef = doc(db, "users", userId)
+      const currentData = data?.settings || {}
+      await updateDoc(userDocRef, {
+        settings: {
+          ...currentData,
+          ...settings,
+        },
+      })
+      console.log("[useProfile] ✅ Settings updated in Firestore")
+    } catch (err) {
+      console.error("[useProfile] ❌ Failed to update settings in Firestore:", err)
+    }
   }
 
-  const updatePayout = (payout: Partial<Profile["payout"]>) => {
-    console.debug("[useProfile] updatePayout:", payout)
+  const updatePayout = async (payout: Partial<Profile["payout"]>) => {
+    if (!userId) return
     
-    // Update local state
-    setData((prev) => (prev ? { ...prev, payout: { ...prev.payout, ...payout } } : prev))
+    console.log("[useProfile] updatePayout:", payout)
     
-    // TODO: Update Firestore: user_profiles/{currentUserId} merge payout field
+    // Update local state immediately (optimistic update)
+    setData((prev) => (prev ? { ...prev, payout: { ...prev.payout, ...payout } } : null))
+    
+    // Update Firestore
+    try {
+      const userDocRef = doc(db, "users", userId)
+      const currentData = data?.payout || {}
+      await updateDoc(userDocRef, {
+        payout: {
+          ...currentData,
+          ...payout,
+        },
+      })
+      console.log("[useProfile] ✅ Payout updated in Firestore")
+    } catch (err) {
+      console.error("[useProfile] ❌ Failed to update payout in Firestore:", err)
+    }
   }
 
   return { data, isLoading, error, updateSettings, updatePayout }
