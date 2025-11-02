@@ -25,6 +25,11 @@ if (!getApps().length) {
 
 // Export Firebase services
 export const auth: Auth = getAuth(app);
+// Ensure session persists across reloads and popup/redirect
+setPersistence(auth, browserLocalPersistence).catch((e) => {
+  // Non-fatal; some browsers disallow persistence in private mode.
+  console.warn("[auth] setPersistence failed:", e);
+});
 export const db: Firestore = getFirestore(app);
 export const storage = getStorage(app);
 
@@ -49,16 +54,6 @@ if (typeof window !== "undefined") {
 // Set auth persistence to LOCAL (never expires until explicit sign out)
 // CRITICAL: This ensures users NEVER get signed out automatically
 if (typeof window !== "undefined") {
-  setPersistence(auth, browserLocalPersistence)
-    .then(() => {
-      console.log("[Firebase] ✅ Auth persistence set to LOCAL - users stay signed in FOREVER");
-      console.log("[Firebase] 🔒 Users will ONLY be signed out if they manually click 'Sign Out'");
-    })
-    .catch((error) => {
-      console.error("[Firebase] ❌ CRITICAL: Failed to set persistence:", error);
-      console.error("[Firebase] ⚠️ Users may be signed out unexpectedly!");
-    });
-  
   // Additional check: Verify persistence is actually set
   setTimeout(() => {
     if (auth.currentUser) {

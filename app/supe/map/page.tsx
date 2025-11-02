@@ -50,7 +50,7 @@ export default function SupeMapPage() {
 
         {/* Map */}
         <div className="flex-1 p-4 pb-20 overflow-y-auto">
-          <LiveMap incidents={recentIncidents} />
+          <LiveMap markers={[]} incidents={recentIncidents} />
         </div>
       </div>
     </RoleLayout>

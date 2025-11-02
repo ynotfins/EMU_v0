@@ -73,7 +73,8 @@ Enable emergency responders to quickly view, respond to, and coordinate incident
 - ✅ **God Mode Toggle**: Super admins can toggle God Mode and switch between Supe/Chaser views from profile page
 
 **Auth Domains Checklist**:
-- Add **4axe.com**, **www.4axe.com**, and Vercel preview domains to *Firebase Auth → Authorized domains*
+
+- Add **4axe.com**, **www.4axe.com**, and Vercel preview domains to _Firebase Auth → Authorized domains_
 - Enable Google provider and Email/Password
 - Browser console message "Cross-Origin-Opener-Policy would block window.close" from Google Identity is benign and can be ignored
 

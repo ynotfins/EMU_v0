@@ -228,7 +228,7 @@ export async function sendDirectMessage(
   await set(chatRef, {
     lastMessage: message,
     lastMessageTime: serverTimestamp(),
-  }, { onlyIf: { exists: true } });
+  });
 
   console.log(`[DirectChat] ✅ Message sent to chat ${chatId}`);
 }
@@ -283,7 +283,7 @@ export async function markMessageAsRead(
   messageId: string
 ): Promise<void> {
   const messageRef = ref(rtdb, `chats/${incidentId}/messages/${messageId}`);
-  await set(messageRef, { read: true }, { onlyIf: { exists: true } });
+  await set(messageRef, { read: true });
 }
 
 /**

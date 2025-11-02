@@ -166,11 +166,8 @@ export class HighAlertSystem {
 
     // Show notification
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('🚨 HIGH ALERT ENABLED', {
-        body: 'You will receive loud alerts for high-priority incidents',
-        icon: '/app-icon.png',
-        vibrate: [200, 100, 200],
-      });
+      const opts: any = { body: 'You will receive loud alerts for high-priority incidents', badge: "/app-icon.png", icon: "/app-icon.png" };
+      new Notification('🚨 HIGH ALERT ENABLED', opts);
     }
   }
 }

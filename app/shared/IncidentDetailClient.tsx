@@ -1,9 +1,12 @@
 "use client"
 
 import { useIncident } from "../../hooks/use-incident";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { waitForAuthReady } from "../../lib/auth-ready";
 
 export default function IncidentDetailClient({ id }: { id: string }) {
+  const [authReady, setAuthReady] = useState<boolean>(false);
+  useEffect(() => { void waitForAuthReady().then(() => setAuthReady(true)); }, []);
   const { data: incident, isLoading, error } = useIncident(id);
   const addr = useMemo(()=> {
     if (!incident) return "";
@@ -15,7 +18,13 @@ export default function IncidentDetailClient({ id }: { id: string }) {
   }, [incident]);
 
   useEffect(()=>{ if (error) console.error("[IncidentDetail]", error) }, [error]);
-  if (isLoading) return <div className="p-6 text-sm text-muted-foreground">Loading incident…</div>;
+  if (!authReady || isLoading) {
+    return <div className="p-6 text-sm text-muted-foreground">Loading incident…</div>;
+  }
+  if (error) {
+    const msg = (error as any)?.code || (error as any)?.message || String(error);
+    return <div className="p-6 text-red-600">Error loading incident: {msg}</div>;
+  }
   if (!incident) return <div className="p-6 text-red-600">Incident not found.</div>;
 
   return (

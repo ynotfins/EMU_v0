@@ -110,9 +110,11 @@ export function useIncident(incidentId: string) {
 
         setIsLoading(false);
       },
-      (e) => {
+      (err) => {
+        console.error("[useIncident] onSnapshot error:", err);
+        const errorCode = (err as any)?.code || String(err);
+        setError(errorCode);
         setIsLoading(false);
-        setError(logError(e, "incident-snapshot", { incidentId }).code);
       }
     );
 
