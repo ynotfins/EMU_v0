@@ -106,8 +106,8 @@ export default function ChaserIncidentsPage() {
   return (
     <RoleLayout role="chaser">
       <div className="flex flex-col h-screen">
-        {/* Header */}
-        <div className="bg-white border-b border-[#E5E7EB] px-4 py-2 flex items-center justify-between">
+        {/* Header - Fixed at top */}
+        <div className="bg-white border-b border-[#E5E7EB] px-4 py-2 flex items-center justify-between fixed top-0 left-0 right-0 z-20">
           {/* Left: Helmet Icon + FIRE ALERTS */}
           <div className="flex items-center gap-2">
             <img 
@@ -153,6 +153,9 @@ export default function ChaserIncidentsPage() {
             </button>
           </div>
         </div>
+
+        {/* Spacer for fixed header */}
+        <div className="h-12"></div>
 
         {/* Location Permission Banner */}
         {locationPermissionGranted === false && (
@@ -205,7 +208,7 @@ export default function ChaserIncidentsPage() {
         )}
 
         {/* Incidents List */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-20">
           {safeIncidents.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-[#6B7280]">No incidents found</p>

@@ -65,8 +65,8 @@ export default function ChaserChatPage() {
     return (
       <RoleLayout role="chaser">
         <div className="flex flex-col h-screen bg-white">
-          {/* Header */}
-          <div className="bg-white border-b border-[#E5E7EB] p-4">
+          {/* Header - Fixed at top */}
+          <div className="bg-white border-b border-[#E5E7EB] p-4 fixed top-0 left-0 right-0 z-20">
             <div className="flex items-center justify-between">
               <h1 className="text-2xl font-bold text-foreground">Chat</h1>
               <Badge className="bg-[#34C759] hover:bg-[#34C759] text-white">
@@ -75,8 +75,11 @@ export default function ChaserChatPage() {
             </div>
           </div>
 
+          {/* Spacer for fixed header */}
+          <div className="h-16"></div>
+
           {/* Contacts List */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden pb-20">
             <ChatContacts
               currentUserId={profile?.uid || ""}
               onSelectContact={(contactId, contactName) => {
@@ -95,8 +98,8 @@ export default function ChaserChatPage() {
   return (
     <RoleLayout role="chaser">
       <div className="flex flex-col h-screen bg-gray-50">
-        {/* Header */}
-        <div className="bg-white border-b border-[#E5E7EB] p-4 flex items-center gap-3">
+        {/* Header - Fixed at top */}
+        <div className="bg-white border-b border-[#E5E7EB] p-4 flex items-center gap-3 fixed top-0 left-0 right-0 z-20">
           <Button
             variant="ghost"
             size="sm"
@@ -116,8 +119,11 @@ export default function ChaserChatPage() {
           <Badge className="bg-[#34C759] text-white">Online</Badge>
         </div>
 
+        {/* Spacer for fixed header */}
+        <div className="h-14"></div>
+
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-20">
           {messages.length === 0 && (
             <div className="text-center text-gray-400 py-8">
               <MessageCircle className="h-12 w-12 mx-auto mb-2 text-gray-300" />
@@ -165,8 +171,8 @@ export default function ChaserChatPage() {
           })}
         </div>
 
-        {/* Input */}
-        <div className="bg-white border-t border-[#E5E7EB] p-4">
+        {/* Input - Fixed at bottom */}
+        <div className="bg-white border-t border-[#E5E7EB] p-4 fixed bottom-16 left-0 right-0 z-10">
           <div className="flex items-end gap-2">
             <Textarea
               placeholder="Type a message..."

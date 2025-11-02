@@ -42,8 +42,8 @@ export default function Client({ id }: { id: string }) {
       console.log('[Respond] Recording response and notifying supes...');
       await recordAlertResponse(
         incident.id,
-        profile.id,
-        profile.name,
+        profile.uid,
+        profile.displayName,
         profile.role,
         incident.address
       );
@@ -79,8 +79,8 @@ export default function Client({ id }: { id: string }) {
   return (
     <RoleLayout role="chaser">
       <div className="flex flex-col h-screen bg-white">
-        {/* Header with Back Button */}
-        <div className="bg-[#007AFF] text-white p-4 flex items-center justify-between">
+        {/* Header with Back Button - Fixed at top */}
+        <div className="bg-[#007AFF] text-white p-4 flex items-center justify-between fixed top-0 left-0 right-0 z-20">
           <button onClick={() => window.history.back()} className="text-white">
             ← Back
           </button>
@@ -88,9 +88,12 @@ export default function Client({ id }: { id: string }) {
           <button className="text-white">⋮</button>
         </div>
 
+        {/* Spacer for fixed header */}
+        <div className="h-14"></div>
+
         {/* Tabs */}
         <Tabs defaultValue="details" className="flex-1 flex flex-col">
-          <TabsList className="w-full justify-start rounded-none border-b bg-white">
+          <TabsList className="w-full justify-start rounded-none border-b bg-white fixed top-14 left-0 right-0 z-10">
             <TabsTrigger value="details" className="flex-1">
               Details
             </TabsTrigger>
@@ -109,7 +112,7 @@ export default function Client({ id }: { id: string }) {
             </TabsTrigger>
           </TabsList>
 
-          <div className="flex-1 overflow-y-auto pb-8">
+          <div className="flex-1 overflow-y-auto pb-8 pt-14">
             <TabsContent value="details" className="m-0 h-full">
               {/* Map - Embedded Google Maps at CITY zoom level */}
               <div 

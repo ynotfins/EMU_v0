@@ -103,9 +103,12 @@ export default function ChaserFavoritesPage() {
     <RoleLayout role="chaser">
       <div className="flex flex-col h-screen">
         {/* Header - Fixed at top */}
-        <div className="bg-white border-b border-[#E5E7EB] p-4 sticky top-0 z-10">
+        <div className="bg-white border-b border-[#E5E7EB] p-4 fixed top-0 left-0 right-0 z-20">
           <h1 className="text-2xl font-bold text-foreground">Favorites</h1>
         </div>
+
+        {/* Spacer for fixed header */}
+        <div className="h-16"></div>
 
         {/* Tabs */}
         <Tabs
@@ -113,7 +116,7 @@ export default function ChaserFavoritesPage() {
           onValueChange={setActiveTab}
           className="flex-1 flex flex-col"
         >
-          <TabsList className="w-full bg-white border-b border-[#E5E7EB] rounded-none h-12 justify-start px-4 sticky top-14 z-10">
+          <TabsList className="w-full bg-white border-b border-[#E5E7EB] rounded-none h-12 justify-start px-4 fixed top-16 left-0 right-0 z-10">
             <TabsTrigger value="favorites" className="gap-2">
               <Heart className="h-4 w-4" />
               Favorites
@@ -134,7 +137,7 @@ export default function ChaserFavoritesPage() {
 
           <TabsContent
             value="favorites"
-            className="flex-1 overflow-y-auto p-0 mt-0 pb-20"
+            className="flex-1 overflow-y-auto p-0 mt-12 pb-20"
           >
             {favoritedIncidents.length === 0 ? (
               <EmptyState
@@ -163,7 +166,7 @@ export default function ChaserFavoritesPage() {
 
           <TabsContent
             value="bookmarks"
-            className="flex-1 overflow-y-auto p-0 mt-0 pb-20"
+            className="flex-1 overflow-y-auto p-0 mt-12 pb-20"
           >
             {bookmarkedIncidents.length === 0 ? (
               <EmptyState
@@ -191,7 +194,7 @@ export default function ChaserFavoritesPage() {
 
           <TabsContent
             value="notes"
-            className="flex-1 overflow-y-auto p-0 mt-0 pb-20"
+            className="flex-1 overflow-y-auto p-0 mt-12 pb-20"
           >
             {notedIncidents.length === 0 ? (
               <EmptyState
@@ -220,7 +223,7 @@ export default function ChaserFavoritesPage() {
           {/* Responses Tab - Shows incidents user has responded to */}
           <TabsContent
             value="responses"
-            className="flex-1 overflow-y-auto p-0 mt-0 pb-20"
+            className="flex-1 overflow-y-auto p-0 mt-12 pb-20"
           >
             {responsesLoading ? (
               <div className="flex items-center justify-center h-64">
