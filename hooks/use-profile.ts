@@ -143,23 +143,11 @@ export function useProfile(uid?: string | null) {
   }
 
   const setViewMode = async (mode: "chaser" | "supe") => {
+    const userId = auth.currentUser?.uid
     if (!userId) return
-    
-    console.log("[useProfile] setViewMode:", mode)
-    
-    // Update local state immediately (optimistic update)
-    setData((prev) => (prev ? { ...prev, viewMode: mode } : null))
-    
-    // Update Firestore
-    try {
-      const userDocRef = doc(db, "users", userId)
-      await updateDoc(userDocRef, {
-        viewMode: mode,
-      })
-      console.log("[useProfile] ✅ ViewMode updated in Firestore")
-    } catch (err) {
-      console.error("[useProfile] ❌ Failed to update viewMode in Firestore:", err)
-    }
+    localStorage.setItem("emu.viewMode", mode)
+    await updateDoc(doc(db, "users", userId), { viewMode: mode }, { merge: true })
+    setData((p) => p ? { ...p, viewMode: mode } : p)
   }
 
   return { data, isLoading, error, updateSettings, updatePayout, setViewMode }

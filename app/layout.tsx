@@ -42,17 +42,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
-        {/* GA DebugView in dev/preview */}
-        {process.env.NODE_ENV !== "production" && (
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('set','debug_mode',true);
-            `}} />
-        )}
         <ErrorBoundary>
+          {process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+            <script dangerouslySetInnerHTML={{
+              __html: `
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', { debug_mode: true });
+              `
+            }} />
+          )}
           <FavoritesProvider>
             {children}
             <PWARegistration />

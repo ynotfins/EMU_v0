@@ -59,19 +59,30 @@ export default function SupeProfilePage() {
           <SupeControlsCard userRole={profile.role} />
 
           {/* View Mode Toggle */}
-          <section className="rounded-xl border p-4">
-            <h3 className="font-semibold mb-3">Supe Controls</h3>
-            <div className="flex items-center justify-between">
-              <span>Current View: {profile.viewMode ?? "chaser"}</span>
-              <button
-                className="px-3 py-1 rounded border"
-                onClick={() => setViewMode((profile.viewMode === "supe" ? "chaser" : "supe"))}
-                disabled={!profile}
-              >
-                Switch to {profile.viewMode === "supe" ? "Chaser" : "Supe"}
-              </button>
-            </div>
-          </section>
+
+        <section className="rounded-xl border p-4">
+
+          <h3 className="font-semibold mb-3">Supe Controls</h3>
+
+          <div className="flex items-center justify-between">
+
+            <span>Current View: {profile?.viewMode ?? "chaser"}</span>
+
+            <button
+
+              className="px-3 py-1 rounded-md border"
+
+              onClick={() => setViewMode((profile?.viewMode === "supe" ? "chaser" : "supe"))}
+
+            >
+
+              Switch to {profile?.viewMode === "supe" ? "Chaser" : "Supe"}
+
+            </button>
+
+          </div>
+
+        </section>
 
           {/* God Mode Card - Only shows when actively in Super Admin mode */}
           {(() => {

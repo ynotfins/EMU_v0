@@ -1,81 +1,99 @@
 "use client";
 
 import { useIncident } from "@/hooks/use-incident";
+
 import { useEffect, useMemo } from "react";
-import { MapCard } from "@/components/map-card"; // existing map card used by chaser
-import { UpdatesList } from "@/components/updates-list"; // existing updates list
-import { toggleFavorite, unfavorite, toggleBookmark, unbookmark } from "@/hooks/use-incidents";
-import { useRouter } from "next/navigation";
+
+import { LiveMap } from "@/components/live-map";
 
 export default function IncidentDetailClient({ id }: { id: string }) {
-  const { data: incident, isLoading, error, updates } = useIncident(id);
-  const router = useRouter();
 
-  useEffect(() => { if (error) console.error("[IncidentDetail]", error); }, [error]);
+  const { data: incident, isLoading, error } = useIncident(id);
+
+  useEffect(()=>{ if (error) console.error("[IncidentDetail]", error) }, [error]);
 
   const addr = useMemo(() => {
+
     if (!incident) return "";
-    const parts = [incident.address, incident.city, incident.county, incident.state].filter(Boolean);
-    return parts.join(", ");
+
+    return [incident.address, incident.city, incident.county, incident.state].filter(Boolean).join(", ");
+
   }, [incident]);
 
   if (isLoading) return <div className="p-6 text-sm text-muted-foreground">Loading incident…</div>;
-  if (error) return <div className="p-6 text-sm text-destructive">Error loading incident.</div>;
-  if (!incident) return <div className="p-6 text-sm">Incident not found.</div>;
 
-  const onFav = async () => {
-    if (incident.isFavorited) await unfavorite(incident.id);
-    else await toggleFavorite(incident.id);
-  };
-  const onBm = async () => {
-    if (incident.isBookmarked) await unbookmark(incident.id);
-    else await toggleBookmark(incident.id);
-  };
+  if (error)     return <div className="p-6 text-sm text-destructive">Error loading incident.</div>;
 
-  const handleOpenMaps = () => {
-    if (incident.lat && incident.lng) {
-      const url = `https://www.google.com/maps?q=${incident.lat},${incident.lng}`;
-      window.open(url, '_blank');
-    } else if (addr) {
-      const url = `https://www.google.com/maps?q=${encodeURIComponent(addr)}`;
-      window.open(url, '_blank');
-    }
-  };
-
-  // Map updates to UpdatesList format
-  const updatesRows = (updates || []).map((update: any) => ({
-    ts: update.ts || update.timestamp || incident.updatedAt || new Date().toISOString(),
-    state: update.state || incident.state || "",
-    county: update.county || incident.county || "",
-    city: update.city || incident.city || "",
-    address: update.address || incident.address || "",
-    type: update.type || update.title || incident.type || "Alert",
-    message: update.message || "",
-    showIncidentId: true,
-    incidentNumber: incident.incidentNumber,
-  }));
+  if (!incident) return <div className="p-6 text-sm">Not found.</div>;
 
   return (
-    <div className="max-w-3xl mx-auto p-4 space-y-6">
-      <div className="h-72 rounded-xl overflow-hidden border">
-        <MapCard address={addr} lat={incident.lat} lng={incident.lng} onOpenMaps={handleOpenMaps} />
+
+    <div className="p-4 space-y-4">
+
+      <div>
+
+        <h1 className="text-2xl font-bold">Incident #{incident.incidentNumber || id}</h1>
+
+        <p className="text-muted-foreground">{addr}</p>
+
       </div>
 
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{incident.type || "Alert"}</h1>
-          <p className="text-muted-foreground">{addr}</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={onFav} className="rounded-full px-3 py-1 border">{incident.isFavorited ? "★" : "☆"}</button>
-          <button onClick={onBm} className="rounded-full px-3 py-1 border">🔖</button>
-        </div>
+      <div className="rounded-xl border">
+
+        <LiveMap markers={(typeof incident.lat === "number" && typeof incident.lng === "number")
+
+          ? [{ uid: id, name: incident.type || "Alert", lat: incident.lat, lng: incident.lng }]
+
+          : []} />
+
       </div>
 
-      <section>
-        <h2 className="text-lg font-semibold mb-2">Updates ({updatesRows.length})</h2>
-        <UpdatesList rows={updatesRows} />
-      </section>
+      <div className="rounded-xl border p-4">
+
+        <h2 className="font-semibold mb-2">Details</h2>
+
+        <div className="space-y-2 text-sm">
+
+          <div><span className="font-medium">Type:</span> {incident.type || "Unknown"}</div>
+
+          <div><span className="font-medium">Location:</span> {addr || "—"}</div>
+
+          <div><span className="font-medium">Message:</span> {incident.message || "—"}</div>
+
+          <div><span className="font-medium">Updated:</span> {incident.updatedAt ? new Date(incident.updatedAt).toLocaleString() : "—"}</div>
+
+        </div>
+
+      </div>
+
+      {Array.isArray(incident.updates) && incident.updates.length > 0 && (
+
+        <div className="rounded-xl border">
+
+          <div className="p-4 pb-0 font-semibold">Updates</div>
+
+          <ul className="p-4 pt-2 space-y-2 text-sm">
+
+            {incident.updates.map((u, i) => (
+
+              <li key={i} className="border rounded-md p-2">
+
+                <div className="text-xs text-muted-foreground">{u?.ts ? new Date(u.ts).toLocaleString() : ""}</div>
+
+                <div>{u?.message || ""}</div>
+
+              </li>
+
+            ))}
+
+          </ul>
+
+        </div>
+
+      )}
+
     </div>
+
   );
+
 }

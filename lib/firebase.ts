@@ -25,11 +25,15 @@ if (!getApps().length) {
 
 // Export Firebase services
 export const auth: Auth = getAuth(app);
-// Ensure session persists across reloads and popup/redirect
-setPersistence(auth, browserLocalPersistence).catch((e) => {
-  // Non-fatal; some browsers disallow persistence in private mode.
-  console.warn("[auth] setPersistence failed:", e);
-});
+// Persist session in browser and mirror a lightweight cookie for Edge middleware
+setPersistence(auth, browserLocalPersistence).catch(() => {})
+if (typeof window !== "undefined") {
+  onAuthStateChanged(auth, (u) => {
+    try {
+      document.cookie = `__emu_authed=${u ? "1" : "0"}; Path=/; SameSite=Lax`
+    } catch {}
+  })
+}
 export const db: Firestore = getFirestore(app);
 export const storage = getStorage(app);
 
