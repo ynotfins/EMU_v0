@@ -82,8 +82,11 @@ function normalize(docId: string, data: FirestoreIncidentData): IncidentLite {
   const county = BOROUGH_TO_COUNTY[rawCounty] || rawCounty;
   const city = data.city || "";
   const address = data.address || data.addr || data.street || "";
-  const type = data.type || data.lastType || data.alertType || "Unknown";
-  const message = data.message || data.lastMessage || data.alertMessage || "";
+  // Filter out "BNN" from type and message (case-insensitive)
+  const rawType = data.type || data.lastType || data.alertType || "Unknown";
+  const type = rawType.replace(/\bBNN\b/gi, "").trim().replace(/\s+/g, " ") || "Unknown";
+  const rawMessage = data.message || data.lastMessage || data.alertMessage || "";
+  const message = rawMessage.replace(/\bBNN\b/gi, "").trim().replace(/\s+/g, " ");
 
   const normalized = {
     id: docId,

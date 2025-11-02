@@ -9,7 +9,6 @@ import { RefreshCw } from "lucide-react"
 import { useMemo } from "react"
 
 export default function SupeMapPage() {
-  const { markers } = useLiveLocations()
   const { data: allIncidents } = useIncidents()
 
   // Filter incidents from last 4 hours
@@ -21,7 +20,9 @@ export default function SupeMapPage() {
       if (incidentTime >= fourHoursAgo) return true
       if (inc.updates && inc.updates.length > 0) {
         const latestUpdate = inc.updates[0]
-        const updateTime = latestUpdate.ts || incidentTime
+        const updateTime = typeof latestUpdate.ts === 'string' 
+          ? new Date(latestUpdate.ts).getTime() 
+          : incidentTime
         return updateTime >= fourHoursAgo
       }
       return false
@@ -49,7 +50,7 @@ export default function SupeMapPage() {
 
         {/* Map */}
         <div className="flex-1 p-4 pb-20 overflow-y-auto">
-          <LiveMap markers={markers} incidents={recentIncidents} />
+          <LiveMap incidents={recentIncidents} />
         </div>
       </div>
     </RoleLayout>

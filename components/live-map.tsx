@@ -12,6 +12,9 @@ interface LiveMapProps {
 }
 
 export function LiveMap({ markers, incidents = [] }: LiveMapProps) {
+  // Filter incidents with valid lat/lng coordinates
+  const incidentsWithLocation = incidents.filter(inc => inc.lat && inc.lng);
+
   return (
     <div className="relative h-full w-full bg-[#E5E7EB] rounded-lg overflow-hidden">
       {/* 4 Hours Text - Small and unintrusive */}
@@ -27,28 +30,32 @@ export function LiveMap({ markers, incidents = [] }: LiveMapProps) {
           <MapPin className="h-16 w-16 text-[#6B7280] mx-auto" />
           <p className="text-[#6B7280] font-medium">Live Map View</p>
           <p className="text-sm text-[#6B7280]">
-            {incidents.length} alert{incidents.length !== 1 ? 's' : ''} from last 4 hours
+            {incidentsWithLocation.length} alert{incidentsWithLocation.length !== 1 ? 's' : ''} with locations from last 4 hours
           </p>
         </div>
       </div>
 
-      {/* Active Responders Overlay */}
+      {/* Alert Locations Overlay */}
       <Card className="absolute top-4 left-4 right-4 p-3">
         <div className="flex items-center gap-2">
-          <Users className="h-5 w-5 text-[#007AFF]" />
-          <span className="text-sm font-medium text-foreground">Active Responders</span>
-          <Badge className="bg-[#34C759] hover:bg-[#2DA84A] ml-auto">{markers.length}</Badge>
+          <MapPin className="h-5 w-5 text-[#FF3B30]" />
+          <span className="text-sm font-medium text-foreground">Alert Locations</span>
+          <Badge className="bg-[#FF3B30] hover:bg-[#E02A20] ml-auto">{incidentsWithLocation.length}</Badge>
         </div>
-        <div className="mt-3 space-y-2">
-          {markers.map((marker) => (
-            <div key={marker.uid} className="flex items-center gap-2 text-sm">
-              <div className="h-2 w-2 bg-[#34C759] rounded-full animate-pulse" />
-              <span className="text-foreground">{marker.name}</span>
-              <span className="text-[#6B7280] text-xs ml-auto">
-                {marker.lat.toFixed(4)}, {marker.lng.toFixed(4)}
-              </span>
-            </div>
-          ))}
+        <div className="mt-3 space-y-2 max-h-64 overflow-y-auto">
+          {incidentsWithLocation.length === 0 ? (
+            <p className="text-xs text-[#6B7280]">No alerts with locations</p>
+          ) : (
+            incidentsWithLocation.map((incident) => (
+              <div key={incident.id} className="flex items-center gap-2 text-sm">
+                <div className="h-2 w-2 bg-[#FF3B30] rounded-full" />
+                <span className="text-foreground flex-1 truncate">{incident.address}</span>
+                <span className="text-[#6B7280] text-xs">
+                  {incident.city}, {incident.state}
+                </span>
+              </div>
+            ))
+          )}
         </div>
       </Card>
     </div>

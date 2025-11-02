@@ -80,7 +80,7 @@ function IncidentListItemComponent({
         />
       )}
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1">
         {/* Badge Row */}
         {incident.highAlert && (
           <div className="flex items-center gap-2">
@@ -93,39 +93,39 @@ function IncidentListItemComponent({
           </div>
         )}
 
-        {/* Date/Time Row - Moved above second line */}
-        <div className="flex items-center justify-center gap-2">
-          <div className="text-xs text-[#6B7280]">{l1}</div>
-          {/* Silent and Hide buttons - centered */}
-          <div className="flex items-center gap-1">
-            <button
-              onClick={handleToggleSilence}
-              className="p-1 rounded transition-colors hover:bg-gray-100"
-              aria-label={silenced ? "Unsilence" : "Silence"}
-              title={silenced ? "Click to unsilence" : "Click to silence"}
-            >
-              {silenced ? (
-                <BellOff className="h-4 w-4 text-[#FF3B30]" />
-              ) : (
-                <Bell className="h-4 w-4 text-[#34C759]" />
-              )}
-            </button>
-            {onHide && (
-              <button
-                onClick={handleHideClick}
-                className="p-1 rounded transition-colors hover:bg-gray-100"
-                aria-label="Hide alert"
-                title="Hide this alert"
-              >
-                <EyeOff className="h-4 w-4 text-[#FF9500]" />
-              </button>
-            )}
-          </div>
-        </div>
-
         {/* Content Row */}
         <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 space-y-1 min-w-0">
+          <div className="flex-1 space-y-0.5 min-w-0">
+            {/* Date/Time Row - Just above state/city row, left aligned */}
+            <div className="flex items-center justify-start gap-2">
+              <div className="text-xs text-[#6B7280]">{l1}</div>
+              {/* Silent and Hide buttons - centered to alert field */}
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={handleToggleSilence}
+                  className="p-1 rounded transition-colors hover:bg-gray-100"
+                  aria-label={silenced ? "Unsilence" : "Silence"}
+                  title={silenced ? "Click to unsilence" : "Click to silence"}
+                >
+                  {silenced ? (
+                    <BellOff className="h-4 w-4 text-[#FF3B30]" />
+                  ) : (
+                    <Bell className="h-4 w-4 text-[#34C759]" />
+                  )}
+                </button>
+                {onHide && (
+                  <button
+                    onClick={handleHideClick}
+                    className="p-1 rounded transition-colors hover:bg-gray-100"
+                    aria-label="Hide alert"
+                    title="Hide this alert"
+                  >
+                    <EyeOff className="h-4 w-4 text-[#FF9500]" />
+                  </button>
+                )}
+              </div>
+            </div>
+
             {/* Line 2: Location */}
             <div className="font-medium text-sm">{l2}</div>
 
