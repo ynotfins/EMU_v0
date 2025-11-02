@@ -39,6 +39,7 @@
     "react-hooks/purity": "warn",
     "react/no-unescaped-entities": "off",
     "react/react-in-jsx-scope": "off",
-    "react/prop-types": "off"
+    "react/prop-types": "off",
+    "no-console": ["warn", { "allow": ["warn", "error"] }]
   }
 }
