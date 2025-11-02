@@ -12,8 +12,12 @@ interface BottomNavProps {
 export function BottomNav({ role }: BottomNavProps) {
   const pathname = usePathname();
 
-  // Super admin can access supe routes
-  const baseRole = role === "super_admin" ? "supe" : role;
+  // Check if user is actively in Super Admin mode
+  // For super_admin users, check localStorage for active role
+  const activeRole =
+    role === "super_admin" && typeof window !== "undefined"
+      ? (localStorage.getItem("activeRole") === "super_admin" ? "super_admin" : "supe")
+      : role;
 
   // Check if God Mode is active (stored in localStorage)
   const isGodMode =
@@ -23,21 +27,23 @@ export function BottomNav({ role }: BottomNavProps) {
 
   // Profile label logic:
   // - super_admin in God Mode → "God"
-  // - super_admin NOT in God Mode → "Supe" (always, since default is supe)
+  // - super_admin NOT in God Mode → "Supe"
   // - supe → "Supe"
   // - chaser → "Profile"
   let profileLabel = "Profile";
 
-  if (role === "super_admin") {
+  if (activeRole === "super_admin") {
     if (isGodMode) {
       profileLabel = "God";
     } else {
-      // Super admin defaults to Supe view
       profileLabel = "Supe";
     }
-  } else if (role === "supe") {
+  } else if (activeRole === "supe" || role === "supe") {
     profileLabel = "Supe";
   }
+
+  // Use active role for navigation
+  const baseRole = activeRole === "super_admin" ? "supe" : activeRole;
 
   const navItems = [
     {

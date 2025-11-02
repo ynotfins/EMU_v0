@@ -75,7 +75,7 @@ export default function LoginPage() {
       const userDocRef = docRef(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
 
-      let userRole = "supe"; // Default to supe for super admin
+      let userRole = "chaser"; // Default to chaser for new users
 
       if (!userDoc.exists()) {
         console.log("[Login] 🆕 New Google user - creating profile...");
@@ -90,7 +90,7 @@ export default function LoginPage() {
           name: user.displayName || user.email?.split("@")[0] || "User",
           nickname: user.displayName || user.email?.split("@")[0] || "User",
           phone: user.phoneNumber || "",
-          role: "supe", // Default to supe for super admin account
+          role: "chaser", // Default to chaser for new users
           settings: {
             pushEnabled: true,
             trackingEnabled: true,
@@ -159,9 +159,9 @@ export default function LoginPage() {
       const userDocRef = docRef(db, "users", result.user.uid);
       const userDoc = await getDoc(userDocRef);
       
-      let userRole = "supe"; // Default to supe
+      let userRole = "chaser"; // Default to chaser
       if (userDoc.exists()) {
-        userRole = userDoc.data().role || "supe";
+        userRole = userDoc.data().role || "chaser";
       }
 
       // Redirect based on role - super_admin defaults to supe view

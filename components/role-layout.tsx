@@ -18,8 +18,14 @@ export function RoleLayout({ role, children }: RoleLayoutProps) {
   // Determine actual role from profile or use provided role
   const actualRole = profile?.role || role;
   
-  // Super admin should use supe as base role for navigation
-  const navRole = actualRole === "super_admin" ? "super_admin" : (actualRole === "admin" ? "supe" : role);
+  // For super_admin users, check localStorage for active role (defaults to supe)
+  let navRole = actualRole;
+  if (actualRole === "super_admin" && typeof window !== "undefined") {
+    const activeRole = localStorage.getItem("activeRole");
+    navRole = activeRole === "super_admin" ? "super_admin" : "supe";
+  } else if (actualRole === "admin") {
+    navRole = "supe";
+  }
 
   return (
     <ProtectedRoute>

@@ -11,6 +11,7 @@ import { IDVerificationCard } from "@/components/id-verification-card";
 import { PreferencesCard } from "@/components/preferences-card";
 import { EmergencyPaymentCard } from "@/components/emergency-payment-card";
 import { HelpLegalCard } from "@/components/help-legal-card";
+import { SupeControlsCard } from "@/components/supe-controls-card";
 import { GodModeCard } from "@/components/god-mode-card";
 import { LiveTeamMap } from "@/components/live-team-map";
 import { Button } from "@/components/ui/button";
@@ -54,8 +55,20 @@ export default function SupeProfilePage() {
         <ProfileHeader profile={profile} />
 
         <div className="flex-1 p-4 space-y-4">
-          {/* God Mode Card - Only shows for super_admin */}
-          <GodModeCard userRole={profile.role} />
+          {/* Supe Controls Card - Shows for all Supe users */}
+          <SupeControlsCard userRole={profile.role} />
+
+          {/* God Mode Card - Only shows when actively in Super Admin mode */}
+          {(() => {
+            // Check if user is actively in Super Admin mode
+            if (typeof window !== "undefined") {
+              const activeRole = localStorage.getItem("activeRole");
+              if (activeRole === "super_admin" && profile.role === "super_admin") {
+                return <GodModeCard userRole={profile.role} />;
+              }
+            }
+            return null;
+          })()}
 
           <StatsCards
             responded={profile.stats.responded}
