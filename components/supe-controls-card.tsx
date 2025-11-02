@@ -20,6 +20,7 @@ interface SupeControlsCardProps {
 export function SupeControlsCard({ userRole }: SupeControlsCardProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Check if user has super_admin role in Firestore (can toggle to Super Admin)
   const canToggleSuperAdmin = userRole === "super_admin";
@@ -90,14 +91,24 @@ export function SupeControlsCard({ userRole }: SupeControlsCardProps) {
             <Shield className="h-5 w-5 text-blue-600" />
             <CardTitle className="text-blue-900">Supe Controls</CardTitle>
           </div>
-          <Badge className="bg-blue-600 text-white">SUPE</Badge>
+          <div className="flex items-center gap-2">
+            <Badge className="bg-blue-600 text-white">SUPE</Badge>
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="text-blue-600 hover:text-blue-800 transition-colors"
+              aria-label={isCollapsed ? "Expand" : "Collapse"}
+            >
+              {isCollapsed ? "▼" : "▲"}
+            </button>
+          </div>
         </div>
         <CardDescription>
           Switch between Chaser/Supe views {canToggleSuperAdmin && "and toggle Super Admin mode"}
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="space-y-6">
+      {!isCollapsed && (
+        <CardContent className="space-y-6">
         {/* Super Admin Toggle - Only if user has super_admin role */}
         {canToggleSuperAdmin && (
           <div className="flex items-center justify-between p-4 bg-white rounded-lg border-2 border-purple-200">
@@ -174,7 +185,8 @@ export function SupeControlsCard({ userRole }: SupeControlsCardProps) {
             </Badge>
           </p>
         </div>
-      </CardContent>
+        </CardContent>
+      )}
     </Card>
   );
 }

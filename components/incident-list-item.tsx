@@ -81,23 +81,23 @@ function IncidentListItemComponent({
       )}
 
       <div className="flex flex-col gap-2">
-        {/* Top Row: Badge + Date/Time + Silent + Hide (centered) */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            {incident.highAlert && (
-              <Badge
-                variant="outline"
-                className="text-[#FF3B30] border-[#FF3B30] shrink-0"
-              >
-                HIGH ALERT
-              </Badge>
-            )}
-            {/* Line 1: Date/Time + Distance */}
-            <div className="text-xs text-[#6B7280] truncate">{l1}</div>
+        {/* Badge Row */}
+        {incident.highAlert && (
+          <div className="flex items-center gap-2">
+            <Badge
+              variant="outline"
+              className="text-[#FF3B30] border-[#FF3B30] shrink-0"
+            >
+              HIGH ALERT
+            </Badge>
           </div>
-          
-          {/* Silent and Hide buttons - centered on same row */}
-          <div className="flex items-center gap-1 shrink-0">
+        )}
+
+        {/* Date/Time Row - Moved above second line */}
+        <div className="flex items-center justify-center gap-2">
+          <div className="text-xs text-[#6B7280]">{l1}</div>
+          {/* Silent and Hide buttons - centered */}
+          <div className="flex items-center gap-1">
             <button
               onClick={handleToggleSilence}
               className="p-1 rounded transition-colors hover:bg-gray-100"

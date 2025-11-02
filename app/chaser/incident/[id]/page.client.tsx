@@ -93,7 +93,7 @@ export default function Client({ id }: { id: string }) {
 
         {/* Tabs */}
         <Tabs defaultValue="details" className="flex-1 flex flex-col overflow-hidden">
-          <TabsList className="w-full justify-start rounded-none border-b bg-white fixed top-14 left-0 right-0 z-10">
+          <TabsList className="w-full justify-start rounded-none border-b bg-white fixed top-14 left-0 right-0 z-10 h-12">
             <TabsTrigger value="details" className="flex-1">
               Details
             </TabsTrigger>
@@ -112,8 +112,8 @@ export default function Client({ id }: { id: string }) {
             </TabsTrigger>
           </TabsList>
 
-          <div className="flex-1 overflow-y-auto pb-20 pt-14">
-            <TabsContent value="details" className="m-0 h-full">
+          <div className="flex-1 overflow-y-auto pb-20 pt-12 min-h-0">
+            <TabsContent value="details" className="m-0 space-y-0 min-h-0">
               {/* Map - Embedded Google Maps at CITY zoom level */}
               <div 
                 className="w-full h-64 bg-gray-100 relative cursor-pointer"
