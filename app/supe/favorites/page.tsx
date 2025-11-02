@@ -65,7 +65,7 @@ export default function SupeFavoritesPage() {
         <div className="h-16"></div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
           <TabsList className="w-full bg-white border-b border-[#E5E7EB] rounded-none h-12 justify-start px-4 fixed top-16 left-0 right-0 z-10">
             <TabsTrigger value="favorites" className="gap-2">
               <Star className="h-4 w-4" />
@@ -81,7 +81,7 @@ export default function SupeFavoritesPage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="favorites" className="flex-1 overflow-y-auto p-4 space-y-3 mt-12 pb-20">
+          <TabsContent value="favorites" className="flex-1 overflow-y-auto p-4 space-y-3 pt-12 pb-20">
             {favoritedIncidents.length === 0 ? (
               <EmptyState icon={Star} message="No favorited incidents yet" />
             ) : (
@@ -98,7 +98,7 @@ export default function SupeFavoritesPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="bookmarks" className="flex-1 overflow-y-auto p-4 space-y-3 mt-12 pb-20">
+          <TabsContent value="bookmarks" className="flex-1 overflow-y-auto p-4 space-y-3 pt-12 pb-20">
             {bookmarkedIncidents.length === 0 ? (
               <EmptyState icon={Bookmark} message="No bookmarked incidents yet" />
             ) : (
@@ -115,7 +115,7 @@ export default function SupeFavoritesPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="notes" className="flex-1 overflow-y-auto p-4 space-y-3 mt-12 pb-20">
+          <TabsContent value="notes" className="flex-1 overflow-y-auto p-4 space-y-3 pt-12 pb-20">
             {notedIncidents.length === 0 ? (
               <EmptyState icon={FileText} message="No incidents with notes yet" />
             ) : (

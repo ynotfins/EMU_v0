@@ -114,7 +114,7 @@ export default function ChaserFavoritesPage() {
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
-          className="flex-1 flex flex-col"
+          className="flex-1 flex flex-col overflow-hidden"
         >
           <TabsList className="w-full bg-white border-b border-[#E5E7EB] rounded-none h-12 justify-start px-4 fixed top-16 left-0 right-0 z-10">
             <TabsTrigger value="favorites" className="gap-2">
@@ -137,7 +137,7 @@ export default function ChaserFavoritesPage() {
 
           <TabsContent
             value="favorites"
-            className="flex-1 overflow-y-auto p-0 mt-12 pb-20"
+            className="flex-1 overflow-y-auto p-0 pt-12 pb-20"
           >
             {favoritedIncidents.length === 0 ? (
               <EmptyState
@@ -166,7 +166,7 @@ export default function ChaserFavoritesPage() {
 
           <TabsContent
             value="bookmarks"
-            className="flex-1 overflow-y-auto p-0 mt-12 pb-20"
+            className="flex-1 overflow-y-auto p-0 pt-12 pb-20"
           >
             {bookmarkedIncidents.length === 0 ? (
               <EmptyState
@@ -194,7 +194,7 @@ export default function ChaserFavoritesPage() {
 
           <TabsContent
             value="notes"
-            className="flex-1 overflow-y-auto p-0 mt-12 pb-20"
+            className="flex-1 overflow-y-auto p-0 pt-12 pb-20"
           >
             {notedIncidents.length === 0 ? (
               <EmptyState
@@ -223,7 +223,7 @@ export default function ChaserFavoritesPage() {
           {/* Responses Tab - Shows incidents user has responded to */}
           <TabsContent
             value="responses"
-            className="flex-1 overflow-y-auto p-0 mt-12 pb-20"
+            className="flex-1 overflow-y-auto p-0 pt-12 pb-20"
           >
             {responsesLoading ? (
               <div className="flex items-center justify-center h-64">
