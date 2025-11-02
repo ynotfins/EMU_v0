@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { logger } from "@/lib/logger";
 import {
   collection,
   onSnapshot,
@@ -78,20 +79,21 @@ function normalize(docId: string, data: any): IncidentLite {
     bookmarkedBy: data.bookmarkedBy || [],
     // CRITICAL: Store the actual firestoreDocId field for routing/querying
     incidentId: data.firestoreDocId || data.incidentId,
-  } as any;
+    } as IncidentLite;
 
-  // DEBUG: Log what we're storing for routing
+  // DEBUG: Log what we're storing for routing (only in development)
   if (
-    docId === "6xE4cVQPSqpjn88vC4kE" ||
+    process.env.NODE_ENV === 'development' &&
+    (docId === "6xE4cVQPSqpjn88vC4kE" ||
     docId === "1834007" ||
-    Math.random() < 0.02
+    Math.random() < 0.02)
   ) {
-    console.log(`[normalize] 🔍 Document ${docId} ALL FIELDS:`, {
+    logger.debug(`Document ${docId} fields`, {
+      code: 'normalize',
       docId,
-      "data.incidentId": data.incidentId,
-      "data.incidentNumber": data.incidentNumber,
-      ALL_FIELD_NAMES: Object.keys(data),
-      FULL_DATA: data,
+      incidentId: data.incidentId,
+      incidentNumber: data.incidentNumber,
+      fieldNames: Object.keys(data),
     });
   }
 
@@ -156,15 +158,15 @@ function withUserFlags(incident: IncidentLite): IncidentLite {
 
   // Only log if it's favorited or bookmarked (reduce noise)
   if (isFavorited || isBookmarked) {
-    console.log(
-      `[withUserFlags] ⭐ Incident ${incident.incidentNumber} for uid ${uid}:`,
-      {
-        isFavorited,
-        isBookmarked,
-        favoritedBy: favoritedBy.length > 0 ? favoritedBy : "(empty)",
-        bookmarkedBy: bookmarkedBy.length > 0 ? bookmarkedBy : "(empty)",
-      }
-    );
+    logger.debug(`Incident ${incident.incidentNumber} user flags`, {
+      code: 'withUserFlags',
+      incidentNumber: incident.incidentNumber,
+      uid,
+      isFavorited,
+      isBookmarked,
+      favoritedByCount: favoritedBy.length,
+      bookmarkedByCount: bookmarkedBy.length,
+    });
   }
 
   return {
@@ -224,19 +226,17 @@ export function useIncidents(filters?: Partial<IncidentFilters>) {
               new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
           );
 
-        console.log(
-          "[useIncidents] Loaded",
-          data.length,
-          "unique incidents from",
-          snapshot.docs.length,
-          "documents"
-        );
+        logger.info(`Loaded ${data.length} unique incidents from ${snapshot.docs.length} documents`, {
+          code: 'useIncidents',
+          uniqueCount: data.length,
+          documentCount: snapshot.docs.length,
+        });
         setIncidents(data);
         setIsLoading(false);
         setError(null);
       },
       (err) => {
-        console.error("[useIncidents] Firestore error:", err);
+        logger.error("Firestore error", err, { code: 'useIncidents' });
         setError(err as Error);
         setIsLoading(false);
       }
@@ -302,17 +302,15 @@ export function useIncidents(filters?: Partial<IncidentFilters>) {
 export async function toggleFavorite(incidentId: string): Promise<void> {
   const userId = auth.currentUser?.uid;
   if (!userId) {
-    console.error("[toggleFavorite] ❌ No authenticated user");
+    logger.error("No authenticated user", undefined, { code: 'toggleFavorite' });
     return;
   }
 
-  console.log("============================================");
-  console.log(
-    "[toggleFavorite] Starting - userId:",
+  logger.debug("Starting toggle favorite", {
+    code: 'toggleFavorite',
     userId,
-    "incidentId:",
-    incidentId
-  );
+    incidentId,
+  });
 
   try {
     const incidentRef = doc(db, "incidents", incidentId);
@@ -320,7 +318,10 @@ export async function toggleFavorite(incidentId: string): Promise<void> {
     // Read current state to determine action
     const snap = await getDoc(incidentRef);
     if (!snap.exists()) {
-      console.error("[toggleFavorite] ❌ Document not found:", incidentId);
+      logger.error("Document not found", undefined, {
+        code: 'toggleFavorite',
+        incidentId,
+      });
       return;
     }
 
@@ -328,34 +329,40 @@ export async function toggleFavorite(incidentId: string): Promise<void> {
     const favoritedBy = data.favoritedBy || [];
     const isFavorited = favoritedBy.includes(userId);
 
-    console.log("[toggleFavorite] Current state:");
-    console.log("  - favoritedBy:", favoritedBy);
-    console.log("  - isFavorited:", isFavorited);
-    console.log("  - Action:", isFavorited ? "REMOVE" : "ADD");
+    logger.debug("Current favorite state", {
+      code: 'toggleFavorite',
+      isFavorited,
+      action: isFavorited ? "REMOVE" : "ADD",
+      favoritedByCount: favoritedBy.length,
+    });
 
     if (isFavorited) {
       // Remove from favorites
       await updateDoc(incidentRef, {
         favoritedBy: arrayRemove(userId),
       });
-      console.log("[toggleFavorite] ✅ REMOVED", userId, "from favoritedBy");
+      logger.info("Removed from favorites", {
+        code: 'toggleFavorite',
+        userId,
+        incidentId,
+      });
     } else {
       // Add to favorites
       await updateDoc(incidentRef, {
         favoritedBy: arrayUnion(userId),
       });
-      console.log("[toggleFavorite] ✅ ADDED", userId, "to favoritedBy");
+      logger.info("Added to favorites", {
+        code: 'toggleFavorite',
+        userId,
+        incidentId,
+      });
     }
-
-    // Verify
-    const verifySnap = await getDoc(incidentRef);
-    console.log(
-      "[toggleFavorite] 🔍 VERIFICATION - favoritedBy after:",
-      verifySnap.data()?.favoritedBy
-    );
-    console.log("============================================");
   } catch (error) {
-    console.error("[toggleFavorite] ❌ Error:", error);
+    logger.error("Error toggling favorite", error, {
+      code: 'toggleFavorite',
+      incidentId,
+      userId,
+    });
     throw error;
   }
 }
@@ -363,7 +370,7 @@ export async function toggleFavorite(incidentId: string): Promise<void> {
 export async function unfavorite(incidentId: string): Promise<void> {
   const userId = auth.currentUser?.uid;
   if (!userId) {
-    console.error("[unfavorite] ❌ No authenticated user");
+    logger.error("No authenticated user", undefined, { code: 'unfavorite' });
     return;
   }
 
@@ -372,25 +379,32 @@ export async function unfavorite(incidentId: string): Promise<void> {
     await updateDoc(incidentRef, {
       favoritedBy: arrayRemove(userId),
     });
+    logger.info("Unfavorited incident", {
+      code: 'unfavorite',
+      userId,
+      incidentId,
+    });
   } catch (error) {
-    console.error("[unfavorite] Error:", error);
+    logger.error("Error unfavoriting", error, {
+      code: 'unfavorite',
+      incidentId,
+      userId,
+    });
   }
 }
 
 export async function toggleBookmark(incidentId: string): Promise<void> {
   const userId = auth.currentUser?.uid;
   if (!userId) {
-    console.error("[toggleBookmark] ❌ No authenticated user");
+    logger.error("No authenticated user", undefined, { code: 'toggleBookmark' });
     return;
   }
 
-  console.log("============================================");
-  console.log(
-    "[toggleBookmark] Starting - userId:",
+  logger.debug("Starting toggle bookmark", {
+    code: 'toggleBookmark',
     userId,
-    "incidentId:",
-    incidentId
-  );
+    incidentId,
+  });
 
   try {
     const incidentRef = doc(db, "incidents", incidentId);
@@ -398,7 +412,10 @@ export async function toggleBookmark(incidentId: string): Promise<void> {
     // Read current state to determine action
     const snap = await getDoc(incidentRef);
     if (!snap.exists()) {
-      console.error("[toggleBookmark] ❌ Document not found:", incidentId);
+      logger.error("Document not found", undefined, {
+        code: 'toggleBookmark',
+        incidentId,
+      });
       return;
     }
 
@@ -406,34 +423,40 @@ export async function toggleBookmark(incidentId: string): Promise<void> {
     const bookmarkedBy = data.bookmarkedBy || [];
     const isBookmarked = bookmarkedBy.includes(userId);
 
-    console.log("[toggleBookmark] Current state:");
-    console.log("  - bookmarkedBy:", bookmarkedBy);
-    console.log("  - isBookmarked:", isBookmarked);
-    console.log("  - Action:", isBookmarked ? "REMOVE" : "ADD");
+    logger.debug("Current bookmark state", {
+      code: 'toggleBookmark',
+      isBookmarked,
+      action: isBookmarked ? "REMOVE" : "ADD",
+      bookmarkedByCount: bookmarkedBy.length,
+    });
 
     if (isBookmarked) {
       // Remove from bookmarks
       await updateDoc(incidentRef, {
         bookmarkedBy: arrayRemove(userId),
       });
-      console.log("[toggleBookmark] ✅ REMOVED", userId, "from bookmarkedBy");
+      logger.info("Removed from bookmarks", {
+        code: 'toggleBookmark',
+        userId,
+        incidentId,
+      });
     } else {
       // Add to bookmarks
       await updateDoc(incidentRef, {
         bookmarkedBy: arrayUnion(userId),
       });
-      console.log("[toggleBookmark] ✅ ADDED", userId, "to bookmarkedBy");
+      logger.info("Added to bookmarks", {
+        code: 'toggleBookmark',
+        userId,
+        incidentId,
+      });
     }
-
-    // Verify
-    const verifySnap = await getDoc(incidentRef);
-    console.log(
-      "[toggleBookmark] 🔍 VERIFICATION - bookmarkedBy after:",
-      verifySnap.data()?.bookmarkedBy
-    );
-    console.log("============================================");
   } catch (error) {
-    console.error("[toggleBookmark] ❌ Error:", error);
+    logger.error("Error toggling bookmark", error, {
+      code: 'toggleBookmark',
+      incidentId,
+      userId,
+    });
     throw error;
   }
 }
@@ -441,7 +464,7 @@ export async function toggleBookmark(incidentId: string): Promise<void> {
 export async function unbookmark(incidentId: string): Promise<void> {
   const userId = auth.currentUser?.uid;
   if (!userId) {
-    console.error("[unbookmark] ❌ No authenticated user");
+    logger.error("No authenticated user", undefined, { code: 'unbookmark' });
     return;
   }
 
@@ -450,13 +473,25 @@ export async function unbookmark(incidentId: string): Promise<void> {
     await updateDoc(incidentRef, {
       bookmarkedBy: arrayRemove(userId),
     });
+    logger.info("Unbookmarked incident", {
+      code: 'unbookmark',
+      userId,
+      incidentId,
+    });
   } catch (error) {
-    console.error("[unbookmark] Error:", error);
+    logger.error("Error unbookmarking", error, {
+      code: 'unbookmark',
+      incidentId,
+      userId,
+    });
   }
 }
 
 // Action stubs - ready for Firebase implementation
 export function respondToAlert(incidentId: string): void {
-  console.debug("[useIncidents] respondToAlert:", incidentId);
+  logger.debug("Responding to alert", {
+    code: 'respondToAlert',
+    incidentId,
+  });
   // TODO: Update Firestore: incidents/{incidentId} set status='responding', assignedTo=currentUserId
 }

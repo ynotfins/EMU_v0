@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo, useCallback } from "react";
 import { Heart, Bookmark, Bell, BellOff, EyeOff } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import type { IncidentLite } from "@/types/domain";
 import { formatListLines } from "@/hooks/use-incidents";
 import { isSilenced, toggleSilenceLocal } from "@/lib/silence";
+import { logger } from "@/lib/logger";
 
 interface IncidentListItemProps {
   incident: IncidentLite;
@@ -18,7 +19,7 @@ interface IncidentListItemProps {
   onHide?: (id: string) => void;
 }
 
-export function IncidentListItem({
+function IncidentListItemComponent({
   incident,
   onOpen,
   onToggleFavorite,
@@ -35,12 +36,33 @@ export function IncidentListItem({
   // Track silence state locally
   const [silenced, setSilenced] = useState(() => isSilenced(incident.id));
 
-  const handleToggleSilence = (e: React.MouseEvent) => {
+  const handleToggleSilence = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     const newState = toggleSilenceLocal(incident.id);
     setSilenced(newState);
     onToggleSilence?.(incident.id);
-  };
+  }, [incident.id, onToggleSilence]);
+
+  const handleCardClick = useCallback(() => {
+    const idToPass = incident.incidentId || incident.incidentNumber.toString();
+    logger.debug('Opening incident', { code: 'IncidentListItem', incidentId: idToPass });
+    onOpen(idToPass);
+  }, [incident.incidentId, incident.incidentNumber, onOpen]);
+
+  const handleFavoriteClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleFavorite(incident.id);
+  }, [incident.id, onToggleFavorite]);
+
+  const handleBookmarkClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleBookmark(incident.id);
+  }, [incident.id, onToggleBookmark]);
+
+  const handleHideClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onHide?.(incident.id);
+  }, [incident.id, onHide]);
 
   return (
     <Card
@@ -48,18 +70,7 @@ export function IncidentListItem({
         "relative p-4 cursor-pointer hover:shadow-md transition-shadow",
         silenced && "opacity-50 bg-gray-50"
       )}
-      onClick={() => {
-        const idToPass =
-          (incident as any).incidentId || incident.incidentNumber.toString();
-        console.log(`[IncidentListItem] 🔍 ROUTING with:`, {
-          "incident.id": incident.id,
-          "incident.incidentNumber": incident.incidentNumber,
-          "(incident as any).incidentId": (incident as any).incidentId,
-          idToPass: idToPass,
-          "typeof idToPass": typeof idToPass,
-        });
-        onOpen(idToPass);
-      }}
+      onClick={handleCardClick}
     >
       {barHeightPercent > 0 && (
         <div
@@ -96,11 +107,9 @@ export function IncidentListItem({
         {/* Actions */}
         <div className="flex flex-col gap-2">
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleFavorite(incident.id);
-            }}
+            onClick={handleFavoriteClick}
             className="p-1 hover:bg-[#F2F2F7] rounded transition-colors"
+            aria-label={incident.isFavorited ? "Remove from favorites" : "Add to favorites"}
           >
             <Heart
               className={cn(
@@ -112,11 +121,9 @@ export function IncidentListItem({
             />
           </button>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleBookmark(incident.id);
-            }}
+            onClick={handleBookmarkClick}
             className="p-1 hover:bg-[#F2F2F7] rounded transition-colors"
+            aria-label={incident.isBookmarked ? "Remove bookmark" : "Add bookmark"}
           >
             <Bookmark
               className={cn(
@@ -141,10 +148,7 @@ export function IncidentListItem({
           </button>
           {onHide && (
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onHide(incident.id);
-              }}
+              onClick={handleHideClick}
               className="p-1 rounded transition-colors hover:bg-gray-100"
               aria-label="Hide alert"
               title="Hide this alert"
@@ -157,3 +161,19 @@ export function IncidentListItem({
     </Card>
   );
 }
+
+// Memoize component to prevent unnecessary re-renders
+export const IncidentListItem = memo(IncidentListItemComponent, (prevProps, nextProps) => {
+  // Custom comparison: only re-render if incident data or handlers change
+  return (
+    prevProps.incident.id === nextProps.incident.id &&
+    prevProps.incident.isFavorited === nextProps.incident.isFavorited &&
+    prevProps.incident.isBookmarked === nextProps.incident.isBookmarked &&
+    prevProps.incident.updatedAt === nextProps.incident.updatedAt &&
+    prevProps.onOpen === nextProps.onOpen &&
+    prevProps.onToggleFavorite === nextProps.onToggleFavorite &&
+    prevProps.onToggleBookmark === nextProps.onToggleBookmark &&
+    prevProps.onToggleSilence === nextProps.onToggleSilence &&
+    prevProps.onHide === nextProps.onHide
+  );
+});
