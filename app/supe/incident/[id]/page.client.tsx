@@ -36,14 +36,18 @@ export default function Client({ id }: { id: string }) {
   return (
     <RoleLayout role="supe">
       <div className="flex flex-col h-screen">
-        <div className="bg-white border-b border-[#E5E7EB] p-4">
+        {/* Header - Fixed at top */}
+        <div className="bg-white border-b border-[#E5E7EB] p-4 fixed top-0 left-0 right-0 z-20">
           <h1 className="text-2xl font-bold text-foreground">
             Incident #{incident.incidentNumber}
           </h1>
           <p className="text-sm text-[#6B7280]">{incident.address}</p>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Spacer for fixed header */}
+        <div className="h-20"></div>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-20">
           <div className="bg-white rounded-lg p-4 shadow-sm">
             <h2 className="font-semibold mb-2">Details</h2>
             <div className="space-y-2 text-sm">

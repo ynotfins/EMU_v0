@@ -92,7 +92,7 @@ export default function Client({ id }: { id: string }) {
         <div className="h-14"></div>
 
         {/* Tabs */}
-        <Tabs defaultValue="details" className="flex-1 flex flex-col">
+        <Tabs defaultValue="details" className="flex-1 flex flex-col overflow-hidden">
           <TabsList className="w-full justify-start rounded-none border-b bg-white fixed top-14 left-0 right-0 z-10">
             <TabsTrigger value="details" className="flex-1">
               Details
@@ -112,7 +112,7 @@ export default function Client({ id }: { id: string }) {
             </TabsTrigger>
           </TabsList>
 
-          <div className="flex-1 overflow-y-auto pb-8 pt-14">
+          <div className="flex-1 overflow-y-auto pb-20 pt-14">
             <TabsContent value="details" className="m-0 h-full">
               {/* Map - Embedded Google Maps at CITY zoom level */}
               <div 

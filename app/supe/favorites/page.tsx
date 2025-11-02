@@ -81,7 +81,7 @@ export default function SupeFavoritesPage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="favorites" className="flex-1 overflow-y-auto p-4 space-y-3 pt-12 pb-20">
+          <TabsContent value="favorites" className="flex-1 overflow-y-auto p-4 space-y-3 pt-12 pb-20 min-h-0">
             {favoritedIncidents.length === 0 ? (
               <EmptyState icon={Star} message="No favorited incidents yet" />
             ) : (
@@ -98,7 +98,7 @@ export default function SupeFavoritesPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="bookmarks" className="flex-1 overflow-y-auto p-4 space-y-3 pt-12 pb-20">
+          <TabsContent value="bookmarks" className="flex-1 overflow-y-auto p-4 space-y-3 pt-12 pb-20 min-h-0">
             {bookmarkedIncidents.length === 0 ? (
               <EmptyState icon={Bookmark} message="No bookmarked incidents yet" />
             ) : (
@@ -115,7 +115,7 @@ export default function SupeFavoritesPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="notes" className="flex-1 overflow-y-auto p-4 space-y-3 pt-12 pb-20">
+          <TabsContent value="notes" className="flex-1 overflow-y-auto p-4 space-y-3 pt-12 pb-20 min-h-0">
             {notedIncidents.length === 0 ? (
               <EmptyState icon={FileText} message="No incidents with notes yet" />
             ) : (
