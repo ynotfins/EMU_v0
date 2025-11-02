@@ -352,6 +352,7 @@ export default function CRMContractorsPage() {
           </div>
         )}
       </div>
+      </div>
     </ProtectedRoute>
   );
 }
