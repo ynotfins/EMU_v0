@@ -72,6 +72,11 @@ Enable emergency responders to quickly view, respond to, and coordinate incident
 - ✅ **Auth Never Expires**: Users stay signed in until manual sign-out
 - ✅ **God Mode Toggle**: Super admins can toggle God Mode and switch between Supe/Chaser views from profile page
 
+**Auth Domains Checklist**:
+- Add **4axe.com**, **www.4axe.com**, and Vercel preview domains to *Firebase Auth → Authorized domains*
+- Enable Google provider and Email/Password
+- Browser console message "Cross-Origin-Opener-Policy would block window.close" from Google Identity is benign and can be ignored
+
 #### Incident Management
 
 - ✅ **Real-Time Incident List**: Firestore `onSnapshot` for live updates
