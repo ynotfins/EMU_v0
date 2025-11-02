@@ -1,5 +1,5 @@
 /**
- * Make j.snap11@yahoo.com a Supe
+ * Make j.snap11@yahoo.com a Chaser
  */
 
 import admin from 'firebase-admin';
@@ -20,25 +20,25 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
-async function makeJSnapSupe() {
+async function makeJSnapChaser() {
   const uid = 'Kfky1lZnisZ21SszzvVkR2w1h172';
   const email = 'j.snap11@yahoo.com';
 
-  console.log(`\n🔄 Updating ${email} to Supe role...`);
+  console.log(`\n🔄 Updating ${email} to Chaser role...`);
 
   try {
     await db.collection('users').doc(uid).update({
-      role: 'supe',
+      role: 'chaser',
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    console.log(`✅ SUCCESS! ${email} is now a SUPE!`);
+    console.log(`✅ SUCCESS! ${email} is now a CHASER!`);
   } catch (error: any) {
     console.error(`❌ Error: ${error.message}`);
   }
 }
 
-makeJSnapSupe()
+makeJSnapChaser()
   .then(() => {
     console.log('✅ Done!');
     process.exit(0);

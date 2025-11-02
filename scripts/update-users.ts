@@ -46,13 +46,13 @@ async function updateTony() {
   await updateUserProfile("ynotfins@gmail.com", updates);
 }
 
-// Create/update j.snap11@yahoo.com as Supe with Lightning Joe name
+// Create/update j.snap11@yahoo.com as Chaser with Lightning Joe name
 async function updateLightningJoe() {
   const updates = {
     displayName: "⚡ Lightning Joe ⚡",
     name: "⚡ Lightning Joe ⚡",
     nickname: "⚡ Lightning Joe ⚡",
-    role: "supe",
+    role: "chaser",
   };
   await updateUserProfile("j.snap11@yahoo.com", updates);
 }
