@@ -64,18 +64,26 @@ export default function LoginPage() {
     try {
       const provider = new GoogleAuthProvider();
       
-      // Check if we're on desktop and popup might be blocked
+      // On desktop/PC, use redirect flow to avoid COOP issues
       const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768;
       
-      // Try popup first, fallback to redirect on desktop if popup fails
+      if (isDesktop) {
+        // Use redirect flow for desktop (no COOP issues)
+        const { signInWithRedirect } = await import("firebase/auth");
+        await signInWithRedirect(auth, provider);
+        // Redirect will happen, so we don't need to handle the result here
+        return;
+      }
+
+      // On mobile, try popup flow
       let result;
       try {
         result = await signInWithPopup(auth, provider);
       } catch (popupError: any) {
-        if (popupError.code === "auth/popup-blocked" && isDesktop) {
-          // On desktop, try redirect flow as fallback
-          setError("Popup blocked. Please allow popups or use email/password sign-in.");
-          setLoading(false);
+        if (popupError.code === "auth/popup-blocked") {
+          // Fallback to redirect on mobile too if popup is blocked
+          const { signInWithRedirect } = await import("firebase/auth");
+          await signInWithRedirect(auth, provider);
           return;
         }
         throw popupError;
@@ -161,7 +169,14 @@ export default function LoginPage() {
       if (err.code === "auth/popup-closed-by-user") {
         setError("Sign-in cancelled. Please try again.");
       } else if (err.code === "auth/popup-blocked") {
-        setError("Popup blocked. Please allow popups for this site or use email/password sign-in.");
+        setError("Popup blocked. Redirecting to Google sign-in...");
+        // Try redirect flow
+        try {
+          const { signInWithRedirect } = await import("firebase/auth");
+          await signInWithRedirect(auth, new GoogleAuthProvider());
+        } catch (redirectErr) {
+          setError("Failed to sign in with Google. Please try again.");
+        }
       } else {
         setError("Failed to sign in with Google. Please try again.");
       }

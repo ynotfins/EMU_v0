@@ -20,7 +20,7 @@ interface SupeControlsCardProps {
 export function SupeControlsCard({ userRole }: SupeControlsCardProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   // Check if user has super_admin role in Firestore (can toggle to Super Admin)
   const canToggleSuperAdmin = userRole === "super_admin";
