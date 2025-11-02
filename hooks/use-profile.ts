@@ -146,7 +146,7 @@ export function useProfile(uid?: string | null) {
     const userId = auth.currentUser?.uid
     if (!userId) return
     localStorage.setItem("emu.viewMode", mode)
-    await updateDoc(doc(db, "users", userId), { viewMode: mode }, { merge: true })
+    await updateDoc(doc(db, "users", userId), { viewMode: mode })
     setData((p) => p ? { ...p, viewMode: mode } : p)
   }
 
