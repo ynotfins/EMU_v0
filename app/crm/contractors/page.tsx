@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, UserPlus, Filter, Download, Users, Phone, Mail, MapPin, CheckCircle2, Clock } from "lucide-react";
+import { ProtectedRoute } from "@/components/protected-route";
 
 interface Contractor {
   id: string;
@@ -84,7 +85,8 @@ export default function CRMContractorsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 p-8">
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 p-8">
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-8">
         <div className="flex items-center justify-between mb-6">
@@ -350,7 +352,7 @@ export default function CRMContractorsPage() {
           </div>
         )}
       </div>
-    </div>
+    </ProtectedRoute>
   );
 }
 

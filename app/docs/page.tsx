@@ -4,11 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { ProtectedRoute } from "@/components/protected-route"
 import manifest from "@/docs/manifest.json"
 
 export default function DocsPage() {
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
+    <ProtectedRoute>
+      <div className="container mx-auto p-6 max-w-6xl">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">EMU Alerts Documentation</h1>
         <p className="text-muted-foreground">Development documentation and project structure overview</p>
@@ -255,5 +257,6 @@ export default function DocsPage() {
         </CardContent>
       </Card>
     </div>
+    </ProtectedRoute>
   )
 }

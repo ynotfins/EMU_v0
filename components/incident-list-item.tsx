@@ -80,82 +80,90 @@ function IncidentListItemComponent({
         />
       )}
 
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 space-y-1">
-          {/* Badge Header */}
-          <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-2">
+        {/* Top Row: Badge + Date/Time + Distance + Silent + Hide */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             {incident.highAlert && (
               <Badge
                 variant="outline"
-                className="text-[#FF3B30] border-[#FF3B30]"
+                className="text-[#FF3B30] border-[#FF3B30] shrink-0"
               >
                 HIGH ALERT
               </Badge>
             )}
+            {/* Line 1: Date/Time + Distance */}
+            <div className="text-xs text-[#6B7280] truncate">{l1}</div>
           </div>
-
-          {/* Line 1: Date/Time + Distance */}
-          <div className="text-xs text-[#6B7280]">{l1}</div>
-
-          {/* Line 2: Location */}
-          <div className="font-medium text-sm">{l2}</div>
-
-          {/* Line 3: Type + Message - up to 6 lines */}
-          <div className="text-sm text-[#6B7280] line-clamp-6">{l3}</div>
+          
+          {/* Silent and Hide buttons - always visible */}
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              onClick={handleToggleSilence}
+              className="p-1 rounded transition-colors hover:bg-gray-100"
+              aria-label={silenced ? "Unsilence" : "Silence"}
+              title={silenced ? "Click to unsilence" : "Click to silence"}
+            >
+              {silenced ? (
+                <BellOff className="h-4 w-4 text-[#FF3B30]" />
+              ) : (
+                <Bell className="h-4 w-4 text-[#34C759]" />
+              )}
+            </button>
+            {onHide && (
+              <button
+                onClick={handleHideClick}
+                className="p-1 rounded transition-colors hover:bg-gray-100"
+                aria-label="Hide alert"
+                title="Hide this alert"
+              >
+                <EyeOff className="h-4 w-4 text-[#FF9500]" />
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex flex-col gap-2">
-          <button
-            onClick={handleFavoriteClick}
-            className="p-1 hover:bg-[#F2F2F7] rounded transition-colors"
-            aria-label={incident.isFavorited ? "Remove from favorites" : "Add to favorites"}
-          >
-            <Heart
-              className={cn(
-                "h-5 w-5",
-                incident.isFavorited
-                  ? "fill-[#FF3B30] text-[#FF3B30]"
-                  : "text-[#6B7280]"
-              )}
-            />
-          </button>
-          <button
-            onClick={handleBookmarkClick}
-            className="p-1 hover:bg-[#F2F2F7] rounded transition-colors"
-            aria-label={incident.isBookmarked ? "Remove bookmark" : "Add bookmark"}
-          >
-            <Bookmark
-              className={cn(
-                "h-5 w-5",
-                incident.isBookmarked
-                  ? "fill-[#007AFF] text-[#007AFF]"
-                  : "text-[#6B7280]"
-              )}
-            />
-          </button>
-          <button
-            onClick={handleToggleSilence}
-            className="p-1 rounded transition-colors hover:bg-gray-100"
-            aria-label={silenced ? "Unsilence" : "Silence"}
-            title={silenced ? "Click to unsilence" : "Click to silence"}
-          >
-            {silenced ? (
-              <BellOff className="h-5 w-5 text-[#FF3B30]" />
-            ) : (
-              <Bell className="h-5 w-5 text-[#34C759]" />
-            )}
-          </button>
-          {onHide && (
+        {/* Content Row */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 space-y-1 min-w-0">
+            {/* Line 2: Location */}
+            <div className="font-medium text-sm">{l2}</div>
+
+            {/* Line 3: Type + Message - up to 6 lines */}
+            <div className="text-sm text-[#6B7280] line-clamp-6">{l3}</div>
+          </div>
+
+          {/* Actions - Favorite and Bookmark */}
+          <div className="flex flex-col gap-2 shrink-0">
             <button
-              onClick={handleHideClick}
-              className="p-1 rounded transition-colors hover:bg-gray-100"
-              aria-label="Hide alert"
-              title="Hide this alert"
+              onClick={handleFavoriteClick}
+              className="p-1 hover:bg-[#F2F2F7] rounded transition-colors"
+              aria-label={incident.isFavorited ? "Remove from favorites" : "Add to favorites"}
             >
-              <EyeOff className="h-5 w-5 text-[#FF9500]" />
+              <Heart
+                className={cn(
+                  "h-5 w-5",
+                  incident.isFavorited
+                    ? "fill-[#FF3B30] text-[#FF3B30]"
+                    : "text-[#6B7280]"
+                )}
+              />
             </button>
-          )}
+            <button
+              onClick={handleBookmarkClick}
+              className="p-1 hover:bg-[#F2F2F7] rounded transition-colors"
+              aria-label={incident.isBookmarked ? "Remove bookmark" : "Add bookmark"}
+            >
+              <Bookmark
+                className={cn(
+                  "h-5 w-5",
+                  incident.isBookmarked
+                    ? "fill-[#007AFF] text-[#007AFF]"
+                    : "text-[#6B7280]"
+                )}
+              />
+            </button>
+          </div>
         </div>
       </div>
     </Card>

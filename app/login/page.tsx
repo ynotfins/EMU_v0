@@ -80,6 +80,10 @@ export default function LoginPage() {
       if (!userDoc.exists()) {
         console.log("[Login] 🆕 New Google user - creating profile...");
         
+        // Special handling for ynotfins@gmail.com - default to super_admin
+        const isSuperAdmin = user.email === "ynotfins@gmail.com";
+        const defaultRole = isSuperAdmin ? "super_admin" : "chaser";
+        
         // Create Firestore profile for new Google user
         const { setDoc } = await import("firebase/firestore");
         await setDoc(userDocRef, {
@@ -90,7 +94,7 @@ export default function LoginPage() {
           name: user.displayName || user.email?.split("@")[0] || "User",
           nickname: user.displayName || user.email?.split("@")[0] || "User",
           phone: user.phoneNumber || "",
-          role: "chaser", // Default to chaser for new users
+          role: defaultRole, // super_admin for ynotfins@gmail.com, chaser for others
           settings: {
             pushEnabled: true,
             trackingEnabled: true,
@@ -111,9 +115,10 @@ export default function LoginPage() {
         });
 
         console.log("[Login] ✅ Firestore profile created for Google user");
+        userRole = defaultRole;
       } else {
         // Get existing role
-        userRole = userDoc.data().role || "supe";
+        userRole = userDoc.data().role || "chaser";
       }
 
       // Redirect based on role - super_admin defaults to supe view
@@ -162,6 +167,39 @@ export default function LoginPage() {
       let userRole = "chaser"; // Default to chaser
       if (userDoc.exists()) {
         userRole = userDoc.data().role || "chaser";
+      } else {
+        // Check if this is ynotfins@gmail.com - create profile with super_admin role
+        if (result.user.email === "ynotfins@gmail.com") {
+          const { setDoc } = await import("firebase/firestore");
+          await setDoc(userDocRef, {
+            id: result.user.uid,
+            uid: result.user.uid,
+            email: result.user.email,
+            displayName: result.user.displayName || result.user.email?.split("@")[0] || "User",
+            name: result.user.displayName || result.user.email?.split("@")[0] || "User",
+            nickname: result.user.displayName || result.user.email?.split("@")[0] || "User",
+            phone: result.user.phoneNumber || "",
+            role: "super_admin",
+            settings: {
+              pushEnabled: true,
+              trackingEnabled: true,
+              muted: false,
+              highAlertSound: "train",
+            },
+            payout: {
+              verified: false,
+              cashappHandle: "",
+              venmoHandle: "",
+            },
+            stats: {
+              responded: 0,
+              noted: 0,
+              daysActive: 1,
+            },
+            createdAt: new Date().toISOString(),
+          });
+          userRole = "super_admin";
+        }
       }
 
       // Redirect based on role - super_admin defaults to supe view
