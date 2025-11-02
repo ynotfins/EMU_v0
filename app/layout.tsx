@@ -41,18 +41,25 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+          <>
+            <script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`} />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', { debug_mode: ${process.env.NODE_ENV !== "production"} });
+                `
+              }}
+            />
+          </>
+        )}
+      </head>
       <body className={`font-sans antialiased`}>
         <ErrorBoundary>
-          {process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
-            <script dangerouslySetInnerHTML={{
-              __html: `
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', { debug_mode: true });
-              `
-            }} />
-          )}
           <FavoritesProvider>
             {children}
             <PWARegistration />
