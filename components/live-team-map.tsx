@@ -24,7 +24,7 @@ export function LiveTeamMap() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("[LiveTeamMap] 🔄 Loading team locations...");
+    logger.debug("Loading team locations", { code: 'LiveTeamMap' });
 
     const q = query(collection(db, "users"));
 
@@ -37,7 +37,10 @@ export function LiveTeamMap() {
         location: doc.data().location,
       })) as TeamMember[];
 
-      console.log(`[LiveTeamMap] ✅ Loaded ${members.length} team members`);
+      logger.info(`Loaded ${members.length} team members`, {
+        code: 'LiveTeamMap',
+        memberCount: members.length,
+      });
       setTeamMembers(members);
       setLoading(false);
     });
@@ -45,9 +48,11 @@ export function LiveTeamMap() {
     return () => unsubscribe();
   }, []);
 
-  const onlineMembers = teamMembers.filter(
-    (m) => m.location && m.location.lat && m.location.lng
-  );
+  const onlineMembers = useMemo(() => {
+    return teamMembers.filter(
+      (m) => m.location && m.location.lat && m.location.lng
+    );
+  }, [teamMembers]);
 
   return (
     <Card className="border-0 shadow-md">

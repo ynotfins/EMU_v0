@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { MessageCircle, Users, Phone } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Input } from "./ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { logger } from "@/lib/logger";
 
 interface UserContact {
   id: string;
@@ -35,7 +36,7 @@ export function ChatContacts({
   useEffect(() => {
     const fetchContacts = async () => {
       try {
-        console.log("[ChatContacts] Fetching all users...");
+        logger.debug("Fetching all users", { code: 'ChatContacts' });
         const usersRef = collection(db, "users");
         const usersSnap = await getDocs(usersRef);
 
@@ -62,12 +63,14 @@ export function ChatContacts({
           return a.name.localeCompare(b.name);
         });
 
-        console.log(`[ChatContacts] ✅ Loaded ${allUsers.length} contacts`);
+        logger.info(`Loaded ${allUsers.length} contacts`, {
+          code: 'ChatContacts',
+          contactCount: allUsers.length,
+        });
         setContacts(allUsers);
-        setFilteredContacts(allUsers);
         setLoading(false);
       } catch (error) {
-        console.error("[ChatContacts] ❌ Error fetching contacts:", error);
+        logger.error("Error fetching contacts", error, { code: 'ChatContacts' });
         setLoading(false);
       }
     };
@@ -90,7 +93,30 @@ export function ChatContacts({
     );
   }, [searchQuery, contacts]);
 
-  const getRoleBadgeColor = (role: string) => {
+  // Memoize filtered contacts by role for tab counts
+  const supeContacts = useMemo(() => {
+    return filteredContacts.filter(
+      (c) =>
+        c.role === "supe" ||
+        c.role === "super_admin" ||
+        c.role === "admin"
+    );
+  }, [filteredContacts]);
+
+  const chaserContacts = useMemo(() => {
+    return filteredContacts.filter((c) => c.role === "chaser");
+  }, [filteredContacts]);
+
+  // Memoize handler functions
+  const handleContactClick = useCallback(
+    (contactId: string, contactName: string) => {
+      onSelectContact(contactId, contactName);
+    },
+    [onSelectContact]
+  );
+
+  // Memoize utility functions
+  const getRoleBadgeColor = useCallback((role: string) => {
     switch (role) {
       case "super_admin":
         return "bg-red-600 text-white";
@@ -103,14 +129,14 @@ export function ChatContacts({
       default:
         return "bg-gray-500 text-white";
     }
-  };
+  }, []);
 
-  const getRoleIcon = (role: string) => {
+  const getRoleIcon = useCallback((role: string) => {
     if (role === "supe" || role === "super_admin" || role === "admin") {
       return <Users className="h-4 w-4" />;
     }
     return <MessageCircle className="h-4 w-4" />;
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -141,20 +167,10 @@ export function ChatContacts({
         <TabsList className="w-full grid grid-cols-3 rounded-none border-b">
           <TabsTrigger value="all">All ({filteredContacts.length})</TabsTrigger>
           <TabsTrigger value="supes">
-            Supes (
-            {
-              filteredContacts.filter(
-                (c) =>
-                  c.role === "supe" ||
-                  c.role === "super_admin" ||
-                  c.role === "admin"
-              ).length
-            }
-            )
+            Supes ({supeContacts.length})
           </TabsTrigger>
           <TabsTrigger value="chasers">
-            Chasers (
-            {filteredContacts.filter((c) => c.role === "chaser").length})
+            Chasers ({chaserContacts.length})
           </TabsTrigger>
         </TabsList>
 
@@ -170,7 +186,7 @@ export function ChatContacts({
               {filteredContacts.map((contact) => (
                 <button
                   key={contact.id}
-                  onClick={() => onSelectContact(contact.id, contact.name)}
+                  onClick={() => handleContactClick(contact.id, contact.name)}
                   className="w-full p-4 hover:bg-gray-50 transition-colors flex items-center gap-3"
                 >
                   {/* Avatar */}
@@ -206,17 +222,10 @@ export function ChatContacts({
         {/* Supes Only */}
         <TabsContent value="supes" className="flex-1 overflow-y-auto m-0">
           <div className="divide-y">
-            {filteredContacts
-              .filter(
-                (c) =>
-                  c.role === "supe" ||
-                  c.role === "super_admin" ||
-                  c.role === "admin"
-              )
-              .map((contact) => (
+            {supeContacts.map((contact) => (
                 <button
                   key={contact.id}
-                  onClick={() => onSelectContact(contact.id, contact.name)}
+                  onClick={() => handleContactClick(contact.id, contact.name)}
                   className="w-full p-4 hover:bg-gray-50 transition-colors flex items-center gap-3"
                 >
                   <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold">
@@ -244,12 +253,10 @@ export function ChatContacts({
         {/* Chasers Only */}
         <TabsContent value="chasers" className="flex-1 overflow-y-auto m-0">
           <div className="divide-y">
-            {filteredContacts
-              .filter((c) => c.role === "chaser")
-              .map((contact) => (
+            {chaserContacts.map((contact) => (
                 <button
                   key={contact.id}
-                  onClick={() => onSelectContact(contact.id, contact.name)}
+                  onClick={() => handleContactClick(contact.id, contact.name)}
                   className="w-full p-4 hover:bg-gray-50 transition-colors flex items-center gap-3"
                 >
                   <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-semibold">
