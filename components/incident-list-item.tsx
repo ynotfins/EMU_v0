@@ -49,14 +49,22 @@ function IncidentListItemComponent({
     onOpen(idToPass);
   }, [incident.incidentId, incident.incidentNumber, onOpen]);
 
-  const handleFavoriteClick = useCallback((e: React.MouseEvent) => {
+  const handleFavoriteClick = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
-    onToggleFavorite(incident.id);
+    try {
+      await onToggleFavorite?.(incident.id);
+    } catch (err: any) {
+      alert(`[Favorites] ${err?.code ?? err?.message ?? err}`);
+    }
   }, [incident.id, onToggleFavorite]);
 
-  const handleBookmarkClick = useCallback((e: React.MouseEvent) => {
+  const handleBookmarkClick = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
-    onToggleBookmark(incident.id);
+    try {
+      await onToggleBookmark?.(incident.id);
+    } catch (err: any) {
+      alert(`[Bookmarks] ${err?.code ?? err?.message ?? err}`);
+    }
   }, [incident.id, onToggleBookmark]);
 
   const handleHideClick = useCallback((e: React.MouseEvent) => {

@@ -1,9 +1,7 @@
-import { use } from "react"
-import Client from "./page.client"
+import { use } from "react";
+import IncidentDetailClient from "../../../shared/IncidentDetailClient";
 
-type Params = { id: string }
-
-export default function Page(p: { params: Promise<Params> }) {
-  const { id } = use(p.params)
-  return <Client id={id} />
+export default function Page({ params }: { params: Promise<{id:string}> }) {
+  const { id } = use(params);
+  return <IncidentDetailClient id={id} />;
 }

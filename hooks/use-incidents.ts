@@ -18,6 +18,7 @@ import {
 import { db, auth } from "@/lib/firebase";
 import type { IncidentLite, IncidentUpdate } from "@/types/domain";
 import { useFavoritesContext } from "@/lib/context/favorites-context";
+import { ensureAuthed } from "../lib/auth-guard";
 
 // NYC Borough to County mapping
 const BOROUGH_TO_COUNTY: Record<string, string> = {
@@ -338,11 +339,7 @@ export function useIncidents(filters?: Partial<IncidentFilters>) {
 
 // Firestore actions for favorites and bookmarks
 export async function toggleFavorite(incidentId: string): Promise<void> {
-  const userId = auth.currentUser?.uid;
-  if (!userId) {
-    logger.error("No authenticated user", undefined, { code: 'toggleFavorite' });
-    return;
-  }
+  const userId = await ensureAuthed().catch((e) => { throw e });
 
   logger.debug("Starting toggle favorite", {
     code: 'toggleFavorite',
@@ -406,12 +403,7 @@ export async function toggleFavorite(incidentId: string): Promise<void> {
 }
 
 export async function unfavorite(incidentId: string): Promise<void> {
-  const userId = auth.currentUser?.uid;
-  if (!userId) {
-    logger.error("No authenticated user", undefined, { code: 'unfavorite' });
-    return;
-  }
-
+  const userId = await ensureAuthed().catch((e) => { throw e });
   try {
     const incidentRef = doc(db, "incidents", incidentId);
     await updateDoc(incidentRef, {
@@ -428,15 +420,12 @@ export async function unfavorite(incidentId: string): Promise<void> {
       incidentId,
       userId,
     });
+    throw error;
   }
 }
 
 export async function toggleBookmark(incidentId: string): Promise<void> {
-  const userId = auth.currentUser?.uid;
-  if (!userId) {
-    logger.error("No authenticated user", undefined, { code: 'toggleBookmark' });
-    return;
-  }
+  const userId = await ensureAuthed().catch((e) => { throw e });
 
   logger.debug("Starting toggle bookmark", {
     code: 'toggleBookmark',
@@ -500,12 +489,7 @@ export async function toggleBookmark(incidentId: string): Promise<void> {
 }
 
 export async function unbookmark(incidentId: string): Promise<void> {
-  const userId = auth.currentUser?.uid;
-  if (!userId) {
-    logger.error("No authenticated user", undefined, { code: 'unbookmark' });
-    return;
-  }
-
+  const userId = await ensureAuthed().catch((e) => { throw e });
   try {
     const incidentRef = doc(db, "incidents", incidentId);
     await updateDoc(incidentRef, {
@@ -522,6 +506,7 @@ export async function unbookmark(incidentId: string): Promise<void> {
       incidentId,
       userId,
     });
+    throw error;
   }
 }
 
