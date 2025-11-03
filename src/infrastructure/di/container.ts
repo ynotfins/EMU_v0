@@ -1,0 +1,105 @@
+/**
+ * Dependency Injection Container
+ * 
+ * Configures the InversifyJS container with all dependencies.
+ * This is the composition root of the application.
+ */
+
+import 'reflect-metadata';
+import { Container, interfaces } from 'inversify';
+import { TOKENS } from './tokens';
+
+// Configuration interfaces
+export interface AppConfig {
+  env: 'development' | 'staging' | 'production';
+  debug: boolean;
+  apiUrl: string;
+  appUrl: string;
+}
+
+export interface DatabaseConfig {
+  type: 'firebase' | 'postgres' | 'in-memory';
+  connectionString?: string;
+}
+
+export interface AuthConfig {
+  jwtSecret?: string;
+  jwtExpiresIn?: string;
+  sessionDuration?: number;
+  enableGoogleAuth: boolean;
+  enableEmailAuth: boolean;
+}
+
+// Container factory options
+export interface ContainerOptions {
+  appConfig: AppConfig;
+  databaseConfig?: DatabaseConfig;
+  authConfig?: AuthConfig;
+}
+
+/**
+ * Creates and configures the DI container
+ */
+export function createContainer(options: ContainerOptions): Container {
+  const container = new Container({
+    defaultScope: 'Singleton',
+    skipBaseClassChecks: true,
+  });
+
+  // Bind configurations
+  container.bind<AppConfig>(TOKENS.AppConfig).toConstantValue(options.appConfig);
+  
+  if (options.databaseConfig) {
+    container.bind<DatabaseConfig>(TOKENS.DatabaseConfig).toConstantValue(options.databaseConfig);
+  }
+  
+  if (options.authConfig) {
+    container.bind<AuthConfig>(TOKENS.AuthConfig).toConstantValue(options.authConfig);
+  }
+
+  // Configure based on environment
+  if (options.appConfig.env === 'development') {
+    configureDevelopmentBindings(container);
+  } else if (options.appConfig.env === 'production') {
+    configureProductionBindings(container);
+  }
+
+  return container;
+}
+
+/**
+ * Development environment bindings
+ */
+function configureDevelopmentBindings(container: Container): void {
+  // In development, we might use in-memory implementations or mocks
+  // These will be implemented in Phase 3
+}
+
+/**
+ * Production environment bindings
+ */
+function configureProductionBindings(container: Container): void {
+  // In production, we use real implementations
+  // These will be implemented in Phase 3
+}
+
+/**
+ * Creates a child container for request-scoped dependencies
+ */
+export function createRequestContainer(
+  parentContainer: Container,
+  requestContext?: any
+): Container {
+  const requestContainer = parentContainer.createChild();
+  
+  // Bind request-specific dependencies
+  if (requestContext) {
+    requestContainer.bind('RequestContext').toConstantValue(requestContext);
+  }
+  
+  return requestContainer;
+}
+
+// Re-export types for convenience
+export { Container, injectable, inject } from 'inversify';
+export { TOKENS } from './tokens';
