@@ -7,24 +7,10 @@
 
 import { injectable } from 'inversify';
 import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  setDoc,
-  deleteDoc,
-  query,
-  where,
-  orderBy,
-  limit,
-  startAfter,
+  Timestamp as FirestoreTimestamp,
   Query,
   DocumentData,
-  runTransaction,
-  Timestamp as FirestoreTimestamp,
-  onSnapshot,
-  QuerySnapshot,
-  Unsubscribe
+  QuerySnapshot
 } from 'firebase-admin/firestore';
 import {
   Incident,

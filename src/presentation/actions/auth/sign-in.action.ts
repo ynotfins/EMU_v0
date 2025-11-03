@@ -56,7 +56,7 @@ export async function signInWithEmail(
     const { user, sessionToken } = result.value;
 
     // Set session cookie
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     cookieStore.set(SESSION_COOKIE_NAME, sessionToken, COOKIE_OPTIONS);
     cookieStore.set(AUTH_COOKIE_NAME, '1', COOKIE_OPTIONS);
 
@@ -98,7 +98,7 @@ export async function signInWithGoogle(
     const { user, sessionToken } = result.value;
 
     // Set session cookie
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     cookieStore.set(SESSION_COOKIE_NAME, sessionToken, COOKIE_OPTIONS);
     cookieStore.set(AUTH_COOKIE_NAME, '1', COOKIE_OPTIONS);
 

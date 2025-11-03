@@ -18,6 +18,8 @@
     "jsx": "react-jsx",
     "forceConsistentCasingInFileNames": true,
     "incremental": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "plugins": [
       {
         "name": "next"

@@ -37,7 +37,7 @@ export class SessionService implements ISessionService {
       });
 
       // Set the cookie (this should be done in the Server Action/Route)
-      const cookieStore = cookies();
+      const cookieStore = await cookies();
       cookieStore.set(SESSION_COOKIE_NAME, sessionCookie, {
         ...SESSION_COOKIE_OPTIONS,
         maxAge: SESSION_DURATION / 1000, // Convert to seconds
@@ -81,7 +81,7 @@ export class SessionService implements ISessionService {
    */
   async getSessionCookie(): Promise<string | null> {
     try {
-      const cookieStore = cookies();
+      const cookieStore = await cookies();
       const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
       return sessionCookie?.value || null;
     } catch {
@@ -106,7 +106,7 @@ export class SessionService implements ISessionService {
       await adminAuth.revokeRefreshTokens(userId);
 
       // Clear the session cookie
-      const cookieStore = cookies();
+      const cookieStore = await cookies();
       cookieStore.delete(SESSION_COOKIE_NAME);
 
       return right(undefined);

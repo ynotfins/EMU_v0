@@ -6,22 +6,10 @@
 
 import { injectable } from 'inversify';
 import { 
-  collection, 
-  doc, 
-  getDoc, 
-  getDocs, 
-  setDoc, 
-  deleteDoc,
-  query, 
-  where, 
-  orderBy,
-  limit,
-  startAfter,
-  Query,
-  DocumentData,
-  runTransaction,
   GeoPoint,
-  Timestamp as FirestoreTimestamp
+  Timestamp as FirestoreTimestamp,
+  Query,
+  DocumentData
 } from 'firebase-admin/firestore';
 import { User } from '@domain/entities/user/user.entity';
 import { UserId, Email, Role, Location } from '@domain/shared/value-objects';
@@ -43,9 +31,9 @@ export class FirebaseUserRepository implements IUserRepository {
   async save(user: User): Promise<Either<Error, void>> {
     try {
       const document = UserMapper.toDocument(user);
-      const docRef = doc(adminDb, this.collection, user.id.value);
+      const docRef = adminDb.collection(this.collection).doc(user.id.value);
       
-      await runTransaction(adminDb, async (transaction) => {
+      await adminDb.runTransaction(async (transaction) => {
         const existingDoc = await transaction.get(docRef);
         
         // Check version for optimistic concurrency control
@@ -67,8 +55,8 @@ export class FirebaseUserRepository implements IUserRepository {
 
   async findById(id: UserId): Promise<Either<Error, User | null>> {
     try {
-      const docRef = doc(adminDb, this.collection, id.value);
-      const docSnap = await getDoc(docRef);
+      const docRef = adminDb.collection(this.collection).doc(id.value);
+      const docSnap = await docRef.get();
       
       if (!docSnap.exists()) {
         return right(null);
@@ -83,13 +71,11 @@ export class FirebaseUserRepository implements IUserRepository {
 
   async findByEmail(email: Email): Promise<Either<Error, User | null>> {
     try {
-      const q = query(
-        collection(adminDb, this.collection),
-        where('email', '==', email.value),
-        limit(1)
-      );
-      
-      const snapshot = await getDocs(q);
+      const snapshot = await adminDb
+        .collection(this.collection)
+        .where('email', '==', email.value)
+        .limit(1)
+        .get();
       
       if (snapshot.empty) {
         return right(null);
@@ -213,8 +199,8 @@ export class FirebaseUserRepository implements IUserRepository {
 
   async delete(id: UserId): Promise<Either<Error, void>> {
     try {
-      const docRef = doc(adminDb, this.collection, id.value);
-      await deleteDoc(docRef);
+      const docRef = adminDb.collection(this.collection).doc(id.value);
+      await docRef.delete();
       return right(undefined);
     } catch (error) {
       return left(new Error(`Failed to delete user: ${error instanceof Error ? error.message : 'Unknown error'}`));
