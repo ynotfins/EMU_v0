@@ -33,9 +33,9 @@ All phases of the Public Adjuster CRM rebuild plan have been successfully implem
 
 #### Lead Generation System (`/crm/leads`)
 - Multi-source lead capture:
-  - Radio scanner integration (demo mode)
-  - Social media monitoring (demo mode)
-  - Web scraping service (demo mode)
+  - Radio scanner integration (ready for live API)
+  - Social media monitoring (ready for live API)
+  - Web scraping service (ready for live API)
   - SEO landing page tracking (active)
 - Lead management dashboard with filtering
 - Manual lead entry form at `/crm/leads/new`

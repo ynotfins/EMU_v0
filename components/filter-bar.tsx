@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
-import { mockHighAlertSounds } from "@/lib/mock/sounds"
 
 interface FilterBarProps {
   distanceMi?: number

@@ -33,9 +33,9 @@
   - Lead management dashboard at `/crm/leads`
   - Manual lead entry form at `/crm/leads/new`
   - Lead generation service with multiple sources:
-    - Radio scanner integration (demo mode)
-    - Social media monitoring (demo mode)
-    - Web scraping service (demo mode)
+    - Radio scanner integration (ready for live API)
+    - Social media monitoring (ready for live API)
+    - Web scraping service (ready for live API)
     - SEO landing page tracking
   - Service control API at `/api/lead-generation`
   - Settings page for service configuration

@@ -184,50 +184,28 @@ export class LeadGenerationService {
   private async startRadioScanner() {
     console.log("[LeadGeneration] Starting radio scanner monitor...")
 
-    // Simulated radio scanner data for development
-    // In production: Connect to Broadcastify API, SDR feeds, or local scanner
-    const simulateRadioDispatch = async () => {
-      if (!this.isRunning || !this.config.radioScannerEnabled) return
-
-      // Example dispatch patterns to monitor:
-      // "Structure fire at [ADDRESS]"
-      // "Working fire, multiple companies"
-      // "2nd alarm requested"
-      
-      const mockDispatch = {
-        frequency: "154.430 MHz",
-        timestamp: new Date().toISOString(),
-        transcript: "Engine 51 responding to structure fire at 123 Main Street, heavy smoke showing",
-        confidence: 0.92
-      }
-
-      // Parse dispatch for fire incident keywords
-      if (this.isFireIncident(mockDispatch.transcript)) {
-        const parsedData = this.parseDispatch(mockDispatch.transcript)
-        if (parsedData.address) {
-          await this.createLead("radio_scanner", {
-            contact: {
-              address: parsedData.address,
-              city: parsedData.city || "Philadelphia",
-              state: "PA"
-            },
-            incidentType: parsedData.type || "Structure Fire",
-            incidentDate: mockDispatch.timestamp,
-            damageDescription: `Radio dispatch: ${mockDispatch.transcript}`,
-            sourceData: {
-              radioFrequency: mockDispatch.frequency
-            },
-            notes: [`Dispatch confidence: ${mockDispatch.confidence}`]
-          })
-        }
-      }
-
-      // Check every 30 seconds in development
-      setTimeout(simulateRadioDispatch, 30000)
-    }
-
-    // Start monitoring
-    setTimeout(simulateRadioDispatch, 5000)
+    // READY FOR LIVE API INTEGRATION
+    // TODO: Connect to your radio scanner API or emergency dispatch feed
+    // Example integration points:
+    // - Broadcastify API
+    // - Local emergency dispatch API
+    // - Scanner radio feed service
+    // - Software Defined Radio (SDR) feeds
+    
+    if (!this.isRunning || !this.config.radioScannerEnabled) return
+    
+    console.log("[LeadGeneration] Radio scanner ready for live API integration")
+    // When you have live API credentials, implement the connection here
+    // Example:
+    // const scanner = new RadioScannerAPI({
+    //   apiKey: process.env.SCANNER_API_KEY,
+    //   frequencies: ['154.430', '154.445', '154.490']
+    // })
+    // scanner.on('dispatch', (dispatch) => {
+    //   if (this.isFireIncident(dispatch.transcript)) {
+    //     this.processRadioDispatch(dispatch)
+    //   }
+    // })
   }
 
   /**
@@ -244,34 +222,24 @@ export class LeadGenerationService {
     const checkSocialMedia = async () => {
       if (!this.isRunning || !this.config.socialMediaEnabled) return
 
-      // Mock social media post
-      const mockPost = {
-        platform: "twitter",
-        postId: "1234567890",
-        text: "Devastating house fire on Oak Street last night. Our neighbors lost everything. Setting up GoFundMe to help.",
-        author: "@phillynews",
-        location: "Philadelphia, PA",
-        timestamp: new Date().toISOString()
-      }
-
-      // Analyze post sentiment and extract information
-      if (this.isFireIncidentPost(mockPost.text)) {
-        const extracted = this.extractFromSocialPost(mockPost.text)
-        
-        await this.createLead("social_media", {
-          contact: {
-            address: extracted.address,
-            city: mockPost.location.split(",")[0],
-            state: mockPost.location.split(",")[1]?.trim() || "PA"
-          },
-          incidentType: "Residential Fire",
-          incidentDate: mockPost.timestamp,
-          damageDescription: mockPost.text,
-          sourceData: {
-            socialMediaPost: `${mockPost.platform}:${mockPost.postId}`
-          }
-        })
-      }
+      // READY FOR LIVE API INTEGRATION
+      // TODO: Connect to social media APIs
+      // - Twitter API v2 with streaming endpoint
+      // - Facebook Graph API
+      // - Instagram Basic Display API
+      // Example:
+      // const twitterClient = new TwitterApi(process.env.TWITTER_BEARER_TOKEN)
+      // const stream = await twitterClient.v2.searchStream({
+      //   'tweet.fields': ['created_at', 'geo', 'text'],
+      //   'expansions': ['geo.place_id']
+      // })
+      // stream.on('data', (tweet) => {
+      //   if (this.isFireIncidentPost(tweet.data.text)) {
+      //     this.processSocialPost(tweet)
+      //   }
+      // })
+      
+      console.log("[LeadGeneration] Social media monitor ready for live API integration")
 
       // Check every 5 minutes
       setTimeout(checkSocialMedia, 300000)
@@ -295,28 +263,27 @@ export class LeadGenerationService {
     const scrapeWebsites = async () => {
       if (!this.isRunning || !this.config.webScrapingEnabled) return
 
-      // Mock scraped article
-      const mockArticle = {
-        url: "https://local-news.com/fire-destroys-home-maple-ave",
-        title: "Fire Destroys Home on Maple Avenue",
-        content: "A two-alarm fire destroyed a single-family home at 456 Maple Avenue yesterday evening...",
-        publishDate: new Date().toISOString(),
-        extractedAddress: "456 Maple Avenue"
-      }
-
-      await this.createLead("web_scraping", {
-        contact: {
-          address: mockArticle.extractedAddress,
-          city: "Philadelphia",
-          state: "PA"
-        },
-        incidentType: "Residential Fire",
-        incidentDate: mockArticle.publishDate,
-        damageDescription: mockArticle.content.substring(0, 200) + "...",
-        sourceData: {
-          webUrl: mockArticle.url
-        }
-      })
+      // READY FOR LIVE WEB SCRAPING
+      // TODO: Implement web scraping with real news sources
+      // - Use Puppeteer or Playwright for dynamic sites
+      // - RSS feed monitoring for news sites
+      // - Fire department incident report APIs
+      // Example:
+      // const newsFeeds = [
+      //   'https://philadelphia.com/rss/news',
+      //   'https://firerescue1.com/rss',
+      //   'https://phila.gov/fire/incidents/feed'
+      // ]
+      // for (const feed of newsFeeds) {
+      //   const articles = await this.parseRSSFeed(feed)
+      //   for (const article of articles) {
+      //     if (this.isFireIncident(article.title + ' ' + article.description)) {
+      //       this.processNewsArticle(article)
+      //     }
+      //   }
+      // }
+      
+      console.log("[LeadGeneration] Web scraper ready for live implementation")
 
       // Check every hour
       setTimeout(scrapeWebsites, 3600000)

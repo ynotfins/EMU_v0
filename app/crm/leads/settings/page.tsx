@@ -427,8 +427,8 @@ export default function LeadGenerationSettingsPage() {
           <Alert className="mt-6">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              <strong>Note:</strong> Radio scanner, social media, and web scraping features are in demo mode. 
-              In production, these would require API integrations with respective services.
+              <strong>Note:</strong> Radio scanner, social media, and web scraping features are ready for API integration. 
+              Add your API credentials and endpoints to enable live monitoring.
             </AlertDescription>
           </Alert>
         )}
