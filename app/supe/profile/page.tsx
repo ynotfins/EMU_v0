@@ -11,8 +11,6 @@ import { IDVerificationCard } from "@/components/id-verification-card";
 import { PreferencesCard } from "@/components/preferences-card";
 import { EmergencyPaymentCard } from "@/components/emergency-payment-card";
 import { HelpLegalCard } from "@/components/help-legal-card";
-import { SupeControlsCard } from "@/components/supe-controls-card";
-import { GodModeCard } from "@/components/god-mode-card";
 import { LiveTeamMap } from "@/components/live-team-map";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
@@ -20,7 +18,7 @@ import { useProfile } from "@/hooks/use-profile";
 
 export default function SupeProfilePage() {
   const router = useRouter();
-  const { data: profile, updateSettings, updatePayout, setViewMode } = useProfile();
+  const { data: profile, updateSettings, updatePayout } = useProfile();
 
   const handleSignOut = async () => {
     try {
@@ -55,19 +53,13 @@ export default function SupeProfilePage() {
         <ProfileHeader profile={profile} />
 
         <div className="flex-1 p-4 space-y-4">
-          {/* Supe Controls Card - Shows for all Supe users */}
-          <SupeControlsCard userRole={profile.role} />
-
-          {/* God Mode Card - Shows for super_admin users */}
-          {profile.role === "super_admin" && <GodModeCard userRole={profile.role} />}
-
           <StatsCards
             responded={profile.stats.responded}
             noted={profile.stats.noted}
             daysActive={profile.stats.daysActive}
           />
 
-          {/* Live Team Map - Above ID Verification */}
+          {/* Live Team Map - Shows all active team members */}
           <LiveTeamMap />
 
           <IDVerificationCard
