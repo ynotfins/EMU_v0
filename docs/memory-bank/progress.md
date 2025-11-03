@@ -2,6 +2,14 @@
 
 ## What Works (Production-Ready) ✅
 
+### Critical Bug Fixes - November 4, 2025 ✅
+
+- ✅ **Supe Version Fixed**: Distance calculation, maps, and profile loading now work for Supe users
+- ✅ **Default Role Fixed**: New accounts properly default to "chaser" not "supe"
+- ✅ **Auth State Race Condition**: Resolved in RoleLayout component
+- ✅ **Environment Variables**: Fixed client-side access via centralized config
+- ✅ **Google Maps API**: Now properly accessible in browser for geocoding
+
 ### Infrastructure - Complete ✅
 
 - **Deployment**: Vercel hosting at https://4axe.com

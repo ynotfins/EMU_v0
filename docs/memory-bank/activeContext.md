@@ -9,7 +9,19 @@
 
 ## Current Work Focus
 
-**Latest Session (Nov 3, 2025 - Late Evening)** - Map Fixes & UI Improvements:
+**Latest Session (Nov 4, 2025)** - Critical Supe Version Fixes:
+
+**Part 4 - Supe Version Bug Fixes**:
+- ✅ Identified root cause: Default role incorrectly set to "supe" in login
+- ✅ Fixed login page defaulting to "chaser" not "supe"
+- ✅ Fixed auth state race condition in RoleLayout
+- ✅ Removed auth.currentUser?.uid dependency
+- ✅ Distance calculation now works for Supe users
+- ✅ Maps now display properly for Supe users
+- ✅ Profile page no longer hangs for Supe users
+- ✅ New accounts correctly default to Chaser role
+
+**Previous Session (Nov 3, 2025 - Late Evening)** - Map Fixes & UI Improvements:
 
 **Part 3 - Map Display & UI Fixes**:
 - ✅ Fixed live map to show top 10 incidents from home page
