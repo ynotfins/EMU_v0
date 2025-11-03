@@ -55,9 +55,17 @@ export function LiveTeamMap() {
   }, []);
 
   const onlineMembers = useMemo(() => {
-    return teamMembers.filter(
-      (m) => m.location && m.location.lat && m.location.lng
-    );
+    // Consider users online if they have location data updated within last 5 minutes
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    
+    return teamMembers.filter((m) => {
+      if (!m.location || !m.location.lat || !m.location.lng || !m.location.lastUpdated) {
+        return false;
+      }
+      
+      const lastUpdate = new Date(m.location.lastUpdated);
+      return lastUpdate > fiveMinutesAgo;
+    });
   }, [teamMembers]);
 
   return (
@@ -160,16 +168,37 @@ export function LiveTeamMap() {
                     </div>
                   </div>
 
-                  {member.location ? (
-                    <Badge className="bg-green-500">
-                      <MapPin className="h-3 w-3 mr-1" />
-                      Online
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-gray-500">
-                      Offline
-                    </Badge>
-                  )}
+                  {(() => {
+                    if (!member.location || !member.location.lastUpdated) {
+                      return (
+                        <Badge variant="outline" className="text-gray-500">
+                          Offline
+                        </Badge>
+                      );
+                    }
+                    
+                    const lastUpdate = new Date(member.location.lastUpdated);
+                    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+                    
+                    if (lastUpdate > fiveMinutesAgo) {
+                      return (
+                        <Badge className="bg-green-500">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          Active
+                        </Badge>
+                      );
+                    } else {
+                      const minutesAgo = Math.floor((Date.now() - lastUpdate.getTime()) / 60000);
+                      const hoursAgo = Math.floor(minutesAgo / 60);
+                      const timeAgo = hoursAgo > 0 ? `${hoursAgo}h ago` : `${minutesAgo}m ago`;
+                      
+                      return (
+                        <Badge variant="outline" className="text-gray-500">
+                          {timeAgo}
+                        </Badge>
+                      );
+                    }
+                  })()}
                 </div>
               ))
             )}
