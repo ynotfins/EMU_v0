@@ -46,6 +46,16 @@ const crmModules = [
     comingSoon: true
   },
   {
+    id: "forms",
+    title: "Form Templates",
+    description: "Create and manage reusable forms",
+    icon: FileText,
+    color: "#6366F1",
+    bg: "#E0E7FF",
+    href: "/crm/forms",
+    stats: { label: "Templates", value: "12" }
+  },
+  {
     id: "documents",
     title: "Document Management",
     description: "Organize forms, contracts, and client documents",
@@ -53,8 +63,7 @@ const crmModules = [
     color: "#8B5CF6",
     bg: "#EDE9FE",
     href: "/crm/documents",
-    stats: { label: "Documents", value: "156" },
-    comingSoon: true
+    stats: { label: "Documents", value: "156" }
   },
   {
     id: "esign",
@@ -64,8 +73,7 @@ const crmModules = [
     color: "#EC4899",
     bg: "#FCE7F3",
     href: "/crm/esign",
-    stats: { label: "Pending", value: "8" },
-    comingSoon: true
+    stats: { label: "Pending", value: "8" }
   },
   {
     id: "seo",
