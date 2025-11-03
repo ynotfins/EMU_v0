@@ -42,9 +42,9 @@ export default function LoginPage() {
         const userDocRef = docRef(db, "users", user.uid);
         const userDoc = await getDoc(userDocRef);
         
-        let userRole = "supe"; // Default to supe
+        let userRole = "chaser"; // Default to chaser
         if (userDoc.exists()) {
-          userRole = userDoc.data().role || "supe";
+          userRole = userDoc.data().role || "chaser";
         }
 
         // Redirect based on role - super_admin defaults to supe view

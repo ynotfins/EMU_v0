@@ -13,7 +13,8 @@ interface RoleLayoutProps {
 }
 
 export function RoleLayout({ role, children }: RoleLayoutProps) {
-  const { data: profile } = useProfile(auth.currentUser?.uid);
+  // Don't pass uid - let useProfile handle auth state internally
+  const { data: profile } = useProfile();
 
   // Determine actual role from profile or use provided role
   const actualRole = profile?.role || role;
