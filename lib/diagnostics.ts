@@ -1,4 +1,4 @@
-import { logError } from "./logger"
+import { logger } from "./logger"
 import { getUid } from "./dev"
 import { initializeApp } from "firebase/app"
 import { getFirestore, doc, getDoc } from "firebase/firestore"
@@ -27,7 +27,7 @@ export async function testFirebaseAccess() {
     
     return { ok: true, uid, message: snap.exists() ? "Firestore read OK (doc exists)" : "Firestore read OK (doc missing)" }
   } catch (e: any) {
-    const err = logError(e, "firestore-access")
-    return { ok: false, uid: "unknown", message: err.message, code: e?.code || "unknown" }
+    logger.error("Diagnostics", "Firestore access failed", e);
+    return { ok: false, uid: "unknown", message: e.message || "Unknown error", code: e?.code || "unknown" }
   }
 }

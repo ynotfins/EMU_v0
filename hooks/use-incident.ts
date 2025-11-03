@@ -12,7 +12,7 @@ import {
   getDoc,
   updateDoc,
 } from "firebase/firestore";
-import { logError } from "@/lib/logger";
+import { logger } from "@/lib/logger";
 import type { Incident } from "@/types/domain";
 import { getUid } from "@/lib/dev";
 
@@ -174,7 +174,7 @@ export function useIncident(incidentId: string) {
       },
       (e) => {
         console.error(`[useIncident] ❌ Error loading updates:`, e);
-        logError(e, "updates-snapshot", { incidentId });
+        logger.error("Incident", "Failed to subscribe to updates", e as Error, { incidentId });
       }
     );
 

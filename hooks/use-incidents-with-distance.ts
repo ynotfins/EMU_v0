@@ -18,6 +18,7 @@ import { useIncidents } from "./use-incidents";
 import { useLocationDistance } from "./use-location-distance";
 import type { IncidentLite } from "@/types/domain";
 import type { IncidentFilters } from "./use-filters";
+import { incidentsLogger, distanceLogger } from "@/lib/logger";
 
 /**
  * Enhanced useIncidents with real-time distance calculation
@@ -40,15 +41,14 @@ export function useIncidentsWithDistance(filters?: Partial<IncidentFilters>) {
 
   // Calculate distances whenever incidents or user location changes
   useEffect(() => {
-    console.log('[useIncidentsWithDistance] Effect triggered');
-    console.log(`  - User location: ${userLocation ? `${userLocation.lat}, ${userLocation.lng}` : 'Not available'}`);
-    console.log(`  - Location permission: ${permissionGranted}`);
-    console.log(`  - Incidents count: ${incidents.length}`);
-    console.log(`  - Google Maps API Key: Check browser console for config`);
+    distanceLogger.debug('Effect', 'Triggered');
+    distanceLogger.debug('Location', userLocation ? `${userLocation.lat}, ${userLocation.lng}` : 'Not available');
+    distanceLogger.debug('Permission', `${permissionGranted}`);
+    incidentsLogger.debug('Count', `${incidents.length}`);
     
     if (!userLocation || incidents.length === 0) {
       // If no user location, just pass through incidents as-is
-      console.log('[useIncidentsWithDistance] No location or no incidents - passing through');
+      distanceLogger.debug('PassThrough', 'No location or no incidents');
       setEnrichedIncidents(incidents);
       return;
     }

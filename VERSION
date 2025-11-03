@@ -1,0 +1,17 @@
+1.0.1
+Build Date: 2025-11-03
+Commit: See git log
+Description: Production-ready with robust logging and error tracking
+
+## Recent Changes:
+- Added centralized logger utility (lib/logger.ts)
+- Added React Error Boundary for crash recovery
+- Fixed locationPermissionGranted undefined bug
+- Removed all mock/test data
+- Enhanced error tracking and debugging
+
+## Deployment:
+- Live URL: https://4axe.com
+- Vercel Project: emu-v0
+- Firebase Project: emu-incidents
+
