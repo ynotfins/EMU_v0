@@ -3,13 +3,25 @@
 ## Current Status
 
 **Project Stage**: Production - Deployed & Operational  
-**Last Updated**: 2025-11-03 (Auth hardening, Firebase Functions, audit logging)  
-**Session**: auth-middleware-functions-audit  
+**Last Updated**: 2025-11-03 (Supe login fixes, God Mode, live location tracking)  
+**Session**: supe-auth-godmode-location-fixes  
 **Live URL**: https://4axe.com (Vercel deployment)
 
 ## Current Work Focus
 
-**Latest Session (Nov 3, 2025)** - Auth Hardening & Audit Infrastructure:
+**Latest Session (Nov 3, 2025 - Evening)** - Supe Login Fixes & Live Location:
+
+- ✅ Fixed Supe login errors by correcting viewMode defaults
+- ✅ Fixed God Mode implementation for super_admin users
+- ✅ Removed duplicate Supe routes from (authed) directory
+- ✅ Implemented live location tracking with useLiveLocations hook
+- ✅ Created location tracking service with 30-second updates
+- ✅ Integrated location tracking with preferences toggle
+- ✅ Optimized Firestore rules for Supe location access
+- ✅ Enhanced Realtime Database rules with validation
+- ✅ Created comprehensive fix summary and improvement recommendations
+
+**Previous Session (Nov 3, 2025 - Morning)** - Auth Hardening & Audit Infrastructure:
 
 - ✅ Added middleware-based route protection with `__emu_authed` cookie
 - ✅ Created `app/(authed)` layout with LoginGate + ConsentGate
@@ -27,18 +39,21 @@
 - ✅ Added Suspense boundaries for useSearchParams
 - ✅ Created auth status API endpoint for debugging
 
-**Previous Session (Nov 2, 2025)**: Authentication and profile fixes, God Mode toggle, favorites page layout
+**Previous Session (Nov 2, 2025)**: Authentication and profile fixes, initial God Mode toggle, favorites page layout
 
 **Current State**:
 
 - ✅ **LIVE ON PRODUCTION**: https://4axe.com
 - ✅ **Middleware Protection**: All routes protected except `/login`
-- ✅ **Firebase Functions**: Deployed and ready for audit logging
+- ✅ **Firebase Functions**: Ready for deployment (logAuthEvent, recordConsent)
 - ✅ **Consent Tracking**: Legal consent with versioning
 - ✅ **Custom Domain Auth**: authDomain=4axe.com
 - ✅ **Unified Detail Pages**: Shared component for Chaser/Supe
-- ✅ **ViewMode Persistence**: Supe can toggle to Chaser view
-- ✅ **Security Hardened**: Headers, cookies, service worker all fixed
+- ✅ **ViewMode Fixed**: Now defaults based on user role (supe/admin/super_admin → supe)
+- ✅ **God Mode Fixed**: Super admin users see God Mode controls properly
+- ✅ **Live Location Tracking**: Implemented with 30-second updates when enabled
+- ✅ **Security Rules Updated**: Supes can read all user locations, proper collection permissions
+- ✅ **Route Structure Cleaned**: Removed duplicate (authed)/supe routes
 
 ## Recent Changes (Today's Session)
 
