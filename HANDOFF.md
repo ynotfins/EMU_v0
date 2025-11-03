@@ -64,13 +64,21 @@ Enable emergency responders to quickly view, respond to, and coordinate incident
 #### Authentication & Users
 
 - ✅ **Email/Password Login**: Fully functional at `/login`
-- ✅ **Google Sign-In**: OAuth integration with automatic profile creation
+- ✅ **Google Sign-In**: OAuth integration with automatic profile creation (redirect flow on desktop)
 - ✅ **Role-Based Access Control**: Chaser, Supe, Admin, Super Admin (God Mode)
 - ✅ **Bulletproof Auth Persistence**: Triple-layer storage (localStorage + sessionStorage + cookies)
+- ✅ **Middleware Protection**: Edge-based route protection with `__emu_authed` cookie
+- ✅ **LoginGate**: Client-side auth check with Suspense boundary
+- ✅ **ConsentGate**: Legal consent tracking before app access
 - ✅ **Signup with Role Selection**: Users choose Chaser or Supe during account creation at `/signup`
 - ✅ **Admin Tool**: One-click user role management at `/admin`
 - ✅ **Auth Never Expires**: Users stay signed in until manual sign-out
 - ✅ **God Mode Toggle**: Super admins can toggle God Mode and switch between Supe/Chaser views from profile page
+- ✅ **ViewMode Persistence**: Supe can toggle to Chaser view, persists to Firestore
+- ✅ **Audit Logging**: Immutable auth event trail with IP, UA, device fingerprint
+- ✅ **Device Fingerprinting**: FingerprintJS Pro + fallback hash
+- ✅ **Custom Domain Auth**: authDomain=4axe.com (prevents third-party storage issues)
+- ✅ **Cookie Domain**: `.4axe.com` works on apex + www
 
 **Auth Domains Checklist**:
 
