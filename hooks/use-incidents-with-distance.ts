@@ -40,8 +40,15 @@ export function useIncidentsWithDistance(filters?: Partial<IncidentFilters>) {
 
   // Calculate distances whenever incidents or user location changes
   useEffect(() => {
+    console.log('[useIncidentsWithDistance] Effect triggered');
+    console.log(`  - User location: ${userLocation ? `${userLocation.lat}, ${userLocation.lng}` : 'Not available'}`);
+    console.log(`  - Location permission: ${locationPermissionGranted}`);
+    console.log(`  - Incidents count: ${incidents.length}`);
+    console.log(`  - Google Maps API Key: ${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? 'Present' : 'Missing'}`);
+    
     if (!userLocation || incidents.length === 0) {
       // If no user location, just pass through incidents as-is
+      console.log('[useIncidentsWithDistance] No location or no incidents - passing through');
       setEnrichedIncidents(incidents);
       return;
     }

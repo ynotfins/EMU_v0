@@ -69,6 +69,7 @@ async function geocodeAddress(address: string): Promise<Location | null> {
   }
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  console.log('[geocodeAddress] Google Maps API Key:', apiKey ? 'Present' : 'Missing');
 
   // Option 1: Google Maps API (if configured)
   if (apiKey) {
