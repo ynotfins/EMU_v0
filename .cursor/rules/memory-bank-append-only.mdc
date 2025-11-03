@@ -1,0 +1,57 @@
+---
+description: Memory Bank files must use append-only pattern, never delete historical data
+globs: ["docs/memory-bank/**/*.md"]
+alwaysRun: true
+---
+
+# Memory Bank Append-Only Policy
+
+## CRITICAL RULE: NEVER DELETE OR OVERWRITE
+
+When updating Memory Bank files (`docs/memory-bank/*.md`):
+
+### ✅ ALWAYS DO:
+- **APPEND** new information with clear session dates
+- **MARK** sections with: `## Session: YYYY-MM-DD (Latest)` or `## Session: YYYY-MM-DD (Previous)`
+- **PRESERVE** all historical content for reference
+- **ADD** new working configurations while keeping old ones
+- **LABEL** what's current vs historical
+
+### ❌ NEVER DO:
+- **DELETE** working information
+- **OVERWRITE** previous session content
+- **REPLACE** dates without keeping old ones
+- **REMOVE** historical context
+
+## Pattern to Follow:
+
+```markdown
+# File Title
+
+## Session: 2025-11-04 (Latest)
+- Current working approach
+- Latest changes
+- What's working now
+
+## Session: 2025-11-03 (Previous)
+- What was working before
+- Kept for historical reference
+- Can compare with latest
+
+## Session: 2025-11-02 (Historical)
+- Earlier working state
+- Preserved for rollback reference
+```
+
+## Why This Matters:
+
+1. **Rollback Reference**: Can always see what was working before
+2. **Decision History**: Understand why changes were made
+3. **Debugging**: Compare current vs previous states
+4. **Context Preservation**: Nothing is lost
+
+## Exception:
+
+Only delete if information is **provably incorrect** (not just different), and even then, mark as "~~INCORRECT~~" rather than deleting.
+
+**Status**: MANDATORY for all memory bank file updates
