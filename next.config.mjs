@@ -12,13 +12,12 @@ const nextConfig = {
       {
         source: '/:path*',
         headers: [
-          {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin-allow-popups',
-          },
+          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' },
+          // Keep COEP disabled unless you need it for WebAssembly/SAB. It breaks auth popups.
+          { key: 'Cross-Origin-Embedder-Policy', value: 'unsafe-none' },
         ],
       },
-    ];
+    ]
   },
 }
 

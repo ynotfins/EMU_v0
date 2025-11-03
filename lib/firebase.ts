@@ -8,7 +8,8 @@ import { saveAuthState, loadAuthState } from "./auth-persistence";
 // Firebase configuration from environment variables
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
+  // Force custom domain to avoid third-party iframe storage issues
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || '4axe.com',
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
@@ -30,7 +31,9 @@ setPersistence(auth, browserLocalPersistence).catch(() => {})
 if (typeof window !== "undefined") {
   onAuthStateChanged(auth, (u) => {
     try {
-      document.cookie = `__emu_authed=${u ? "1" : "0"}; Path=/; SameSite=Lax`
+      // make cookie valid on apex and www
+      const base = location.hostname.endsWith('4axe.com') ? '.4axe.com' : location.hostname
+      document.cookie = `__emu_authed=${u ? "1" : "0"}; Path=/; Domain=${base}; SameSite=Lax; Secure`
     } catch {}
   })
 }

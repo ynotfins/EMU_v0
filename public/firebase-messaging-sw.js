@@ -51,8 +51,14 @@ self.addEventListener("activate", (event) => {
 
 // Fetch event - network first, fallback to cache
 self.addEventListener("fetch", (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
+  const req = event.request;
+  const url = new URL(req.url);
+  
+  // Do not cache non-GET
+  if (req.method !== 'GET') {
+    event.respondWith(fetch(req))
+    return
+  }
   
   // Skip cross-origin requests
   if (url.origin !== self.location.origin) {
@@ -70,20 +76,20 @@ self.addEventListener("fetch", (event) => {
   }
   
   // Network-first strategy for HTML pages
-  if (request.mode === "navigate") {
+  if (req.mode === "navigate") {
     event.respondWith(
-      fetch(request)
+      fetch(req)
         .then((response) => {
           // Cache successful responses
           const responseClone = response.clone();
           caches.open(RUNTIME_CACHE).then((cache) => {
-            cache.put(request, responseClone);
+            cache.put(req, responseClone);
           });
           return response;
         })
         .catch(() => {
           // Fallback to cache when offline
-          return caches.match(request).then((cachedResponse) => {
+          return caches.match(req).then((cachedResponse) => {
             if (cachedResponse) {
               return cachedResponse;
             }
@@ -96,24 +102,21 @@ self.addEventListener("fetch", (event) => {
   }
   
   // Cache-first strategy for static assets
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
+  event.respondWith((async () => {
+    try {
+      const cache = await caches.open(RUNTIME_CACHE)
+      const hit = await cache.match(req)
+      if (hit) return hit
+      const resp = await fetch(req)
+      // Only cache successful same-origin GET
+      if (resp && resp.ok && resp.type === 'basic') {
+        try { await cache.put(req, resp.clone()) } catch {}
       }
-      
-      return fetch(request).then((response) => {
-        // Cache new resources
-        if (response.status === 200) {
-          const responseClone = response.clone();
-          caches.open(RUNTIME_CACHE).then((cache) => {
-            cache.put(request, responseClone);
-          });
-        }
-        return response;
-      });
-    })
-  );
+      return resp
+    } catch (e) {
+      return fetch(req)
+    }
+  })())
 });
 
 // Push notification event (for FCM)

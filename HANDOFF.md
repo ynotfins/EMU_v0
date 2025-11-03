@@ -74,8 +74,13 @@ Enable emergency responders to quickly view, respond to, and coordinate incident
 
 **Auth Domains Checklist**:
 
-- Add **4axe.com**, **www.4axe.com**, and Vercel preview domains to _Firebase Auth → Authorized domains_
-- Enable Google provider and Email/Password
+- Set `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=4axe.com` (prefer apex; redirect www → apex).
+- Firebase Console → Authentication → Sign-in method → Google:
+  - **Authorized domains**: `4axe.com`, `www.4axe.com`
+  - **Authorized redirect URIs**:
+    - `https://4axe.com/__/auth/handler`
+    - `https://www.4axe.com/__/auth/handler` (if www served)
+- After change, redeploy and clear service worker (`POST /api/sw-reset` once on each device).
 - Browser console message "Cross-Origin-Opener-Policy would block window.close" from Google Identity is benign and can be ignored
 
 #### Incident Management
