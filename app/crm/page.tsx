@@ -42,8 +42,7 @@ const crmModules = [
     color: colors.warning.DEFAULT,
     bg: colors.warning.light,
     href: "/crm/leads",
-    stats: { label: "New Leads", value: "37" },
-    comingSoon: true
+    stats: { label: "New Leads", value: "37" }
   },
   {
     id: "forms",
@@ -261,7 +260,7 @@ export default function CRMDashboardPage() {
               <Button
                 variant="outline"
                 className="h-auto flex-col py-4"
-                disabled
+                onClick={() => router.push("/crm/leads/new")}
                 style={{ borderRadius: borderRadius.md }}
               >
                 <Target className="h-6 w-6 mb-2" />
