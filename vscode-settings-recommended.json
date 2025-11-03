@@ -1,0 +1,151 @@
+{
+  // Editor Settings
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true,
+    "source.organizeImports": true
+  },
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  
+  // TypeScript Settings
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.preferences.includePackageJsonAutoImports": "auto",
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.suggest.autoImports": true,
+  
+  // ESLint Settings
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.format.enable": true,
+  "eslint.lintTask.enable": true,
+  
+  // Path Intellisense
+  "path-intellisense.mappings": {
+    "@": "${workspaceFolder}/src",
+    "@core": "${workspaceFolder}/src/core",
+    "@domain": "${workspaceFolder}/src/core/domain",
+    "@application": "${workspaceFolder}/src/core/application",
+    "@infrastructure": "${workspaceFolder}/src/infrastructure",
+    "@presentation": "${workspaceFolder}/src/presentation",
+    "@shared": "${workspaceFolder}/src/shared",
+    "@test": "${workspaceFolder}/src/test"
+  },
+  
+  // File Associations
+  "files.associations": {
+    "*.css": "tailwindcss",
+    ".env*": "dotenv"
+  },
+  
+  // Exclude Files from Search
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/.next": true,
+    "**/coverage": true,
+    "**/.turbo": true
+  },
+  
+  // Files to Watch
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/.next/**": true,
+    "**/dist/**": true,
+    "**/build/**": true
+  },
+  
+  // Tailwind CSS
+  "tailwindCSS.includeLanguages": {
+    "typescript": "javascript",
+    "typescriptreact": "javascript"
+  },
+  "tailwindCSS.experimental.classRegex": [
+    ["clsx\\(([^)]*)\\)", "\"([^\"]*)\""],
+    ["cn\\(([^)]*)\\)", "\"([^\"]*)\""],
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+  ],
+  
+  // Error Lens Settings (if installed)
+  "errorLens.enabledDiagnosticLevels": ["error", "warning"],
+  "errorLens.delay": 300,
+  "errorLens.followCursor": "closestProblem",
+  
+  // Git Settings
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  
+  // Terminal Settings
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  
+  // Prettier Settings
+  "prettier.requireConfig": true,
+  "prettier.documentSelectors": ["**/*.{ts,tsx,js,jsx,json,md}"],
+  
+  // Auto Import Settings
+  "javascript.suggest.autoImports": true,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  
+  // TypeScript Hero Settings (if installed)
+  "typescriptHero.imports.insertSemicolons": false,
+  "typescriptHero.imports.stringQuoteStyle": "'",
+  
+  // TODO Tree Settings (if installed)
+  "todo-tree.general.tags": [
+    "BUG",
+    "HACK",
+    "FIXME",
+    "TODO",
+    "XXX",
+    "[ ]",
+    "[x]"
+  ],
+  
+  // Spell Checker Settings (if installed)
+  "cSpell.words": [
+    "clsx",
+    "lucide",
+    "tailwindcss",
+    "inversify",
+    "firestore",
+    "zustand",
+    "shadcn",
+    "superjson",
+    "trpc",
+    "nextjs",
+    "vercel",
+    "supabase",
+    "geofire",
+    "realtime",
+    "supe",
+    "chaser",
+    "homeowner",
+    "esign"
+  ],
+  
+  // Hide Files in Explorer
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "node_modules": false,
+    ".next": true,
+    ".turbo": true
+  }
+}

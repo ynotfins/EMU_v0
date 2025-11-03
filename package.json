@@ -16,7 +16,9 @@
     "roles:seed": "tsx scripts/seed-roles.ts",
     "incidents:seed": "tsx scripts/seed-admin.ts",
     "ext:audit": "tsx scripts/check-extensions.ts",
-    "ext:install": "powershell -ExecutionPolicy Bypass -File scripts/install-disable-extensions.ps1"
+    "ext:install": "powershell -ExecutionPolicy Bypass -File scripts/install-disable-extensions.ps1",
+    "check": "tsx scripts/pre-build-check.ts",
+    "precommit": "tsx scripts/pre-build-check.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
