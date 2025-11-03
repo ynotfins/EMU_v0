@@ -94,6 +94,13 @@ export default function LoginPage() {
       const user = result.user;
 
       console.log("[Login] ✅ Google sign-in successful:", user.email);
+      
+      // CRITICAL: Set auth cookie IMMEDIATELY (synchronous) to prevent middleware race condition
+      const domain = typeof window !== 'undefined' && window.location.hostname.endsWith("4axe.com") 
+        ? "; Domain=.4axe.com" 
+        : "";
+      document.cookie = `__emu_authed=1; Path=/${domain}; SameSite=Lax; Secure`;
+      console.log("[Login] 🔒 Auth cookie set synchronously");
 
       // Check if user profile exists in Firestore
       const { doc: docRef, getDoc } = await import("firebase/firestore");
@@ -211,6 +218,13 @@ export default function LoginPage() {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       console.log("[Login] ✅ Email sign-in successful:", result.user.email);
+      
+      // CRITICAL: Set auth cookie IMMEDIATELY (synchronous) to prevent middleware race condition
+      const domain = typeof window !== 'undefined' && window.location.hostname.endsWith("4axe.com") 
+        ? "; Domain=.4axe.com" 
+        : "";
+      document.cookie = `__emu_authed=1; Path=/${domain}; SameSite=Lax; Secure`;
+      console.log("[Login] 🔒 Auth cookie set synchronously");
       
       // Check user role and redirect accordingly
       const { doc: docRef, getDoc } = await import("firebase/firestore");
