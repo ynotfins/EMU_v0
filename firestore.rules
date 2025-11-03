@@ -2,6 +2,16 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // ---- LOCKED AREAS: audit & legal are write-only by Admin (Functions). Clients cannot write. ----
+    match /audit/{document=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+    match /legal/{document=**} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.uid; // user can read own consent history if stored with uid
+      allow write: if false;
+    }
+
     // Helper function to check if user is authenticated
     function isAuthenticated() {
       return request.auth != null;

@@ -3,6 +3,7 @@ import { getAuth, type Auth, setPersistence, browserLocalPersistence, onAuthStat
 import { getFirestore, type Firestore, enableIndexedDbPersistence, enableMultiTabIndexedDbPersistence } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getMessaging, type Messaging } from "firebase/messaging";
+import { getFunctions, type Functions } from "firebase/functions";
 import { saveAuthState, loadAuthState } from "./auth-persistence";
 
 // Firebase configuration from environment variables
@@ -26,6 +27,7 @@ if (!getApps().length) {
 
 // Export Firebase services
 export const auth: Auth = getAuth(app);
+export const functions: Functions = getFunctions(app);
 // Persist session in browser and mirror a lightweight cookie for Edge middleware
 setPersistence(auth, browserLocalPersistence).catch(() => {})
 if (typeof window !== "undefined") {
