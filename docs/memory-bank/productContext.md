@@ -1,107 +1,146 @@
-# Product Context: EMU Alerts
+# Product Context: User Experience & Features
 
-## Why This Exists
+## User Roles
 
-Emergency responders need a fast, reliable way to coordinate during active incidents. Traditional communication methods (phone, radio) lack the context, documentation, and tracking capabilities needed for modern emergency management.
+### Chaser (Field Responder)
+- **Primary Actions**: Respond to incidents, update status, chat with team
+- **Key Features**: 
+  - View assigned incidents with distance
+  - Navigate to incident location
+  - Update arrival/completion status
+  - Chat with supervisors
+  - Upload photos and documents
+  - Collect homeowner signatures
 
-## Problems It Solves
+### Supe (Supervisor)
+- **Primary Actions**: Create incidents, assign chasers, monitor progress
+- **Key Features**:
+  - Create new incidents with location
+  - View all active incidents on map
+  - Assign/reassign chasers
+  - Monitor real-time status
+  - Communicate with field team
+  - Generate reports
 
-### For Chasers (Emergency Responders)
+### Admin
+- **Primary Actions**: System management, user management, analytics
+- **Key Features**:
+  - All Supe features
+  - Manage user roles
+  - View system analytics
+  - Configure settings
+  - Access all incidents
 
-- **Problem**: Missing critical incident updates while in the field
-- **Solution**: Real-time push notifications with high-alert audio for urgent incidents
-- **Problem**: Difficulty tracking which incidents they've responded to
-- **Solution**: Favorites, bookmarks, and response tracking in profile stats
-- **Problem**: Cumbersome document collection and signatures
-- **Solution**: In-app photo upload, document management, and e-signature workflows
+## Core User Flows
 
-### For Supes (Supervisors)
+### Incident Creation (Supe)
+1. Supe receives damage report
+2. Creates incident with location/details
+3. System notifies nearby chasers
+4. Incident appears on map
 
-- **Problem**: No visibility into responder locations during active incidents
-- **Solution**: Live map showing all active responder GPS locations
-- **Problem**: Difficulty coordinating multiple responders across incidents
-- **Solution**: Team chat, incident chat, and ability to monitor all active incidents
-- **Problem**: Managing document approval and file organization
-- **Solution**: File management with delete permissions, document review workflows
+### Incident Response (Chaser)
+1. Chaser receives notification
+2. Views incident details and distance
+3. Accepts assignment
+4. Navigates to location
+5. Updates status on arrival
+6. Completes work and documents
+7. Marks incident complete
 
-### For Admins
+### Real-time Communication
+1. Automatic chat thread per incident
+2. All assigned users added
+3. Real-time message sync
+4. Push notifications
+5. File/photo sharing
 
-- **Problem**: Manual user onboarding and permission management
-- **Solution**: Admin dashboard to toggle roles and verification status
-- **Problem**: No system oversight or user analytics
-- **Solution**: Centralized user management interface
+## UI/UX Principles
 
-## How It Works
+### Mobile-First Design
+- Large touch targets
+- Bottom navigation
+- Swipe gestures
+- Minimal scrolling
+- Offline capability
 
-### Core User Flow (Chaser)
+### Information Hierarchy
+1. **Critical**: Status, location, assignment
+2. **Important**: Details, chat, updates
+3. **Supporting**: History, documents, settings
 
-1. **Login** → Select "Chaser" role
-2. **View Incidents** → Filtered list with distance, status, type
-3. **Respond** → Open incident → View details, homeowner info, documents
-4. **Document** → Upload photos, fill homeowner form, get e-signature
-5. **Communicate** → Chat with team or supervisor about incident
-6. **Track** → Favorites for quick access, bookmarks for important items
+### Visual Design
+- **Colors**: Red theme (danger/urgency)
+- **Typography**: Clear, readable fonts
+- **Spacing**: Comfortable touch targets
+- **Feedback**: Loading states, confirmations
 
-### Core User Flow (Supe)
+## Key Features
 
-1. **Login** → Select "Supe" role
-2. **Monitor** → Live map view of all active responders
-3. **Coordinate** → View all incidents, assign priorities, communicate via chat
-4. **Review** → Check documents, manage files, verify completion
-5. **Track** → Same chaser capabilities plus oversight tools
+### Maps Integration
+- Real-time location tracking
+- Incident pins with status colors
+- Distance calculations
+- Navigation integration
+- Clustering for many incidents
 
-### Core User Flow (Admin)
+### Chat System
+- Per-incident threads
+- Direct messaging
+- Read receipts
+- File attachments
+- Notification badges
 
-1. **Login** → Select "Admin" role
-2. **Manage Users** → View all users in table format, one-click role changes
-3. **Oversight** → System-wide monitoring, user verification status
+### Document Management
+- Photo upload from camera/gallery
+- E-signature capture
+- PDF generation
+- Cloud storage
+- Offline sync
 
-### Core User Flow (Super Admin - God Mode)
+### Notifications
+- New incident alerts
+- Assignment notifications
+- Status updates
+- Chat messages
+- System announcements
 
-1. **Login** → Select "Supe" role (default)
-2. **Profile** → Toggle God Mode ON in profile settings
-3. **Switch Views** → Toggle between Chaser and Supe views
-4. **Full Access** → All features accessible with role override
-5. **Admin Tools** → Access admin dashboard at /admin
+## Performance Requirements
 
-## User Experience Goals
+### Speed
+- < 3s initial load
+- < 100ms interaction response
+- Real-time updates < 1s
+- Smooth 60fps animations
 
-### Mobile-First
+### Reliability
+- Offline functionality
+- Auto-retry failed operations
+- Data persistence
+- Graceful error handling
 
-- Optimized for use in the field on smartphones
-- Bottom navigation for thumb-friendly one-handed use
-- Large touch targets, readable fonts, high contrast
+### Scalability
+- Handle 1000+ active incidents
+- Support 100+ concurrent users
+- Efficient data loading
+- Progressive enhancement
 
-### Real-Time
+## Success Metrics
 
-- Instant push notifications for new/updated incidents
-- Live chat updates without refresh
-- GPS tracking updates every few seconds
+### User Efficiency
+- Time to respond to incident
+- Time to complete incident
+- Number of clicks per task
+- Error rate
 
-### Minimal Friction
+### System Performance
+- Uptime percentage
+- Response time
+- Real-time sync delay
+- Mobile data usage
 
-- Quick login (eventually biometric)
-- Incident list automatically filtered to relevant items
-- One-tap actions (favorite, bookmark, mute)
-- Offline-capable for poor connectivity areas
-
-### Clear Visual Hierarchy
-
-- High-priority incidents stand out (badges, colors)
-- Status indicators easily scannable
-- Navigation between incident details seamless (tabs)
-
-### Accessibility
-
-- Readable on bright sunlight (high contrast)
-- Audio alerts for critical notifications
-- Text labels on all icons
-- Proper semantic HTML for screen readers
-
-## Key Insights
-
-- Emergency responders work in high-stress, fast-paced environments
-- Mobile connectivity can be unreliable during emergencies
-- Visual clarity and speed are more important than feature richness
-- Trust and reliability are paramount (no bugs, no downtime)
-- Documentation and compliance are critical for legal/insurance purposes
+### Business Value
+- Incidents handled per day
+- Average response time
+- Customer satisfaction
+- Team utilization

@@ -1,240 +1,211 @@
-# System Patterns: EMU Alerts
+# System Patterns: Architecture & Design Patterns
 
-## Architecture Overview
+## Clean Architecture Structure
 
-### Application Structure
-
+### Layer Dependencies
 ```
-Next.js 16 App Router
-├── Client Components (Interactive UI)
-├── Server Components (Data fetching)
-├── API Routes (Future: Custom endpoints)
-└── Firebase Backend (Firestore, Auth, Storage, FCM, Realtime DB)
+Presentation → Application → Domain ← Infrastructure
+     ↓             ↓                      ↑
+     └─────────────┴──────────────────────┘
 ```
 
-### Key Technical Decisions
+### Key Principles
+1. **Dependency Rule**: Dependencies point inward
+2. **Domain Independence**: Business logic has no external dependencies
+3. **Interface Segregation**: Use interfaces, not concrete implementations
+4. **Single Responsibility**: Each module has one reason to change
 
-#### 1. **Next.js App Router**
+## Core Design Patterns
 
-- **Why**: Modern React patterns, built-in routing, server components
-- **Pattern**: File-based routing with role-based directory structure
-- **Trade-off**: Learning curve for App Router patterns
-
-#### 2. **Role-Based Directory Structure**
-
-```
-/app
-  /login       # Login page (public)
-  /signup      # Signup pages (public)
-  /chaser      # Chaser-only routes
-  /supe        # Supe-only routes (includes chaser features)
-  /admin       # Admin-only routes
-  /crm         # CRM pages (contractors management)
-  /role        # Role selection page
-```
-
-- **Why**: Clear separation, easier to secure with protected routes
-- **Pattern**: Parallel route trees for each role, no route groups needed
-- **Trade-off**: Some component duplication between roles (e.g., incident pages)
-
-#### 3. **Component Architecture**
-
-- **Presentational Components**: UI-only, receive props
-  - Example: `<IncidentListItem />`, `<MapCard />`, `<ProfileHeader />`
-- **Container Components**: Data fetching + logic
-  - Example: Page components that use hooks
-- **Shared UI Components**: shadcn/ui in `/components/ui`
-
-#### 4. **Custom Hooks Pattern**
-
+### 1. Repository Pattern
 ```typescript
-// hooks/use-incidents.ts - FULLY WIRED ✅
-export const useIncidents = () => {
-  const [incidents, setIncidents] = useState<IncidentLite[]>([]);
-  const [loading, setLoading] = useState(true);
+// Domain defines interface
+interface IUserRepository {
+  findById(id: UserId): Promise<Either<Error, User>>;
+  save(user: User): Promise<Either<Error, void>>;
+}
 
-  useEffect(() => {
-    // Real-time Firestore listener
-    const unsubscribe = onSnapshot(collection(db, "incidents"), (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({
-        ...doc.data(),
-        id: doc.id,
-      }));
-      setIncidents(data);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  return { incidents, loading };
-};
+// Infrastructure implements
+class FirebaseUserRepository implements IUserRepository {
+  // Concrete Firebase implementation
+}
 ```
 
-- **Why**: Centralize data access, real-time updates with Firestore `onSnapshot`
-- **Current State**: 6 hooks fully wired, 4 hooks stubbed
-  - ✅ Wired: `useIncidents`, `useIncident`, `useProfile`, `useIncidentsWithDistance`, `useLocationDistance`, `useFilters`
-  - ⏳ Stubbed: `useThreads`, `useMessages`, `useFiles`, `useLiveLocations`
-- **Pattern**: Real-time listeners with proper cleanup, error handling, user-specific data derivation
-
-#### 5. **Type-First Development**
-
+### 2. Use Case Pattern
 ```typescript
-// types/domain.ts - Single source of truth
-export type Incident = { ... }
-export type Profile = { ... }
+// Single responsibility use case
+class SignInUseCase {
+  execute(request: SignInRequest): Promise<Either<Error, SignInResponse>> {
+    // Orchestrates domain logic
+  }
+}
 ```
 
-- **Why**: TypeScript strict mode catches errors early
-- **Pattern**: All domain types in `/types/domain.ts`
-- **Trade-off**: Type errors must be fixed before deployment
-
-## Component Relationships
-
-### Incident Management Flow
-
-```
-Page (chaser/incidents)
-  ├── useIncidents() hook
-  │     └── Firestore: /incidents collection
-  ├── useFilters() hook (client state)
-  └── <FilterBar /> + <IncidentListItem />
-        └── Events: onToggleFavorite, onToggleSilence, etc.
+### 3. Value Object Pattern
+```typescript
+// Self-validating, immutable values
+class Email extends ValueObject<{ value: string }> {
+  static create(email: string): Either<InvalidEmailError, Email> {
+    // Validation logic
+  }
+}
 ```
 
-### Chat System Flow
-
-```
-Page (chaser/chat/[threadId] or incident/[id] with Chat tab)
-  ├── Firebase Realtime Database (NOT Firestore)
-  │     ├── /incident-chats/{incidentId}/messages
-  │     └── /direct-chats/{chatId}/messages
-  ├── createIncidentChat() - Auto-adds chaser + all supes
-  ├── subscribeToIncidentChat() - Real-time listener
-  └── <IncidentChat /> or <ChatRoom />
-        └── <MessageList /> + <MessageInput />
+### 4. Either Monad Pattern
+```typescript
+// Explicit error handling
+const result = await createIncident(data);
+if (result.isLeft()) {
+  handleError(result.value);
+} else {
+  handleSuccess(result.value);
+}
 ```
 
-### Profile Management Flow
+## Data Flow Patterns
 
+### Server Action Flow
 ```
-Page (chaser/profile)
-  ├── useProfile(uid) hook
-  │     └── Firestore: /profiles/{uid} document
-  └── Components:
-        ├── <ProfileHeader />
-        ├── <StatsCards />
-        ├── <IDVerificationCard />
-        ├── <PreferencesCard />
-        └── <EmergencyPaymentCard />
+Client Component → Server Action → Use Case → Repository → Database
+                         ↓              ↓           ↓
+                    Session Check   Domain Logic  Mapping
 ```
 
-## Critical Implementation Paths
-
-### Authentication & Authorization
-
+### Real-time Subscription Flow
 ```
-1. Login Page → Firebase Auth
-2. Get user UID → Fetch profile from /profiles/{uid}
-3. Check role (chaser, supe, admin)
-4. Redirect to role-specific dashboard
-5. Middleware validates role for protected routes
+Firestore → onSnapshot → React Hook → Zustand Store → UI Component
+               ↓             ↓              ↓
+          Data Transform  State Update  Re-render
 ```
 
-### Real-Time Incident Updates
-
+### Authentication Flow
 ```
-1. useIncidents() establishes Firestore listener
-2. onSnapshot triggers on any /incidents change
-3. Filter logic applied client-side
-4. UI updates immediately
-5. High-alert incidents trigger FCM push notification
+Login Form → Server Action → Auth Service → Session Cookie
+                 ↓               ↓               ↓
+            Validation    Firebase Auth    httpOnly Cookie
 ```
 
-### Live Location Tracking
+## State Management Patterns
 
-```
-1. Chaser enables location in profile settings
-2. Geolocation API gets current position
-3. Update Firestore /profiles/{uid}/location every 5-10 seconds
-4. Supe's LiveMap subscribes to all /profiles where role=chaser
-5. Map markers update in real-time
-```
+### Global State (Zustand)
+- **Auth Store**: User session, permissions
+- **Incidents Store**: List, filters, selections
+- **UI Store**: Modals, notifications, theme
 
-### Document Upload Flow
+### Component State (Hooks)
+- **Real-time Data**: Firebase subscriptions
+- **Form State**: Controlled inputs
+- **UI State**: Loading, errors
 
-```
-1. User selects file(s) in incident details
-2. Upload to Firebase Storage: /incidents/{incidentId}/files/{filename}
-3. Create Firestore doc: /files collection with metadata
-4. Update incident doc with file reference
-5. UI shows uploaded file with download link
-```
+### Server State (Server Actions)
+- **Data Fetching**: Initial loads
+- **Mutations**: Create, update, delete
+- **Validation**: Server-side checks
 
-### E-Signature Flow
+## Error Handling Patterns
 
-```
-1. User initiates signature request
-2. Create Firestore doc: /signatures collection
-3. Send notification to signer (FCM or email)
-4. Signer opens unique link, signs on device
-5. Signature saved to Storage, doc updated
-6. Requestor gets notification of completion
+### Domain Errors
+```typescript
+class UserNotFoundError extends DomainError {
+  constructor(id: string) {
+    super('USER_NOT_FOUND', `User ${id} not found`);
+  }
+}
 ```
 
-## Design Patterns in Use
+### Application Errors
+```typescript
+class AuthenticationError extends ApplicationError {
+  constructor(message: string) {
+    super('AUTH_ERROR', message);
+  }
+}
+```
 
-### 1. **Optimistic Updates**
+### UI Error Boundaries
+```typescript
+function ErrorBoundary({ children }) {
+  // Catches React errors
+  // Shows fallback UI
+  // Reports to monitoring
+}
+```
 
-- Update UI immediately, sync to Firestore in background
-- Rollback if network request fails
-- Example: Toggling favorites, muting incidents
+## Security Patterns
 
-### 2. **Stale-While-Revalidate**
+### Authentication
+- Server-side session validation
+- httpOnly cookies for tokens
+- CSRF protection
+- Rate limiting
 
-- Show cached data immediately
-- Fetch fresh data in background
-- Update UI when fresh data arrives
-- Example: Incident list on page load
+### Authorization
+- Role-based access control (RBAC)
+- Resource-level permissions
+- Server-side checks
+- Client-side UI hiding
 
-### 3. **Pub/Sub for Real-Time**
+### Data Validation
+- Input validation in value objects
+- Schema validation in use cases
+- Firebase Security Rules
+- XSS prevention
 
-- Components subscribe to Firestore collections
-- Automatic UI updates when data changes
-- Unsubscribe on component unmount
-- Example: Chat messages, incident updates
+## Performance Patterns
 
-### 4. **Context for Cross-Cutting State**
+### Lazy Loading
+- Route-based code splitting
+- Dynamic imports for features
+- Suspense boundaries
+- Progressive enhancement
 
-- Favorites stored in React Context
-- Persisted to localStorage and Firestore
-- Accessible from any component
-- Example: `FavoritesContext` in `/lib/context/favorites-context.tsx`
+### Caching
+- Zustand persistence
+- Firebase offline persistence
+- Service Worker caching
+- CDN for static assets
 
-### 5. **Error Boundaries**
+### Optimization
+- React.memo for pure components
+- useMemo/useCallback hooks
+- Virtual scrolling for lists
+- Image optimization
 
-- Catch component errors gracefully
-- Show fallback UI instead of crash
-- Log errors for debugging
-- Pattern: Wrap critical sections with ErrorBoundary
+## Testing Patterns
 
-## Technology Integration Points
+### Unit Testing
+- Pure functions in domain
+- Use cases with mocked repos
+- Value object validation
+- Store actions
 
-### Firebase Integration
+### Integration Testing
+- Server Actions
+- API endpoints
+- Database queries
+- External services
 
-- **Firestore**: Primary database (NoSQL document store)
-- **Auth**: User authentication (email/password, eventually SSO)
-- **Storage**: File uploads (photos, documents, signatures)
-- **FCM**: Push notifications (high alerts, chat messages)
-- **Extensions**: Automated workflows (thumbnails, resize images)
+### E2E Testing
+- Critical user flows
+- Cross-browser testing
+- Mobile testing
+- Performance testing
 
-### Google Maps Integration
+## Deployment Patterns
 
-- **Maps JavaScript API**: Render maps in MapCard and LiveMap
-- **Geocoding API**: Convert addresses to coordinates
-- **Geolocation API**: Browser API for GPS coordinates
+### Environment Management
+- Development: Local Firebase emulator
+- Staging: Preview deployments
+- Production: Main branch auto-deploy
 
-### Vercel Deployment
+### Feature Flags
+- Gradual rollouts
+- A/B testing
+- Quick rollbacks
+- User segments
 
-- **Edge Functions**: Fast API routes globally distributed
-- **Environment Variables**: Secure credential storage
-- **Analytics**: Track performance and usage
+### Monitoring
+- Error tracking (Sentry)
+- Performance monitoring
+- User analytics
+- Custom metrics

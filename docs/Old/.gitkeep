@@ -1,0 +1,15 @@
+# Old Documentation Archive
+
+This folder contains documentation from the previous build.
+These files are kept for reference but should NOT be used for the new Clean Architecture implementation.
+
+## DO NOT USE THESE FILES FOR:
+- Context about current architecture
+- Implementation guidance
+- API references
+- Component structure
+
+## Refer to the new documentation in:
+- `/docs/memory-bank/` - New memory bank files
+- `/docs/clean-architecture/` - Clean Architecture documentation
+- Root level architecture files (EMU_BEST_PRACTICES_ARCHITECTURE.md, etc.)

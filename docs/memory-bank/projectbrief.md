@@ -1,56 +1,47 @@
-# Project Brief: EMU Alerts
+# Project Brief: EMU Remote Alerts - Clean Architecture
 
-🔗 **Anchored Docs**: docs/README.md, docs/WIRING.md, BUILD_REPORT.md, docs/ROUTES.md, docs/COMPONENTS.md, docs/TESTPLAN.md, docs/API_MAP.md, docs/AVATAR_GUIDE.md, docs/FIRESTORE_BACKUP_STRATEGY.md, docs/ANDROID_APP_GUIDE.md
-
-## Project Name
-
-**EMU Alerts** (Emergency Management Unit) - Also known as National Fire Alerts (NFA) System
+## Overview
+EMU Remote Alerts is an emergency incident management system built with Clean Architecture principles, Next.js 14+, and Firebase. The application enables real-time coordination between emergency supervisors (Supes) and field responders (Chasers) during storm damage incidents.
 
 ## Core Purpose
+- **Real-time incident reporting**: Supervisors create and manage incidents
+- **Field response coordination**: Chasers receive alerts and respond to incidents  
+- **Live tracking**: GPS-based location tracking and distance calculations
+- **Instant communication**: Real-time chat and updates per incident
+- **Document management**: Photos, signatures, and homeowner information
 
-A comprehensive emergency management system that enables real-time coordination between emergency responders (chasers), supervisors (supes), and administrators during emergency incidents.
+## Architecture
+The project follows Clean Architecture with four distinct layers:
+1. **Domain Layer**: Business entities, value objects, and rules
+2. **Application Layer**: Use cases and application-specific logic
+3. **Infrastructure Layer**: External services (Firebase, Maps, etc.)
+4. **Presentation Layer**: UI components, pages, and state management
 
-## Primary Goals
-
-1. **Rapid Response**: Enable emergency responders to quickly view, respond to, and manage incidents
-2. **Real-Time Communication**: Provide team chat, incident-specific chat, and direct messaging
-3. **Live Tracking**: Allow supervisors to monitor active responder locations on a live map
-4. **Document Management**: Handle photos, documents, e-signatures, and homeowner forms
-5. **Role-Based Access**: Three distinct user experiences (chaser, supe, admin) with appropriate permissions
-
-## Target Users
-
-- **Chasers (Emergency Responders)**: Front-line workers responding to incidents
-- **Supes (Supervisors)**: Team leaders who coordinate and monitor responders
-- **Admins**: System administrators managing user accounts and permissions
-- **Super Admins**: God Mode users with full system access and role-switching capabilities
+## Technology Stack
+- **Frontend**: Next.js 14+ (App Router), React 19, TypeScript
+- **Backend**: Firebase (Auth, Firestore, Realtime DB, Storage, FCM)
+- **State**: Zustand for client state, Server Actions for API
+- **Styling**: Tailwind CSS, shadcn/ui components
+- **Maps**: Google Maps API
+- **Deployment**: Vercel
 
 ## Key Features
+1. **Role-based access**: Chaser, Supe, Admin roles with different permissions
+2. **Real-time updates**: Live incident status and location tracking
+3. **Mobile-first**: Optimized for field use on mobile devices
+4. **Offline support**: Works without constant connectivity
+5. **Push notifications**: Instant alerts for new incidents
 
-- Incident management with real-time updates and high-alert notifications
-- Multi-channel chat system (team chat, incident group chat, 1-on-1 direct messages)
-- Live GPS tracking and team map for supervisors
-- Alert response tracking with Google Maps navigation integration
-- Document upload and e-signature workflows
-- Favorites, bookmarks, notes, and responses tabs
-- Profile management with ID verification, avatars, and payment info
-- Configurable audio alerts for high-priority incidents (train horn + flash)
-- Mobile-first PWA with offline capabilities
-- Multi-step onboarding with camera ID capture and OCR
-- CRM integration for independent contractors & employees management
-- God Mode for super admins (role switching, full access)
+## Current Status
+- Phase 1-3: Domain, Application, Infrastructure layers complete
+- Phase 4: Presentation layer 60% complete
+- Production URL: https://4axe.com
+- Development URL: https://rebuild.4axe.com (to be configured)
 
 ## Success Criteria
-
-- Responders can view and respond to incidents within seconds
-- Real-time location tracking works reliably
-- Push notifications deliver instantly for high-priority incidents
-- Document and signature workflows are intuitive
-- System is accessible on mobile devices in the field
-
-## Technical Constraints
-
-- Must work on mobile devices (primary use case)
-- Must support offline-capable PWA features
-- Firebase-based backend for real-time capabilities
-- Vercel deployment for global edge distribution
+- Zero TypeScript errors
+- Clean Architecture compliance
+- Real-time performance
+- Mobile responsiveness
+- Secure authentication
+- Scalable infrastructure
