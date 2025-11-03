@@ -25,6 +25,16 @@ export interface IncidentLite {
   updatedAt: Date | string;
   assignedTo?: string;
   reportedBy?: string;
+  
+  // UI state properties
+  isFavorited?: boolean;
+  isBookmarked?: boolean;
+  distanceMi?: number;
+  
+  // Additional properties
+  priority?: 'low' | 'medium' | 'high' | 'critical';
+  images?: string[];
+  address?: string;
 }
 
 export interface IncidentUpdate {
@@ -74,6 +84,18 @@ export interface FileMetadata {
   fileType: string;
   uploadedBy: string;
   uploadedAt: Date | string;
+}
+
+export interface HomeownerForm {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  insurance?: string;
+  policyNumber?: string;
+  deductible?: string;
+  claimNumber?: string;
+  notes?: string;
 }
 
 // Re-export from Clean Architecture (when available)

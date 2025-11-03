@@ -128,13 +128,13 @@ export function useProtectedRoute(
     if (!loading) {
       // Not authenticated
       if (!user) {
-        router.push(redirectTo);
+        router.push(redirectTo as any);
         return;
       }
 
       // Role check
       if (allowedRoles && !allowedRoles.includes(user.role)) {
-        router.push('/unauthorized');
+        router.push('/unauthorized' as any);
       }
     }
   }, [user, loading, allowedRoles, redirectTo, router]);
