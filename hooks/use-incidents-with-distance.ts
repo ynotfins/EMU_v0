@@ -42,7 +42,7 @@ export function useIncidentsWithDistance(filters?: Partial<IncidentFilters>) {
   useEffect(() => {
     console.log('[useIncidentsWithDistance] Effect triggered');
     console.log(`  - User location: ${userLocation ? `${userLocation.lat}, ${userLocation.lng}` : 'Not available'}`);
-    console.log(`  - Location permission: ${locationPermissionGranted}`);
+    console.log(`  - Location permission: ${permissionGranted}`);
     console.log(`  - Incidents count: ${incidents.length}`);
     console.log(`  - Google Maps API Key: Check browser console for config`);
     
