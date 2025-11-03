@@ -56,7 +56,33 @@ export function GoogleMap({ center, markers = [], incidents = [], zoom = 13 }: G
         console.log('[GoogleMap] No valid incidents with lat/lng found')
       }
     }
-  }, [center, incidents, zoom])
+    // If we have markers (team member locations)
+    else if (markers.length > 0) {
+      const validMarkers = markers.filter(m => {
+        const lat = Number(m.lat)
+        const lng = Number(m.lng)
+        return !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0
+      })
+      
+      if (validMarkers.length > 0) {
+        // Calculate center of all markers
+        const latSum = validMarkers.reduce((sum, m) => sum + Number(m.lat || 0), 0)
+        const lngSum = validMarkers.reduce((sum, m) => sum + Number(m.lng || 0), 0)
+        const centerLat = latSum / validMarkers.length
+        const centerLng = lngSum / validMarkers.length
+        
+        // Use appropriate zoom based on number of markers
+        const mapZoom = validMarkers.length > 1 ? 10 : 13
+        const query = `${centerLat},${centerLng}`
+        const embedUrl = `https://maps.google.com/maps?q=${query}&z=${mapZoom}&output=embed`
+        setMapUrl(embedUrl)
+        
+        console.log('[GoogleMap] ✅ Created map URL for', validMarkers.length, 'team members')
+      } else {
+        console.log('[GoogleMap] ⚠️ No valid markers with lat/lng found')
+      }
+    }
+  }, [center, incidents, markers, zoom])
 
   if (!mapUrl) {
     // Show placeholder when no location data
