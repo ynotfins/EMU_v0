@@ -56,7 +56,7 @@ export function ChatContacts({
               })(),
               email: data.email,
               role: data.role || "chaser",
-              lastSeen: data.lastSeen || Date.now(),
+              lastSeen: data.location?.lastUpdated ? new Date(data.location.lastUpdated).getTime() : Date.now(),
             });
           }
         });
@@ -205,6 +205,13 @@ export function ChatContacts({
                     <div className="flex items-center gap-2 mb-1">
                       <p className="font-semibold text-sm">{contact.name}</p>
                       {getRoleIcon(contact.role)}
+                      {/* Online indicator - show if last seen within 5 minutes */}
+                      {contact.lastSeen && Date.now() - contact.lastSeen < 5 * 60 * 1000 && (
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                          <span className="text-xs text-green-600">Active</span>
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge
