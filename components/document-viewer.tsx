@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast"
 import {
   FileText, Download, Eye, Upload, Clock, User, Tag,
   CheckCircle, AlertCircle, Share2, Lock, Trash2, Edit,
-  FileImage, FilePdf, File, ChevronRight
+  FileImage, File, ChevronRight
 } from "lucide-react"
 import { spacing, borderRadius, cardStyles, colors } from "@/lib/design-tokens"
 import type { Document, DocumentStatus } from "@/types/domain"
@@ -28,7 +28,7 @@ interface DocumentViewerProps {
 // File type icons
 const getFileIcon = (mimeType: string) => {
   if (mimeType.includes("image")) return FileImage
-  if (mimeType.includes("pdf")) return FilePdf
+  if (mimeType.includes("pdf")) return FileText
   return File
 }
 
