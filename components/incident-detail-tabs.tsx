@@ -220,15 +220,11 @@ export function IncidentDetailTabs({ incidentId, userRole }: IncidentDetailTabsP
                 lngType: typeof incident.lng
               });
               
+              // Pass as single incident (not marker) - GoogleMap will handle it
               return (
                 <LiveMap 
-                  markers={hasCoords ? [{
-                    uid: incidentId,
-                    name: incident.type || "Alert",
-                    lat: Number(incident.lat),
-                    lng: Number(incident.lng)
-                  }] : []}
-                  incidents={[]}
+                  incidents={hasCoords ? [incident] : []}
+                  markers={[]}
                 />
               );
             })()}
