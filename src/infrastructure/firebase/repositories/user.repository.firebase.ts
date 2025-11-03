@@ -122,18 +122,18 @@ export class FirebaseUserRepository implements IUserRepository {
     pagination?: Pagination
   ): Promise<Either<Error, PaginatedResult<User>>> {
     try {
-      let q: Query<DocumentData> = collection(adminDb, this.collection);
+      let q = adminDb.collection(this.collection) as Query<DocumentData>;
       
       // Apply filters
       if (filter) {
         if (filter.role) {
-          q = query(q, where('role', '==', filter.role.value));
+          q = q.where('role', '==', filter.role.value);
         }
         if (filter.status) {
-          q = query(q, where('status', '==', filter.status));
+          q = q.where('status', '==', filter.status);
         }
         if (filter.emailVerified !== undefined) {
-          q = query(q, where('emailVerified', '==', filter.emailVerified));
+          q = q.where('emailVerified', '==', filter.emailVerified);
         }
         // Note: Full-text search is limited in Firestore
         // For production, consider using Algolia or Elasticsearch
@@ -141,13 +141,13 @@ export class FirebaseUserRepository implements IUserRepository {
       
       // Apply sorting
       if (sort) {
-        q = query(q, orderBy(sort.field, sort.direction));
+        q = q.orderBy(sort.field, sort.direction);
       } else {
-        q = query(q, orderBy('createdAt', 'desc'));
+        q = q.orderBy('createdAt', 'desc');
       }
       
       // Get total count (expensive operation in Firestore)
-      const countSnapshot = await getDocs(q);
+      const countSnapshot = await q.get();
       const total = countSnapshot.size;
       
       // Apply pagination
@@ -158,14 +158,14 @@ export class FirebaseUserRepository implements IUserRepository {
       if (offset > 0) {
         const offsetDoc = countSnapshot.docs[offset - 1];
         if (offsetDoc) {
-          q = query(q, startAfter(offsetDoc));
+          q = q.startAfter(offsetDoc);
         }
       }
       
-      q = query(q, limit(pageSize));
+      q = q.limit(pageSize);
       
       // Execute paginated query
-      const snapshot = await getDocs(q);
+      const snapshot = await q.get();
       const users = snapshot.docs.map(doc => 
         UserMapper.toDomain(doc.data() as UserDocument)
       );
@@ -184,13 +184,11 @@ export class FirebaseUserRepository implements IUserRepository {
 
   async existsByEmail(email: Email): Promise<Either<Error, boolean>> {
     try {
-      const q = query(
-        collection(adminDb, this.collection),
-        where('email', '==', email.value),
-        limit(1)
-      );
-      
-      const snapshot = await getDocs(q);
+      const snapshot = await adminDb
+        .collection(this.collection)
+        .where('email', '==', email.value)
+        .limit(1)
+        .get();
       return right(!snapshot.empty);
     } catch (error) {
       return left(new Error(`Failed to check email existence: ${error instanceof Error ? error.message : 'Unknown error'}`));
@@ -209,14 +207,12 @@ export class FirebaseUserRepository implements IUserRepository {
 
   async findByRole(role: Role): Promise<Either<Error, User[]>> {
     try {
-      const q = query(
-        collection(adminDb, this.collection),
-        where('role', '==', role.value),
-        where('status', '==', 'active'),
-        orderBy('createdAt', 'desc')
-      );
-      
-      const snapshot = await getDocs(q);
+      const snapshot = await adminDb
+        .collection(this.collection)
+        .where('role', '==', role.value)
+        .where('status', '==', 'active')
+        .orderBy('createdAt', 'desc')
+        .get();
       const users = snapshot.docs.map(doc => 
         UserMapper.toDomain(doc.data() as UserDocument)
       );
@@ -237,14 +233,12 @@ export class FirebaseUserRepository implements IUserRepository {
       // For production, use GeoFirestore or similar library
       // For now, we'll fetch all active chasers and filter in memory
       
-      const q = query(
-        collection(adminDb, this.collection),
-        where('role', '==', 'chaser'),
-        where('status', '==', 'active'),
-        where('settings.locationSharingEnabled', '==', true)
-      );
-      
-      const snapshot = await getDocs(q);
+      const snapshot = await adminDb
+        .collection(this.collection)
+        .where('role', '==', 'chaser')
+        .where('status', '==', 'active')
+        .where('settings.locationSharingEnabled', '==', true)
+        .get();
       const results: Array<{ user: User; distance: number }> = [];
       
       for (const docSnap of snapshot.docs) {

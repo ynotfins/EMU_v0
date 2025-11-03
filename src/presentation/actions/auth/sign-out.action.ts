@@ -21,7 +21,7 @@ const AUTH_COOKIE_NAME = '__emu_authed';
  */
 export async function signOut(): Promise<void> {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
 
     if (sessionToken) {
@@ -39,7 +39,7 @@ export async function signOut(): Promise<void> {
   } catch (error) {
     console.error('Sign out error:', error);
     // Still clear cookies even if server invalidation fails
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     cookieStore.delete(SESSION_COOKIE_NAME);
     cookieStore.delete(AUTH_COOKIE_NAME);
   }

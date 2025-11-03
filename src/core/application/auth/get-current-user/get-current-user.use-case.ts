@@ -55,7 +55,7 @@ export class GetCurrentUserUseCase extends UseCase<GetCurrentUserRequest, GetCur
       const userId = userIdResult.value;
 
       // 3. Get user from repository
-      const userResult = await this.userRepository.findById(userId);
+      const userResult = await this.userRepository.findById(userId as UserId);
       if (userResult.isLeft()) {
         return left(toApplicationError(userResult.value));
       }

@@ -243,8 +243,8 @@ export const selectIncidentsError = (state: IncidentsState) => state.error;
 
 // Filter presets
 export const ACTIVE_INCIDENT_STATUSES: IncidentStatus[] = [
-  IncidentStatus.PENDING,
   IncidentStatus.ACTIVE,
+  IncidentStatus.ASSIGNED,
   IncidentStatus.IN_PROGRESS,
 ];
 

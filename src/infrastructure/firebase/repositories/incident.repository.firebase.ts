@@ -43,9 +43,9 @@ export class FirebaseIncidentRepository implements IIncidentRepository {
   async save(incident: Incident): Promise<Either<Error, void>> {
     try {
       const document = IncidentMapper.toDocument(incident);
-      const docRef = doc(adminDb, this.collection, incident.id.value);
-
-      await runTransaction(adminDb, async (transaction) => {
+      const docRef = adminDb.collection(this.collection).doc(incident.id.value);
+      
+      await adminDb.runTransaction(async (transaction) => {
         const existingDoc = await transaction.get(docRef);
 
         // Check version for optimistic concurrency control
@@ -67,8 +67,8 @@ export class FirebaseIncidentRepository implements IIncidentRepository {
 
   async findById(id: IncidentId): Promise<Either<Error, Incident | null>> {
     try {
-      const docRef = doc(adminDb, this.collection, id.value);
-      const docSnap = await getDoc(docRef);
+      const docRef = adminDb.collection(this.collection).doc(id.value);
+      const docSnap = await docRef.get();
 
       if (!docSnap.exists()) {
         return right(null);

@@ -165,7 +165,7 @@ export async function getMyIncidents(): Promise<GetIncidentsResult> {
 
   // For supes, get all active incidents
   return getIncidents({ 
-    status: [IncidentStatus.PENDING, IncidentStatus.ACTIVE, IncidentStatus.IN_PROGRESS] 
+    status: [IncidentStatus.ACTIVE, IncidentStatus.ASSIGNED, IncidentStatus.IN_PROGRESS] 
   });
 }
 

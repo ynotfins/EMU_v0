@@ -42,7 +42,7 @@ export interface SerializedUser {
  */
 export async function getCurrentUser(): Promise<GetUserResult> {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
 
     if (!sessionToken) {
