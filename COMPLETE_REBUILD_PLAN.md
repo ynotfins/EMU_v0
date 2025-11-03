@@ -217,12 +217,24 @@ NODE_ENV=development
     e-signature.tsx
   
   /lib
-    firebase-client.ts  ← Client SDK (NEW separation)
-    firebase-admin.ts   ← Admin SDK (NEW separation)
-    auth.ts             ← Auth utilities
-    realtime-database.ts
-    notifications.ts
-    
+    /modules            ← Consolidated business logic (NEW)
+      auth.module.ts    ← ALL authentication in one file
+      incident.module.ts ← ALL incident operations
+      database.module.ts ← Database utilities
+      chat.module.ts    ← Chat functionality
+      maps.module.ts    ← Map operations
+      storage.module.ts ← File storage
+      user.module.ts    ← User profile management
+      
+    /firebase
+      firebase-client.ts  ← Client SDK initialization
+      firebase-admin.ts   ← Admin SDK initialization
+      auth-persistence.ts ← Auth state persistence
+      
+    /utils
+      realtime-database.ts ← Chat DB operations
+      logger.ts         ← Centralized logging
+      
     /lead-generation
       index.ts
   
@@ -420,6 +432,91 @@ export { adminApp }
 - Client Components → `from '@/lib/firebase-client'`
 - Server Components → `from '@/lib/firebase-admin'`
 - Remove old `lib/firebase.ts`
+
+---
+
+### **Phase 2.5: Module Architecture** (2 hours)
+
+#### Create Consolidated Module Files
+
+Instead of scattering functionality across multiple files, we consolidate into focused modules:
+
+**Auth Module** (`src/lib/modules/auth.module.ts`):
+```typescript
+// Single source of truth for ALL authentication
+export class AuthenticationModule {
+  // Methods:
+  - signInWithEmail(email, password)
+  - signInWithGoogle()
+  - signUpWithEmail(data)
+  - signOut()
+  - onAuthStateChanged(callback)
+  - getUserRole(uid)
+  - updateUserRole(uid, role)
+  - isAuthenticated()
+  - hasRole(role)
+  - isAdmin()
+}
+
+// Export singleton
+export const authModule = new AuthenticationModule()
+```
+
+**Benefits**:
+- ✅ No more auth logic in 10+ different files
+- ✅ Single place to debug auth issues
+- ✅ Easy to test
+- ✅ Clear API surface
+
+**Incident Module** (`src/lib/modules/incident.module.ts`):
+```typescript
+// ALL incident operations in one place
+export class IncidentModule {
+  // Methods:
+  - createIncident(data)
+  - getIncident(id)
+  - getIncidents(filters)
+  - getRecentIncidents(limit)
+  - updateIncident(id, updates)
+  - deleteIncident(id)
+  - addIncidentUpdate(id, update)
+  - addChaserResponse(id, response)
+  - toggleFavorite(id)
+  - toggleSilence(id)
+  - assignIncident(id, chaserIds)
+  - subscribeToIncident(id, callback)
+  - subscribeToIncidents(callback, filters)
+}
+```
+
+**Database Module** (`src/lib/modules/database.module.ts`):
+```typescript
+// Generic database utilities used by other modules
+export class DatabaseModule {
+  - getDocument(collection, id)
+  - getDocuments(collection, query)
+  - createDocument(collection, data)
+  - updateDocument(collection, id, data)
+  - deleteDocument(collection, id)
+  - batchOperations(operations)
+  - subscribeToDocument(collection, id, callback)
+  - subscribeToCollection(collection, callback)
+}
+```
+
+**How Components Use Modules**:
+```typescript
+// BEFORE (scattered):
+import { signInWithEmailAndPassword } from 'firebase/auth'
+import { auth } from '@/lib/firebase'
+import { saveAuthState } from '@/lib/auth-persistence'
+// ... logic spread across file
+
+// AFTER (consolidated):
+import { authModule } from '@/lib/modules/auth.module'
+await authModule.signInWithEmail(email, password)
+// That's it! All complexity handled in module
+```
 
 ---
 
@@ -1336,11 +1433,18 @@ const recentIncidents = await adminDb.collection('incidents')
 - [ ] Update all import paths
 - [ ] Test build passes
 
-### **Phase 2: Firebase Separation** (1 hour)
+### **Phase 2: Firebase Separation & Modules** (2 hours)
 - [ ] Create `firebase-client.ts`
-- [ ] Create `firebase-admin.ts`
-- [ ] Update all imports
-- [ ] Test both work
+- [ ] Create `firebase-admin.ts` 
+- [ ] Create module files:
+  - [ ] `auth.module.ts` - All authentication logic
+  - [ ] `incident.module.ts` - All incident operations
+  - [ ] `database.module.ts` - Database utilities
+  - [ ] `chat.module.ts` - Chat functionality
+  - [ ] `maps.module.ts` - Map operations
+  - [ ] `user.module.ts` - User profile management
+- [ ] Update all imports to use modules
+- [ ] Test modules work correctly
 
 ### **Phase 3: Auth Rebuild** (2 hours)
 - [ ] Server Actions for auth
@@ -1494,13 +1598,17 @@ const recentIncidents = await adminDb.collection('incidents')
 ## 🎯 **Final Plan Summary**
 
 ### **The Approach**:
-1. **Rollback** to `b8f0754` (working baseline)
-2. **Restructure** to `src/` directory
-3. **Separate** Firebase Client/Admin SDKs properly
-4. **Rebuild Auth** with Server Actions (secure, no race conditions)
-5. **Create Shared Pages** with role-based rendering (DRY)
-6. **Proper Maps** with official Google Maps SDK
-7. **Re-integrate CRM** from backup (properly architected)
+1. **Keep current branch** (`rebuild-proper-architecture`)
+2. **Modularize code** into focused, single-responsibility files
+3. **Consolidate scattered logic**:
+   - Authentication → `auth.module.ts`
+   - Incidents → `incident.module.ts`
+   - Database → `database.module.ts`
+   - Chat → `chat.module.ts`
+   - Maps → `maps.module.ts`
+4. **Update components** to use clean module APIs
+5. **Test each module** independently
+6. **Build incrementally** with working code at each step
 
 ### **Timeline**:
 - **Aggressive**: 2 days
