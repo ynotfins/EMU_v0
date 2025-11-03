@@ -1,0 +1,29 @@
+﻿"use client"
+
+import { useState } from "react"
+import type { Message } from "@/types/domain"
+
+export function useMessages(threadId: string) {
+  const [data] = useState<Message[]>([])
+  const [isLoading] = useState(false)
+  const [error] = useState<Error | null>(null)
+
+  // TODO: Replace with Firestore query to 'threads/{threadId}/messages' subcollection
+  // const messagesRef = collection(db, 'threads', threadId, 'messages')
+  // const q = query(messagesRef, orderBy('timestamp', 'asc'))
+  // Use onSnapshot for real-time updates
+
+  const send = (text: string) => {
+    console.debug("[useMessages] send:", { threadId, text })
+    // TODO: Add document to threads/{threadId}/messages subcollection
+    // Also update threads/{threadId} lastMessage and lastMessageAt fields
+  }
+
+  return { data, isLoading, error, send }
+}
+
+// Action stub
+export function sendMessage(threadId: string, text: string): void {
+  console.debug("[useMessages] sendMessage:", { threadId, text })
+  // TODO: Add document to threads/{threadId}/messages subcollection
+}
