@@ -37,12 +37,14 @@
 
 **Files**: `src/infrastructure/**`
 
-### 🔄 Phase 4: Presentation Layer (60%)
+### 🔄 Phase 4: Presentation Layer (70%)
 #### Completed
 - ✅ Server Actions for authentication
 - ✅ Server Actions for incidents
 - ✅ React hooks (useAuth, useIncidents, useLocation)
 - ✅ Zustand stores (Auth, Incidents, UI)
+- ✅ Authentication middleware
+- ✅ Error boundaries (global, chaser, supe)
 
 #### In Progress
 - 🚧 UI component integration
