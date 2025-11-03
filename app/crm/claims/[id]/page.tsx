@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label"
 import { ProtectedRoute } from "@/components/protected-route"
 import { useProfile } from "@/hooks/use-profile"
 import { useToast } from "@/hooks/use-toast"
+import { DocumentViewer } from "@/components/document-viewer"
 import {
   ArrowLeft, Phone, Mail, Building, Calendar, DollarSign,
   FileText, Camera, MessageSquare, Clock, Target, CheckCircle,
@@ -581,24 +582,7 @@ export default function ClaimDetailPage() {
 
           {/* Documents Tab */}
           <TabsContent value="documents">
-            <Card style={cardStyles.base}>
-              <CardHeader>
-                <CardTitle>Documents</CardTitle>
-                <CardDescription>
-                  Upload and manage claim-related documents
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 mb-4">No documents uploaded yet</p>
-                  <Button>
-                    <Camera className="h-4 w-4 mr-2" />
-                    Upload Document
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <DocumentViewer claimId={claimId} />
           </TabsContent>
 
           {/* Communication Tab */}
