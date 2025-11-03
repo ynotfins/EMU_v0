@@ -167,27 +167,28 @@ export function IncidentDetailTabs({ incidentId, userRole }: IncidentDetailTabsP
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Header */}
-      <div className="bg-[#007AFF] text-white p-4">
-        <div className="flex items-center justify-between mb-2">
+      {/* Header - Reduced height by 50% */}
+      <div className="bg-[#007AFF] text-white p-2">
+        <div className="flex items-center justify-between mb-1">
           <Button
             variant="ghost"
-            className="text-white p-0 hover:bg-transparent"
+            size="sm"
+            className="text-white p-0 hover:bg-transparent h-8"
             onClick={() => router.back()}
           >
             ← Back
           </Button>
-          <h1 className="text-xl font-bold">NFA Alert Details</h1>
+          <h1 className="text-lg font-bold">NFA Alert Details</h1>
           <Button
             variant="ghost"
-            size="icon"
-            className="text-white"
+            size="sm"
+            className="text-white h-8 w-8 p-0"
           >
             ⋮
           </Button>
         </div>
         {incident.incidentNumber && (
-          <div className="text-sm opacity-90">#{incident.incidentNumber}</div>
+          <div className="text-xs opacity-90">#{incident.incidentNumber}</div>
         )}
       </div>
 
@@ -209,25 +210,21 @@ export function IncidentDetailTabs({ incidentId, userRole }: IncidentDetailTabsP
           {/* Map Section */}
           <div className="relative h-64 bg-gray-100">
             <LiveMap 
-              markers={incident.lat && incident.lng ? [{
+              markers={incident.lat !== undefined && incident.lng !== undefined ? [{
                 uid: incidentId,
                 name: incident.type || "Alert",
-                lat: incident.lat,
-                lng: incident.lng
+                lat: Number(incident.lat),
+                lng: Number(incident.lng)
               }] : []}
+              incidents={[]}
             />
-            <div className="absolute bottom-4 left-4 right-4 flex gap-2">
+            <div className="absolute bottom-4 left-4 right-4">
               <Button 
-                className="flex-1 bg-[#34C759] hover:bg-[#2FB04D] text-white font-bold"
+                className="w-full bg-[#34C759] hover:bg-[#2FB04D] text-white font-bold"
                 onClick={handleRespondToAlert}
               >
                 Respond to Alert
               </Button>
-              {incident.incidentNumber && (
-                <div className="bg-[#007AFF] text-white px-3 py-2 rounded-md text-sm font-medium">
-                  #NFA-{incident.incidentNumber}
-                </div>
-              )}
             </div>
           </div>
 
@@ -244,18 +241,37 @@ export function IncidentDetailTabs({ incidentId, userRole }: IncidentDetailTabsP
                 <CardTitle>Updates ({incident.updates?.length || 0})</CardTitle>
               </CardHeader>
             <CardContent className="space-y-3">
-              {incident.updates?.map((update, index) => (
-                <div key={index} className="bg-gray-50 p-3 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                    <span>📍 UPDATE #{index + 1}</span>
-                    <span className="ml-auto">{new Date(update.ts || update.timestamp).toLocaleString()}</span>
-                  </div>
-                  <p className="text-sm">{update.message}</p>
-                  {update.address && (
-                    <p className="text-xs text-gray-500 mt-1">📍 {update.address}</p>
-                  )}
+              {/* Always show the main incident as the first update */}
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                  <span>📍 INITIAL ALERT</span>
+                  <span className="ml-auto">{new Date(incident.updatedAt).toLocaleString()}</span>
                 </div>
-              ))}
+                <p className="text-sm">{incident.type} | {incident.message}</p>
+                <p className="text-xs text-gray-500 mt-1">📍 {incident.address}</p>
+              </div>
+              
+              {/* Show all updates in reverse chronological order (newest first) */}
+              {incident.updates && incident.updates.length > 0 && 
+                [...incident.updates]
+                  .sort((a, b) => {
+                    const dateA = new Date(a.ts || a.timestamp || 0).getTime()
+                    const dateB = new Date(b.ts || b.timestamp || 0).getTime()
+                    return dateB - dateA // Newest first
+                  })
+                  .map((update, index) => (
+                    <div key={index} className="bg-gray-50 p-3 rounded-lg">
+                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                        <span>📍 UPDATE #{incident.updates!.length - index}</span>
+                        <span className="ml-auto">{new Date(update.ts || update.timestamp || 0).toLocaleString()}</span>
+                      </div>
+                      <p className="text-sm">{update.message}</p>
+                      {update.address && (
+                        <p className="text-xs text-gray-500 mt-1">📍 {update.address}</p>
+                      )}
+                    </div>
+                  ))
+              }
             </CardContent>
           </Card>
 

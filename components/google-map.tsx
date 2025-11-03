@@ -18,21 +18,30 @@ export function GoogleMap({ center, markers = [], incidents = [], zoom = 13 }: G
   
   useEffect(() => {
     // If we have a single center point (for incident details)
-    if (center?.lat && center?.lng) {
+    if (center?.lat !== undefined && center?.lng !== undefined) {
       // Use Google Maps embed API (doesn't require API key)
-      const query = `${center.lat},${center.lng}`
-      const embedUrl = `https://maps.google.com/maps?q=${query}&z=${zoom}&output=embed`
-      setMapUrl(embedUrl)
+      const lat = Number(center.lat)
+      const lng = Number(center.lng)
+      
+      if (!isNaN(lat) && !isNaN(lng)) {
+        const query = `${lat},${lng}`
+        const embedUrl = `https://maps.google.com/maps?q=${query}&z=${zoom}&output=embed`
+        setMapUrl(embedUrl)
+      }
     }
     // If we have multiple incidents (for live map)
     else if (incidents.length > 0) {
-      const validIncidents = incidents.filter(inc => inc.lat && inc.lng)
+      const validIncidents = incidents.filter(inc => {
+        const lat = Number(inc.lat)
+        const lng = Number(inc.lng)
+        return !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0
+      })
       setIncidentsWithLocation(validIncidents)
       
       if (validIncidents.length > 0) {
         // Calculate center of all incidents
-        const latSum = validIncidents.reduce((sum, inc) => sum + (inc.lat || 0), 0)
-        const lngSum = validIncidents.reduce((sum, inc) => sum + (inc.lng || 0), 0)
+        const latSum = validIncidents.reduce((sum, inc) => sum + Number(inc.lat || 0), 0)
+        const lngSum = validIncidents.reduce((sum, inc) => sum + Number(inc.lng || 0), 0)
         const centerLat = latSum / validIncidents.length
         const centerLng = lngSum / validIncidents.length
         
@@ -41,6 +50,10 @@ export function GoogleMap({ center, markers = [], incidents = [], zoom = 13 }: G
         const query = `${centerLat},${centerLng}`
         const embedUrl = `https://maps.google.com/maps?q=${query}&z=${mapZoom}&output=embed`
         setMapUrl(embedUrl)
+        
+        console.log('[GoogleMap] Created map URL for', validIncidents.length, 'incidents')
+      } else {
+        console.log('[GoogleMap] No valid incidents with lat/lng found')
       }
     }
   }, [center, incidents, zoom])

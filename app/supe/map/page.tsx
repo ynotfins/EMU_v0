@@ -4,54 +4,57 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { RoleLayout } from "@/components/role-layout"
 import { LiveMap } from "@/components/live-map"
-import { useIncidents } from "@/hooks/use-incidents"
-import { Card } from "@/components/ui/card"
+import { useIncidentsWithDistance } from "@/hooks/use-incidents-with-distance"
+import { useFilters } from "@/hooks/use-filters"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, MapPin } from "lucide-react"
 
 export default function SupeLiveMapPage() {
   const router = useRouter()
-  const { data: allIncidents, isLoading } = useIncidents()
-  const [recentIncidents, setRecentIncidents] = useState<typeof allIncidents>([])
+  const { filters } = useFilters()
+  const { data: incidents, isLoading } = useIncidentsWithDistance(filters)
+  const [topIncidents, setTopIncidents] = useState<typeof incidents>([])
 
-  // Filter incidents from last 4 hours that have lat/lng
+  // Get top 10 most recent incidents
   useEffect(() => {
-    const fourHoursAgo = Date.now() - (4 * 60 * 60 * 1000)
+    // Sort by updatedAt and take top 10
+    const sorted = [...incidents]
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      .slice(0, 10)
     
-    const filtered = allIncidents.filter(incident => {
-      const incidentTime = new Date(incident.updatedAt).getTime()
-      const isRecent = incidentTime >= fourHoursAgo
-      const hasLocation = incident.lat !== undefined && incident.lng !== undefined
-      return isRecent && hasLocation
-    })
-
-    setRecentIncidents(filtered)
-  }, [allIncidents])
+    setTopIncidents(sorted)
+    console.log('[LiveMap] Top 10 incidents:', sorted.map(inc => ({
+      id: inc.id,
+      address: inc.address,
+      lat: inc.lat,
+      lng: inc.lng
+    })))
+  }, [incidents])
 
   return (
     <RoleLayout role="supe">
       <div className="flex flex-col min-h-screen">
-        {/* Header */}
-        <div className="bg-[#007AFF] text-white p-4 flex items-center gap-3">
+        {/* Header - Reduced height by 50% */}
+        <div className="bg-[#007AFF] text-white p-2 flex items-center gap-3">
           <Button
             onClick={() => router.back()}
             variant="ghost"
-            size="icon"
-            className="text-white hover:bg-white/20"
+            size="sm"
+            className="text-white hover:bg-white/20 h-8 w-8 p-0"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h1 className="text-xl font-bold flex-1">Live Alert Map</h1>
+          <h1 className="text-lg font-bold flex-1">Live Alert Map</h1>
           <Badge className="bg-white text-[#007AFF]">
-            {recentIncidents.length} Alerts
+            {topIncidents.length} Alerts
           </Badge>
         </div>
 
         {/* Map Container */}
         <div className="flex-1 relative">
           <LiveMap 
-            incidents={recentIncidents}
+            incidents={topIncidents}
             markers={[]}
           />
           
@@ -62,7 +65,7 @@ export default function SupeLiveMapPage() {
               <span className="font-semibold">Alert Locations</span>
             </div>
             <p className="text-sm text-gray-600">
-              Showing {recentIncidents.length} alerts from the last 4 hours
+              Showing top {topIncidents.length} most recent alerts
             </p>
           </div>
         </div>

@@ -89,14 +89,20 @@ function normalize(docId: string, data: FirestoreIncidentData): IncidentLite {
   const rawMessage = data.message || data.lastMessage || data.alertMessage || "";
   const message = rawMessage.replace(/\bBNN\b/gi, "").trim().replace(/\s+/g, " ");
 
+  // Generate custom incident number starting from 1000000
+  let incidentNumber = data.incidentNumber
+  if (!incidentNumber || incidentNumber < 1000000) {
+    // Use a hash of the docId to generate a consistent number
+    const hashCode = docId.split('').reduce((acc, char) => {
+      return ((acc << 5) - acc) + char.charCodeAt(0)
+    }, 0)
+    // Ensure positive number and add to base
+    incidentNumber = 1000000 + Math.abs(hashCode) % 1000000
+  }
+  
   const normalized = {
     id: docId,
-    incidentNumber:
-      data.incidentNumber ||
-      data.incidentId ||
-      data.firestoreDocId ||
-      parseInt(docId) ||
-      0,
+    incidentNumber,
     updatedAt,
     state,
     county,
