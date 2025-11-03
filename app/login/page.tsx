@@ -9,6 +9,8 @@ import {
   onAuthStateChanged,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { getFunctions, httpsCallable } from "firebase/functions";
+import { getFingerprint } from "@/lib/fp";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -157,6 +159,16 @@ export default function LoginPage() {
         }
       }
 
+      // Audit login event
+      try {
+        const functions = getFunctions();
+        const logAuthEvent = httpsCallable(functions, 'logAuthEvent');
+        const fp = await getFingerprint();
+        await logAuthEvent({ type: 'login', fingerprint: fp });
+      } catch (auditErr) {
+        console.warn("[Login] ⚠️ Audit failed (non-fatal):", auditErr);
+      }
+
       // Redirect based on role - super_admin defaults to supe view
       if (userRole === "super_admin" || userRole === "admin" || userRole === "supe") {
         router.push("/supe/incidents");
@@ -243,6 +255,16 @@ export default function LoginPage() {
           });
           userRole = "super_admin";
         }
+      }
+
+      // Audit login event
+      try {
+        const functions = getFunctions();
+        const logAuthEvent = httpsCallable(functions, 'logAuthEvent');
+        const fp = await getFingerprint();
+        await logAuthEvent({ type: 'login', fingerprint: fp });
+      } catch (auditErr) {
+        console.warn("[Login] ⚠️ Audit failed (non-fatal):", auditErr);
       }
 
       // Redirect based on role - super_admin defaults to supe view
