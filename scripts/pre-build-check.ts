@@ -152,8 +152,26 @@ addCheck({
 
 // Check 6: Check for TODO comments
 console.log('\nChecking for TODO comments...');
-const todoCheck = runCommand('grep -r "TODO\\|FIXME\\|XXX\\|HACK" src/ --include="*.ts" --include="*.tsx" | wc -l');
-const todoCount = parseInt(todoCheck.output.trim()) || 0;
+let todoCount = 0;
+function countTodos(dir: string) {
+  const files = fs.readdirSync(dir);
+  
+  for (const file of files) {
+    const filePath = path.join(dir, file);
+    const stat = fs.statSync(filePath);
+    
+    if (stat.isDirectory() && !file.includes('node_modules') && !file.startsWith('.')) {
+      countTodos(filePath);
+    } else if (file.endsWith('.ts') || file.endsWith('.tsx')) {
+      const content = fs.readFileSync(filePath, 'utf-8');
+      const matches = content.match(/TODO|FIXME|XXX|HACK/g);
+      if (matches) {
+        todoCount += matches.length;
+      }
+    }
+  }
+}
+countTodos(srcPath);
 addCheck({
   name: 'TODO Comments',
   passed: true, // This is informational
