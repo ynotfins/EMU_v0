@@ -209,15 +209,29 @@ export function IncidentDetailTabs({ incidentId, userRole }: IncidentDetailTabsP
         <TabsContent value="details" className="flex-1 overflow-y-auto">
           {/* Map Section */}
           <div className="relative h-64 bg-gray-100">
-            <LiveMap 
-              markers={incident.lat !== undefined && incident.lng !== undefined ? [{
-                uid: incidentId,
-                name: incident.type || "Alert",
-                lat: Number(incident.lat),
-                lng: Number(incident.lng)
-              }] : []}
-              incidents={[]}
-            />
+            {(() => {
+              const hasCoords = incident.lat !== undefined && incident.lng !== undefined;
+              console.log('[IncidentDetail] Map data:', {
+                incidentId,
+                hasCoords,
+                lat: incident.lat,
+                lng: incident.lng,
+                latType: typeof incident.lat,
+                lngType: typeof incident.lng
+              });
+              
+              return (
+                <LiveMap 
+                  markers={hasCoords ? [{
+                    uid: incidentId,
+                    name: incident.type || "Alert",
+                    lat: Number(incident.lat),
+                    lng: Number(incident.lng)
+                  }] : []}
+                  incidents={[]}
+                />
+              );
+            })()}
             <div className="absolute bottom-4 left-4 right-4">
               <Button 
                 className="w-full bg-[#34C759] hover:bg-[#2FB04D] text-white font-bold"
