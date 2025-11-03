@@ -10,7 +10,7 @@ export default function AuthedLayout({ children }: { children: ReactNode }) {
       <ConsentGate>
         <AuthFix />
         {children}
-        <DebugPanel />
+        {process.env.NODE_ENV === 'development' && <DebugPanel />}
       </ConsentGate>
     </LoginGate>
   );
