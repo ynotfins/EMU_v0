@@ -17,6 +17,7 @@ import { useState, useEffect } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { geocodeCache, userLocationCache, locationPermission } from '@/lib/offline-cache';
+import { config } from '@/lib/config';
 
 interface Location {
   lat: number;
@@ -68,8 +69,8 @@ async function geocodeAddress(address: string): Promise<Location | null> {
     return { lat: cached.lat, lng: cached.lng };
   }
 
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-  console.log('[geocodeAddress] Google Maps API Key:', apiKey ? 'Present' : 'Missing');
+  const apiKey = config.googleMapsApiKey;
+  console.log('[geocodeAddress] Google Maps API Key:', apiKey ? `Present (${apiKey.substring(0, 10)}...)` : 'Missing');
 
   // Option 1: Google Maps API (if configured)
   if (apiKey) {

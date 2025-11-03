@@ -6,15 +6,16 @@ import { getMessaging, type Messaging } from "firebase/messaging";
 import { getFunctions, type Functions } from "firebase/functions";
 import { saveAuthState, loadAuthState } from "./auth-persistence";
 
-// Firebase configuration from environment variables
+import { config } from './config';
+
+// Firebase configuration from centralized config
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
-  // Force custom domain to avoid third-party iframe storage issues
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || '4axe.com',
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID_WEB!,
+  apiKey: config.firebaseApiKey,
+  authDomain: config.firebaseAuthDomain,
+  projectId: config.firebaseProjectId,
+  storageBucket: config.firebaseStorageBucket,
+  messagingSenderId: config.firebaseMessagingSenderId,
+  appId: config.firebaseAppId,
 };
 
 // Initialize Firebase app (singleton pattern)
