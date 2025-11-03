@@ -26,11 +26,11 @@ export default function Page() {
 
       const ms = snap.docs
 
-        .map(d => ({ id: d.id, ...(d.data() as any) }))
+        .map(d => ({ docId: d.id, ...(d.data() as any) }))
 
         .filter(x => typeof x.lat === "number" && typeof x.lng === "number")
 
-        .map(x => ({ uid: x.id, name: x.type || "Alert", lat: x.lat, lng: x.lng }));
+        .map(x => ({ uid: String(x.docId), name: x.type || "Alert", lat: Number(x.lat), lng: Number(x.lng) }));
 
       setMarkers(ms);
 

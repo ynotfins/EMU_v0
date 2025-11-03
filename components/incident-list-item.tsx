@@ -44,10 +44,10 @@ function IncidentListItemComponent({
   }, [incident.id, onToggleSilence]);
 
   const handleCardClick = useCallback(() => {
-    const idToPass = incident.incidentId || incident.incidentNumber.toString();
+    const idToPass = (incident as any).incidentId ?? incident.id;
     logger.debug('Opening incident', { code: 'IncidentListItem', incidentId: idToPass });
     onOpen(idToPass);
-  }, [incident.incidentId, incident.incidentNumber, onOpen]);
+  }, [(incident as any).incidentId, incident.id, onOpen]);
 
   const handleFavoriteClick = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();

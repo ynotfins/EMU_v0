@@ -42,7 +42,7 @@ export default function IncidentDetailClient({ id }: { id: string }) {
 
         <LiveMap markers={(typeof incident.lat === "number" && typeof incident.lng === "number")
 
-          ? [{ uid: id, name: incident.type || "Alert", lat: incident.lat, lng: incident.lng }]
+          ? [{ uid: String(id), name: incident.type || "Alert", lat: Number(incident.lat), lng: Number(incident.lng) }]
 
           : []} />
 
