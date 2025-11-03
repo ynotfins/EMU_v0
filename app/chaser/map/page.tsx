@@ -16,13 +16,26 @@ export default function ChaserLiveMapPage() {
   const { data: incidents, isLoading } = useIncidentsWithDistance(filters)
   const [topIncidents, setTopIncidents] = useState<typeof incidents>([])
 
-  // Get top 10 most recent incidents
+  // Get top 10 most recent incidents with coordinates (last 4 hours)
   useEffect(() => {
+    const fourHoursAgo = Date.now() - (4 * 60 * 60 * 1000)
+    
+    // Filter to recent incidents with valid coordinates
+    const recentWithCoords = incidents.filter(inc => {
+      const incidentTime = new Date(inc.updatedAt).getTime()
+      const isRecent = incidentTime >= fourHoursAgo
+      const hasCoords = inc.lat !== undefined && inc.lat !== null && 
+                       inc.lng !== undefined && inc.lng !== null &&
+                       inc.lat !== 0 && inc.lng !== 0
+      return isRecent && hasCoords
+    })
+    
     // Sort by updatedAt and take top 10
-    const sorted = [...incidents]
+    const sorted = [...recentWithCoords]
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
       .slice(0, 10)
     
+    console.log('[ChaserLiveMap] Showing', sorted.length, 'recent incidents with coordinates')
     setTopIncidents(sorted)
   }, [incidents])
 
@@ -59,7 +72,7 @@ export default function ChaserLiveMapPage() {
               <span className="font-semibold">Alert Locations</span>
             </div>
             <p className="text-sm text-gray-600">
-              Showing top {topIncidents.length} most recent alerts
+              Showing top {topIncidents.length} most recent alerts (last 4 hours)
             </p>
           </div>
         </div>
