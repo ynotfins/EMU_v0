@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 import { Badge } from "./ui/badge";
 import { MapPin, Users, Navigation } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { LiveMap } from "./live-map";
 
 interface TeamMember {
   id: string;
@@ -93,36 +94,25 @@ export function LiveTeamMap() {
 
       <CardContent className="space-y-4">
         {/* Map Container */}
-        <div className="w-full h-80 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl relative overflow-hidden border-2 border-blue-100">
-          {/* Placeholder for actual map - will integrate Google Maps */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center space-y-3">
-              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto shadow-lg">
-                <Navigation className="h-10 w-10 text-blue-600" />
-              </div>
-              <p className="text-lg font-semibold text-gray-900">
-                Live Map Loading...
-              </p>
-              <p className="text-sm text-gray-600">
-                Tracking {onlineMembers.length} team member{onlineMembers.length !== 1 ? "s" : ""}
-              </p>
-            </div>
+        <div className="w-full h-80 rounded-xl relative overflow-hidden border-2 border-blue-100">
+          <LiveMap 
+            markers={onlineMembers.map(member => ({
+              uid: member.id,
+              name: member.nickname || member.name,
+              lat: member.location?.lat || 0,
+              lng: member.location?.lng || 0,
+              role: member.role,
+              lastUpdated: member.location?.lastUpdated
+            }))}
+            incidents={[]}
+          />
+          
+          {/* Overlay showing tracking count */}
+          <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg px-3 py-2">
+            <p className="text-sm font-medium">
+              Tracking {onlineMembers.length} active member{onlineMembers.length !== 1 ? "s" : ""}
+            </p>
           </div>
-
-          {/* Simulated Map Markers */}
-          {onlineMembers.slice(0, 5).map((member, index) => (
-            <div
-              key={member.id}
-              className="absolute w-10 h-10 bg-blue-600 rounded-full border-4 border-white shadow-lg flex items-center justify-center text-white font-bold text-sm animate-pulse"
-              style={{
-                top: `${20 + index * 15}%`,
-                left: `${30 + index * 10}%`,
-              }}
-              title={member.nickname}
-            >
-              {member.nickname.charAt(0).toUpperCase()}
-            </div>
-          ))}
         </div>
 
         {/* Team List */}
