@@ -209,6 +209,12 @@ export function IncidentDetailTabs({ incidentId, userRole }: IncidentDetailTabsP
         <TabsContent value="details" className="flex-1 overflow-y-auto">
           {/* Map Section */}
           <div className="relative h-64 bg-gray-100">
+            {console.log('[IncidentDetailTabs] Incident coords:', {
+              id: incidentId,
+              lat: incident.lat,
+              lng: incident.lng,
+              hasCoords: incident.lat !== undefined && incident.lng !== undefined
+            })}
             <LiveMap 
               markers={incident.lat !== undefined && incident.lng !== undefined ? [{
                 uid: incidentId,

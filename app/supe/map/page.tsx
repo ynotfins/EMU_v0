@@ -18,6 +18,9 @@ export default function SupeLiveMapPage() {
 
   // Get top 10 most recent incidents
   useEffect(() => {
+    console.log('[LiveMap] All incidents:', incidents.length)
+    console.log('[LiveMap] Sample incident:', incidents[0])
+    
     // Sort by updatedAt and take top 10
     const sorted = [...incidents]
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
@@ -27,8 +30,11 @@ export default function SupeLiveMapPage() {
     console.log('[LiveMap] Top 10 incidents:', sorted.map(inc => ({
       id: inc.id,
       address: inc.address,
+      city: inc.city,
+      state: inc.state,
       lat: inc.lat,
-      lng: inc.lng
+      lng: inc.lng,
+      hasCoords: inc.lat !== undefined && inc.lng !== undefined
     })))
   }, [incidents])
 

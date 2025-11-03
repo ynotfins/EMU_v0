@@ -18,12 +18,21 @@ export default function ChaserLiveMapPage() {
 
   // Get top 10 most recent incidents
   useEffect(() => {
+    console.log('[ChaserLiveMap] All incidents:', incidents.length)
+    console.log('[ChaserLiveMap] Sample incident:', incidents[0])
+    
     // Sort by updatedAt and take top 10
     const sorted = [...incidents]
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
       .slice(0, 10)
     
     setTopIncidents(sorted)
+    console.log('[ChaserLiveMap] Top 10 incidents with coords check:', sorted.map(inc => ({
+      id: inc.id,
+      lat: inc.lat,
+      lng: inc.lng,
+      hasCoords: inc.lat !== undefined && inc.lng !== undefined
+    })))
   }, [incidents])
 
   return (
