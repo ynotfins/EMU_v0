@@ -33,9 +33,9 @@ setPersistence(auth, browserLocalPersistence).catch(() => {})
 if (typeof window !== "undefined") {
   onAuthStateChanged(auth, (u) => {
     try {
-      // make cookie valid on apex and www
-      const base = location.hostname.endsWith('4axe.com') ? '.4axe.com' : location.hostname
-      document.cookie = `__emu_authed=${u ? "1" : "0"}; Path=/; Domain=${base}; SameSite=Lax; Secure`
+      // Scope cookie to both 4axe.com and www.4axe.com
+      const domain = location.hostname.endsWith("4axe.com") ? "; Domain=.4axe.com" : "";
+      document.cookie = `__emu_authed=${u ? "1" : "0"}; Path=/${domain}; SameSite=Lax; Secure`;
     } catch {}
   })
 }
