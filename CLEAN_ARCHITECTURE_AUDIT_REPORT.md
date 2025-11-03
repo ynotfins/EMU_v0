@@ -40,6 +40,16 @@ typescript: {
 **Impact**: Hiding potential type errors
 **Fix**: Remove this and fix all TypeScript errors
 
+**UPDATE**: Removed `ignoreBuildErrors` and found 250+ TypeScript errors!
+
+Main categories:
+- **Missing dependencies**: `zustand` not installed
+- **Firebase imports**: Using client SDK imports in Admin SDK code
+- **Cookies API**: Next.js 14+ requires `await` for cookies
+- **Branded types**: Missing branded type implementations
+- **Decorators**: Need `experimentalDecorators` in tsconfig
+- **Missing types**: Various domain types not found
+
 ### 2. **Missing Middleware** ⚠️
 No middleware.ts file exists for:
 - Route protection
@@ -119,6 +129,11 @@ No rate limiting on Server Actions
 Server Actions accept raw strings without validation
 
 **Fix**: Add zod or similar for input validation
+
+### 8. **Missing Dependencies** 📦
+`zustand` is not installed but imported everywhere
+
+**Fix**: Install missing dependencies
 
 ## 🟡 **Performance Concerns**
 
@@ -259,9 +274,33 @@ export const env = envSchema.parse(process.env);
 ## ✅ **Conclusion**
 
 The architecture foundation is **solid**, but needs:
-1. **Security hardening** (rate limiting, validation)
-2. **Error handling improvements** (boundaries, middleware)
-3. **Testing infrastructure**
-4. **Completion of infrastructure services**
+1. **TypeScript errors fixed** (250+ errors found)
+2. **Missing dependencies installed** (zustand)
+3. **Security hardening** (rate limiting, validation)
+4. **Error handling improvements** (boundaries, middleware)
+5. **Testing infrastructure**
+6. **Completion of infrastructure services**
+
+## 🚨 **Immediate Action Required**
+
+1. **Install missing dependencies**:
+   ```bash
+   pnpm add zustand
+   ```
+
+2. **Fix Firebase imports in repositories** (use client SDK, not admin SDK imports)
+
+3. **Fix cookies API usage** (add `await`):
+   ```typescript
+   const cookieStore = await cookies();
+   ```
+
+4. **Enable decorators** in tsconfig.json:
+   ```json
+   "experimentalDecorators": true,
+   "emitDecoratorMetadata": true
+   ```
+
+5. **Create missing types file** (`src/types/domain.d.ts`)
 
 Fix the critical issues first, then move to important issues. The architecture itself is sound and follows Clean Architecture principles well.
