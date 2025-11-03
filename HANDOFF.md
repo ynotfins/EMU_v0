@@ -1510,6 +1510,29 @@ npm run dev
 # 6. Open http://localhost:3000
 ```
 
+### Available Scripts
+
+```bash
+# Frontend Development
+npm run dev          # Start development server
+npm run build        # Production build
+npm run start        # Start production server
+npm run typecheck    # TypeScript type checking
+npm run lint         # ESLint checks
+
+# Firebase Functions
+npm run fn:build     # Build Functions TypeScript
+npm run fn:deploy    # Deploy Cloud Functions to Firebase
+npm run fn:emulate   # Run local Firebase emulators
+
+# Firebase Rules
+npm run rules:deploy # Deploy Firestore security rules
+
+# Utilities
+npm run wiring:test  # Test Firebase wiring
+npm run check-env    # Verify environment variables
+```
+
 ### Daily Development Loop
 
 ```bash
@@ -1536,6 +1559,21 @@ git commit -m "feat: your change description"
 git push origin main
 
 # 8. Automatic deployment to Vercel (within ~60 seconds)
+```
+
+### Firebase Functions Workflow
+
+```bash
+# 1. Build Functions
+npm run fn:build
+
+# 2. Test locally with emulators
+npm run fn:emulate
+
+# 3. Deploy to production
+npm run fn:deploy
+
+# Note: Requires Firebase CLI (firebase login) and Blaze plan enabled
 ```
 
 ### Testing Workflow
