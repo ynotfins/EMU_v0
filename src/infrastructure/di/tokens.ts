@@ -18,6 +18,7 @@ export const TOKENS = {
   
   // Infrastructure Services
   AuthService: Symbol.for('AuthService'),
+  SessionService: Symbol.for('SessionService'),
   StorageService: Symbol.for('StorageService'),
   EmailService: Symbol.for('EmailService'),
   SMSService: Symbol.for('SMSService'),
