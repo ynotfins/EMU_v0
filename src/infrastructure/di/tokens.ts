@@ -23,6 +23,7 @@ export const TOKENS = {
   EmailService: Symbol.for('EmailService'),
   SMSService: Symbol.for('SMSService'),
   MapService: Symbol.for('MapService'),
+  LocationService: Symbol.for('LocationService'),
   RealtimeService: Symbol.for('RealtimeService'),
   LoggerService: Symbol.for('LoggerService'),
   CacheService: Symbol.for('CacheService'),
@@ -30,6 +31,7 @@ export const TOKENS = {
   // Application Services (Use Cases)
   // Auth Use Cases
   SignInUseCase: Symbol.for('SignInUseCase'),
+  SignInWithGoogleUseCase: Symbol.for('SignInWithGoogleUseCase'),
   SignUpUseCase: Symbol.for('SignUpUseCase'),
   SignOutUseCase: Symbol.for('SignOutUseCase'),
   GetCurrentUserUseCase: Symbol.for('GetCurrentUserUseCase'),

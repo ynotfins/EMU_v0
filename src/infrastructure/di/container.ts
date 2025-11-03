@@ -71,16 +71,18 @@ export function createContainer(options: ContainerOptions): Container {
  * Development environment bindings
  */
 function configureDevelopmentBindings(container: Container): void {
-  // In development, we might use in-memory implementations or mocks
-  // These will be implemented in Phase 3
+  // Import and configure bindings
+  const { configureContainer } = require('./bindings');
+  configureContainer(container);
 }
 
 /**
  * Production environment bindings
  */
 function configureProductionBindings(container: Container): void {
-  // In production, we use real implementations
-  // These will be implemented in Phase 3
+  // Import and configure bindings
+  const { configureContainer } = require('./bindings');
+  configureContainer(container);
 }
 
 /**
