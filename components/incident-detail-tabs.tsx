@@ -16,6 +16,7 @@ import { createIncidentChat } from "@/lib/realtime-database"
 import { useToast } from "@/hooks/use-toast"
 import { auth, db } from "@/lib/firebase"
 import { updateDoc, doc, arrayUnion } from "firebase/firestore"
+import { notifySupervisors } from "@/lib/notifications"
 
 interface IncidentDetailTabsProps {
   incidentId: string
@@ -77,6 +78,22 @@ export function IncidentDetailTabs({ incidentId, userRole }: IncidentDetailTabsP
         respondedAt: serverTimestamp(),
         status: "active",
         createdAt: serverTimestamp()
+      })
+      
+      // Send notification to all supervisors
+      await notifySupervisors({
+        type: 'response',
+        title: 'New Response to Alert',
+        message: `${auth.currentUser.displayName || auth.currentUser.email} has responded to alert at ${incident.address}`,
+        from: {
+          uid: auth.currentUser.uid,
+          name: auth.currentUser.displayName || auth.currentUser.email || "Unknown",
+          role: userRole
+        },
+        metadata: {
+          incidentId: incidentId,
+          incidentAddress: incident.address
+        }
       })
       
       toast({

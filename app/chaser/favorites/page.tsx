@@ -73,7 +73,21 @@ export default function ChaserFavoritesPage() {
   
   // Get incidents for responses
   const responseIncidents = responses.map(response => {
-    return safeIncidents.find(inc => inc.id === response.incidentId);
+    // Try matching by id first, then by incidentId field if it exists
+    const incident = safeIncidents.find(inc => 
+      inc.id === response.incidentId || 
+      (inc as any).incidentId === response.incidentId
+    );
+    
+    // Debug logging
+    if (!incident && response.incidentId) {
+      console.log('[Favorites] Could not find incident for response:', {
+        responseIncidentId: response.incidentId,
+        availableIncidentIds: safeIncidents.slice(0, 5).map(inc => ({ id: inc.id, incidentId: (inc as any).incidentId }))
+      });
+    }
+    
+    return incident;
   }).filter(Boolean);
 
   // Handle favorite/bookmark with Firestore toggle logic

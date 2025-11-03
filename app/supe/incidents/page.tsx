@@ -12,6 +12,8 @@ import { useProfile } from "@/hooks/use-profile"
 import { useFavoritesContext } from "@/lib/context/favorites-context"
 import { Button } from "@/components/ui/button"
 import { Map, MapPin, AlertCircle, ArrowUpDown } from "lucide-react"
+import { NotificationListener } from "@/components/notification-listener"
+import { auth } from "@/lib/firebase"
 
 export default function SupeIncidentsPage() {
   const router = useRouter()
@@ -105,6 +107,11 @@ export default function SupeIncidentsPage() {
 
   return (
     <RoleLayout role="supe">
+      {/* Notification listener for supervisors */}
+      {profile?.uid && profile?.role && (
+        <NotificationListener userId={profile.uid} userRole={profile.role} />
+      )}
+      
       <div className="flex flex-col h-screen">
         {/* Header - Fixed at top */}
         <div className="bg-white border-b border-[#E5E7EB] px-4 py-2 flex items-center justify-between fixed top-0 left-0 right-0 z-20">
