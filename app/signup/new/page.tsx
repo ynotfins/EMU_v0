@@ -150,16 +150,22 @@ export default function NewSignupPage() {
 
       console.log("[Signup] ✅ OCR complete, extracted data:", extractedData);
 
-      // Create Firestore user profile
+      // Generate employee ID
+      const employeeId = `EMP-${Date.now().toString().slice(-6)}`;
+
+      // Create Firestore user profile with employee data
       await setDoc(doc(db, "users", auth.currentUser!.uid), {
         id: auth.currentUser!.uid,
+        uid: auth.currentUser!.uid,
         email: email,
+        displayName: `${extractedData.firstName} ${extractedData.lastName}`,
         nickname: nickname,
         name: `${extractedData.firstName} ${extractedData.lastName}`,
         firstName: extractedData.firstName,
         lastName: extractedData.lastName,
         phone: phone.replace(/\D/g, ""),
         role: "chaser",
+        viewMode: "chaser",
         settings: {
           pushEnabled: true,
           trackingEnabled: true,
@@ -175,6 +181,23 @@ export default function NewSignupPage() {
           responded: 0,
           noted: 0,
           daysActive: 1,
+        },
+        // Employee data structure
+        employee: {
+          employeeId: employeeId,
+          hireDate: new Date().toISOString(),
+          department: "Field Operations",
+          permissions: ["basic"],
+          idDocument: {
+            url: idImage || "", // In production, upload to Storage
+            uploadedAt: new Date().toISOString(),
+            verified: false
+          },
+          emergencyContact: {
+            name: "",
+            phone: "",
+            relationship: ""
+          }
         },
         idVerification: {
           verified: true,
