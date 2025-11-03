@@ -218,6 +218,10 @@ Enable emergency responders to quickly view, respond to, and coordinate incident
 - **Firebase Firestore**: Real-time NoSQL database, primary data store
 - **Firebase Authentication**: Email/password + Google Sign-In, browser local persistence
 - **Firebase Realtime Database**: Live chat messages (incident + direct chats)
+- **Firebase Cloud Functions**: TypeScript Cloud Functions (Node 20)
+  - `logAuthEvent` - Audit logging with IP, UA, device fingerprint
+  - `recordConsent` - Legal consent tracking with versioning
+  - Writes to locked Firestore paths (only Functions can write)
 - **Firebase Cloud Storage**: File uploads (initialized, not yet wired)
 - **Firebase Cloud Messaging (FCM)**: Push notifications (initialized, not yet wired)
 
