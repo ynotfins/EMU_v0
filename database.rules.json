@@ -1,45 +1,91 @@
 {
   "rules": {
+    // Incident chats - group chats for incidents
     "incident-chats": {
       "$incidentId": {
-        // Only authenticated users can read/write
+        // Only authenticated users can read incident chats
         ".read": "auth != null",
+        
+        // Only authenticated users can create/modify incident chats
         ".write": "auth != null",
         
         "metadata": {
+          // Validate metadata structure
           ".validate": "newData.hasChildren(['incidentId', 'incidentAddress', 'createdAt', 'createdBy', 'participants'])"
         },
         
         "messages": {
           "$messageId": {
-            ".validate": "newData.hasChildren(['senderId', 'senderName', 'message', 'timestamp'])"
+            // Only authenticated users can write messages
+            ".write": "auth != null && newData.child('senderId').val() === auth.uid",
+            
+            // Validate message structure
+            ".validate": "newData.hasChildren(['senderId', 'senderName', 'message', 'timestamp']) && 
+                         newData.child('timestamp').val() <= now"
           }
         }
       }
     },
     
+    // Direct chats - 1-on-1 conversations
     "direct-chats": {
       "$chatId": {
-        // Only authenticated users who are participants can read
+        // Read access: authenticated users who are participants
         ".read": "auth != null && (
-          root.child('direct-chats/' + $chatId + '/metadata/participants/' + auth.uid).exists()
+          root.child('direct-chats/' + $chatId + '/metadata/participants/' + auth.uid).exists() ||
+          // Allow initial read for chat creation
+          !data.exists()
         )",
         
-        // Only authenticated participants can write
+        // Write access: authenticated users who are participants or creating new chat
         ".write": "auth != null && (
-          root.child('direct-chats/' + $chatId + '/metadata/participants/' + auth.uid).exists()
+          root.child('direct-chats/' + $chatId + '/metadata/participants/' + auth.uid).exists() ||
+          // Allow creating new chat if user is one of the participants
+          (!data.exists() && newData.child('metadata/participants/' + auth.uid).exists())
         )",
         
         "metadata": {
+          // Validate metadata has required fields
           ".validate": "newData.hasChildren(['participants', 'createdAt'])"
         },
         
         "messages": {
           "$messageId": {
-            ".validate": "newData.hasChildren(['senderId', 'senderName', 'message', 'timestamp'])"
+            // Only authenticated participants can write messages
+            ".write": "auth != null && 
+                       root.child('direct-chats/' + $chatId + '/metadata/participants/' + auth.uid).exists() &&
+                       newData.child('senderId').val() === auth.uid",
+            
+            // Validate message structure
+            ".validate": "newData.hasChildren(['senderId', 'senderName', 'message', 'timestamp']) && 
+                         newData.child('timestamp').val() <= now"
           }
         }
       }
+    },
+    
+    // Live locations for real-time tracking
+    "live-locations": {
+      "$userId": {
+        // Users can only write their own location
+        ".write": "auth != null && auth.uid === $userId",
+        
+        // Authenticated users can read locations
+        // In production, you might want to restrict this to supervisors only
+        ".read": "auth != null",
+        
+        // Validate location data
+        ".validate": "newData.hasChildren(['lat', 'lng', 'timestamp']) && 
+                     newData.child('lat').isNumber() && 
+                     newData.child('lng').isNumber() &&
+                     newData.child('timestamp').val() <= now"
+      }
+    },
+    
+    // Prevent access to any undefined paths
+    "$other": {
+      ".read": false,
+      ".write": false
     }
   }
 }

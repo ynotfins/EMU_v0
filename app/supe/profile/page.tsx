@@ -58,43 +58,8 @@ export default function SupeProfilePage() {
           {/* Supe Controls Card - Shows for all Supe users */}
           <SupeControlsCard userRole={profile.role} />
 
-          {/* View Mode Toggle */}
-
-        <section className="rounded-xl border p-4">
-
-          <h3 className="font-semibold mb-3">Supe Controls</h3>
-
-          <div className="flex items-center justify-between">
-
-            <span>Current View: {profile?.viewMode ?? "chaser"}</span>
-
-            <button
-
-              className="px-3 py-1 rounded-md border"
-
-              onClick={() => setViewMode((profile?.viewMode === "supe" ? "chaser" : "supe"))}
-
-            >
-
-              Switch to {profile?.viewMode === "supe" ? "Chaser" : "Supe"}
-
-            </button>
-
-          </div>
-
-        </section>
-
-          {/* God Mode Card - Only shows when actively in Super Admin mode */}
-          {(() => {
-            // Check if user is actively in Super Admin mode
-            if (typeof window !== "undefined") {
-              const activeRole = localStorage.getItem("activeRole");
-              if (activeRole === "super_admin" && profile.role === "super_admin") {
-                return <GodModeCard userRole={profile.role} />;
-              }
-            }
-            return null;
-          })()}
+          {/* God Mode Card - Shows for super_admin users */}
+          {profile.role === "super_admin" && <GodModeCard userRole={profile.role} />}
 
           <StatsCards
             responded={profile.stats.responded}

@@ -33,12 +33,18 @@ export function useProfile(uid?: string | null) {
           const userData = docSnap.data()
           
           // Map Firestore data to Profile type
+          const userRole = userData.role || "chaser";
+          
+          // Set viewMode based on user's role if not already set
+          // super_admin and supe default to "supe" view, chasers to "chaser" view
+          const defaultViewMode = (userRole === "super_admin" || userRole === "admin" || userRole === "supe") ? "supe" : "chaser";
+          
           const profile: Profile = {
             uid: userId,
             email: userData.email || "",
             displayName: userData.displayName || userData.name || userData.nickname || userData.email?.split("@")[0] || "User",
-            role: userData.role || "chaser",
-            viewMode: userData.viewMode || "chaser",
+            role: userRole,
+            viewMode: userData.viewMode || defaultViewMode,
             agency: userData.agency,
             stats: {
               responded: userData.stats?.responded || 0,

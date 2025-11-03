@@ -12,28 +12,42 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // Helper function to check if user is authenticated
+    // Helper functions
     function isAuthenticated() {
       return request.auth != null;
     }
     
-    // Helper function to get user ID
     function getUserId() {
       return request.auth.uid;
     }
     
-    // Incidents collection - all authenticated users can read, only system can write
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(getUserId())).data.role;
+    }
+    
+    function isSupe() {
+      return getUserRole() in ['supe', 'admin', 'super_admin'];
+    }
+    
+    function isAdmin() {
+      return getUserRole() in ['admin', 'super_admin'];
+    }
+    
+    // Incidents collection - all authenticated users can read, limited updates allowed
     match /incidents/{incidentId} {
       // All authenticated users can read incidents
       allow read: if isAuthenticated();
       
-      // Only system/cloud functions can create/update incidents
-      // Allow authenticated users to update:
+      // Allow authenticated users to update specific fields:
       // - favorites/bookmarks: User interaction
       // - notes: User-created content
       // - lat/lng/geocodedAt: Client-side geocoding cache
       allow update: if isAuthenticated() && 
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['favoritedBy', 'bookmarkedBy', 'notes', 'lat', 'lng', 'geocodedAt']);
+      
+      // Only cloud functions can create new incidents
+      allow create: if false;
+      allow delete: if false;
       
       // Updates subcollection - authenticated users can read
       match /updates/{updateId} {
@@ -42,10 +56,81 @@ service cloud.firestore {
       }
     }
     
-    // Users collection - users can only read/write their own document
+    // Users collection
     match /users/{userId} {
+      // Users can read their own document
+      // Supes can read all user documents (for team location tracking)
+      allow read: if isAuthenticated() && 
+        (getUserId() == userId || isSupe());
+      
+      // Users can only write their own document
+      allow write: if isAuthenticated() && getUserId() == userId;
+    }
+    
+    // Favorites collection - users manage their own favorites
+    match /favorites/{userId} {
       allow read: if isAuthenticated() && getUserId() == userId;
       allow write: if isAuthenticated() && getUserId() == userId;
+    }
+    
+    // Bookmarks collection - users manage their own bookmarks
+    match /bookmarks/{userId} {
+      allow read: if isAuthenticated() && getUserId() == userId;
+      allow write: if isAuthenticated() && getUserId() == userId;
+    }
+    
+    // Notes collection - users manage their own notes
+    match /notes/{noteId} {
+      allow read: if isAuthenticated() && resource.data.userId == getUserId();
+      allow write: if isAuthenticated() && 
+        (request.resource.data.userId == getUserId() || resource.data.userId == getUserId());
+    }
+    
+    // Responses collection - users manage their own responses
+    match /responses/{responseId} {
+      allow read: if isAuthenticated() && resource.data.userId == getUserId();
+      allow write: if isAuthenticated() && request.resource.data.userId == getUserId();
+    }
+    
+    // Independent contractors - only admins can manage
+    match /independent_contractors/{contractorId} {
+      allow read: if isAuthenticated() && isAdmin();
+      allow write: if isAuthenticated() && isAdmin();
+    }
+    
+    // Threads collection (for chat)
+    match /threads/{threadId} {
+      allow read: if isAuthenticated() && 
+        getUserId() in resource.data.participants;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && 
+        getUserId() in resource.data.participants;
+      
+      // Messages subcollection
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && 
+          getUserId() in get(/databases/$(database)/documents/threads/$(threadId)).data.participants;
+        allow write: if isAuthenticated() && 
+          request.resource.data.senderId == getUserId() &&
+          getUserId() in get(/databases/$(database)/documents/threads/$(threadId)).data.participants;
+      }
+    }
+    
+    // Files collection (for document uploads)
+    match /files/{fileId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
+        request.resource.data.uploadedBy == getUserId();
+    }
+    
+    // Signatures collection (for e-signatures)
+    match /signatures/{signatureId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.requestedBy == getUserId() || 
+         resource.data.signedBy == getUserId());
+      allow write: if isAuthenticated() && 
+        (request.resource.data.requestedBy == getUserId() || 
+         request.resource.data.signedBy == getUserId());
     }
     
     // Deny all other paths by default
