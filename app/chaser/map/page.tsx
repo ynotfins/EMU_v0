@@ -56,7 +56,7 @@ export default function ChaserLiveMapPage() {
           />
           
           {/* Legend Overlay */}
-          <Card className="absolute top-4 left-4 p-3 max-w-xs">
+          <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-3 max-w-xs">
             <div className="flex items-center gap-2 mb-2">
               <MapPin className="h-5 w-5 text-[#FF3B30]" />
               <span className="font-semibold">Alert Locations</span>
@@ -64,7 +64,7 @@ export default function ChaserLiveMapPage() {
             <p className="text-sm text-gray-600">
               Showing {recentIncidents.length} alerts from the last 4 hours
             </p>
-          </Card>
+          </div>
         </div>
 
         {/* Bottom Info */}

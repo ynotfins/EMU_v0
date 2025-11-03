@@ -191,41 +191,9 @@ export function IncidentDetailTabs({ incidentId, userRole }: IncidentDetailTabsP
         )}
       </div>
 
-      {/* Map Section */}
-      <div className="relative h-64 bg-gray-100">
-        <LiveMap 
-          markers={incident.lat && incident.lng ? [{
-            uid: incidentId,
-            name: incident.type || "Alert",
-            lat: incident.lat,
-            lng: incident.lng
-          }] : []}
-        />
-        <div className="absolute bottom-4 left-4 right-4 flex gap-2">
-          <Button 
-            className="flex-1 bg-[#34C759] hover:bg-[#2FB04D] text-white font-bold"
-            onClick={handleRespondToAlert}
-          >
-            Respond to Alert
-          </Button>
-          {incident.incidentNumber && (
-            <div className="bg-[#007AFF] text-white px-3 py-2 rounded-md text-sm font-medium">
-              #NFA-{incident.incidentNumber}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Incident Info */}
-      <div className="bg-white p-4 border-b">
-        <h2 className="text-xl font-bold">{incident.type || "Incident"}</h2>
-        <p className="text-lg">{incident.address}</p>
-        <p className="text-gray-600">{incident.city}, {incident.state}</p>
-      </div>
-
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
-        <TabsList className="grid grid-cols-5 w-full rounded-none border-b">
+      {/* Tabs - Moved to top */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+        <TabsList className="grid grid-cols-5 w-full rounded-none border-b bg-white">
           <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger value="homeowner">Homeowner</TabsTrigger>
           <TabsTrigger value="docs">Docs</TabsTrigger>
@@ -237,11 +205,44 @@ export function IncidentDetailTabs({ incidentId, userRole }: IncidentDetailTabsP
         </TabsList>
 
         {/* Details Tab */}
-        <TabsContent value="details" className="p-4 space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Updates ({incident.updates?.length || 0})</CardTitle>
-            </CardHeader>
+        <TabsContent value="details" className="flex-1 overflow-y-auto">
+          {/* Map Section */}
+          <div className="relative h-64 bg-gray-100">
+            <LiveMap 
+              markers={incident.lat && incident.lng ? [{
+                uid: incidentId,
+                name: incident.type || "Alert",
+                lat: incident.lat,
+                lng: incident.lng
+              }] : []}
+            />
+            <div className="absolute bottom-4 left-4 right-4 flex gap-2">
+              <Button 
+                className="flex-1 bg-[#34C759] hover:bg-[#2FB04D] text-white font-bold"
+                onClick={handleRespondToAlert}
+              >
+                Respond to Alert
+              </Button>
+              {incident.incidentNumber && (
+                <div className="bg-[#007AFF] text-white px-3 py-2 rounded-md text-sm font-medium">
+                  #NFA-{incident.incidentNumber}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Incident Info */}
+          <div className="bg-white p-4 border-b">
+            <h2 className="text-xl font-bold">{incident.type || "Incident"}</h2>
+            <p className="text-lg">{incident.address}</p>
+            <p className="text-gray-600">{incident.city}, {incident.state}</p>
+          </div>
+          
+          <div className="p-4 space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Updates ({incident.updates?.length || 0})</CardTitle>
+              </CardHeader>
             <CardContent className="space-y-3">
               {incident.updates?.map((update, index) => (
                 <div key={index} className="bg-gray-50 p-3 rounded-lg">
@@ -273,6 +274,7 @@ export function IncidentDetailTabs({ incidentId, userRole }: IncidentDetailTabsP
               {isSaving && <p className="text-xs text-gray-500 mt-1">Saving...</p>}
             </CardContent>
           </Card>
+          </div>
         </TabsContent>
 
         {/* Homeowner Tab */}
