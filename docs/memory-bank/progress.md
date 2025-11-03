@@ -11,19 +11,27 @@
 - **Auto-Deploy**: Git push → automatic deployment (~60 seconds)
 - **Firebase Project**: `emu-incidents` fully configured
 - **Vercel Project**: `emu-v0`
+- **Middleware**: Edge-based route protection with cookie auth
+- **Firebase Functions**: TypeScript Cloud Functions for audit/consent (ready to deploy)
+- **Security Headers**: COOP/COEP for OAuth popup flows
 
 ### Authentication - Complete ✅
 
 - ✅ **Email/Password Login**: Working
-- ✅ **Google Sign-In**: Working with auto-profile creation
+- ✅ **Google Sign-In**: Working with auto-profile creation (redirect flow on desktop)
 - ✅ **Signup with Role Selection**: Chaser or Supe during signup
 - ✅ **Auth Persistence**: Triple-layer (localStorage + sessionStorage + cookies)
 - ✅ **Firebase LOCAL Persistence**: `browserLocalPersistence` - never expires
 - ✅ **Manual Sign-Out**: Only way to sign out
 - ✅ **Admin Tool**: Role management at `/admin`
-- ✅ **Protected Routes**: `ProtectedRoute` component wraps all role pages
+- ✅ **Middleware Protection**: Edge-based route protection with `__emu_authed` cookie
+- ✅ **LoginGate**: Client-side auth check with Suspense boundary
+- ✅ **ConsentGate**: Legal consent tracking before app access
+- ✅ **Protected Routes**: All routes under `app/(authed)/` layout
 - ✅ **Default Login Redirect**: Super admin/admin/supe → `/supe/incidents`, Chaser → `/chaser/incidents`
 - ✅ **Profile Loading**: Real-time Firestore listener fetches from `/users/{uid}`
+- ✅ **Custom Domain**: authDomain=4axe.com (prevents third-party storage issues)
+- ✅ **Cookie Domain**: Works on apex + www (`.4axe.com`)
 
 ### UI/UX Layer - Complete ✅
 
@@ -76,9 +84,18 @@
 #### Firebase Auth
 
 - ✅ **Email/Password**: Fully wired
-- ✅ **Google Sign-In**: Fully wired
+- ✅ **Google Sign-In**: Fully wired (redirect flow on desktop, popup on mobile)
 - ✅ **Persistence**: `browserLocalPersistence` + triple-layer backup
-- ✅ **onAuthStateChanged**: Saves to 3 storage locations
+- ✅ **onAuthStateChanged**: Saves to 3 storage locations + `__emu_authed` cookie
+- ✅ **Custom Domain**: authDomain=4axe.com
+- ✅ **Cookie Domain**: `.4axe.com` (works on apex + www)
+
+#### Firebase Functions
+
+- ✅ **logAuthEvent**: Records auth events with IP, UA, device fingerprint
+- ✅ **recordConsent**: Tracks ToS/Privacy consent with versioning
+- ✅ **TypeScript Build**: Compiles successfully
+- ⏳ **Deployment**: Ready to deploy with `npm run fn:deploy`
 
 #### Firebase Storage
 
@@ -225,10 +242,16 @@
 
 ### Security - Production-Ready ✅
 
-- ✅ **Firestore Rules**: Deployed, production-grade
+- ✅ **Firestore Rules**: Deployed, production-grade with audit/legal paths locked
+- ✅ **Middleware Protection**: Edge-based route protection
 - ✅ **Auth Required**: All routes except login/signup
 - ✅ **User-Specific Data**: Favorites/bookmarks per-user arrays
 - ✅ **Role-Based Access**: Chaser/Supe/Admin separation
+- ✅ **Audit Logging**: Immutable auth event trail (Functions only)
+- ✅ **Consent Tracking**: Legal compliance with versioning
+- ✅ **Device Fingerprinting**: Security tracking with confidence scores
+- ✅ **Security Headers**: COOP/COEP for OAuth flows
+- ✅ **Cookie Domain**: Secure, apex + www compatible
 - ⚠️ **Storage Rules**: Not yet deployed
 - ⚠️ **Realtime DB Rules**: Open for testing (needs securing)
 

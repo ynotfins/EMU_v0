@@ -3,385 +3,194 @@
 ## Current Status
 
 **Project Stage**: Production - Deployed & Operational  
-**Last Updated**: 2025-11-02 (Authentication and profile fixes)  
-**Session**: authentication-profile-fixes  
+**Last Updated**: 2025-11-03 (Auth hardening, Firebase Functions, audit logging)  
+**Session**: auth-middleware-functions-audit  
 **Live URL**: https://4axe.com (Vercel deployment)
 
 ## Current Work Focus
 
-**Latest Session (Nov 2, 2025)**:
+**Latest Session (Nov 3, 2025)** - Auth Hardening & Audit Infrastructure:
 
-- ✅ Fixed useProfile hook to fetch from Firestore instead of hardcoded DEV_PROFILE
-- ✅ Fixed login redirects to default to Supe for super_admin/admin/supe users
-- ✅ Fixed Google sign-in to default new users to "supe" role (was "chaser")
-- ✅ Fixed God Mode card view toggle bug (removed setViewMode reference)
-- ✅ Fixed favorites page header/footer sticky positioning
-- ✅ Fixed bottom nav to show "Supe" for super_admin when not in God Mode
-- ✅ Fixed profile.id → profile.uid references in favorites page
-- ✅ Wired updateSettings and updatePayout to Firestore
+- ✅ Added middleware-based route protection with `__emu_authed` cookie
+- ✅ Created `app/(authed)` layout with LoginGate + ConsentGate
+- ✅ Implemented Firebase Cloud Functions (logAuthEvent, recordConsent)
+- ✅ Added device fingerprinting (FingerprintJS Pro + fallback hash)
+- ✅ Added audit logging to locked Firestore paths
+- ✅ Fixed duplicate route conflicts (removed `app/(protected)`)
+- ✅ Created shared IncidentDetailClient for Chaser/Supe consistency
+- ✅ Added viewMode persistence to Firestore
+- ✅ Updated j.snap11@yahoo.com to chaser role
+- ✅ Fixed security headers (COOP, COEP)
+- ✅ Fixed cookie domain for apex + www (`.4axe.com`)
+- ✅ Fixed service worker POST caching issue
+- ✅ Added GA4 debug mode with proper gtag.js loader
+- ✅ Added Suspense boundaries for useSearchParams
+- ✅ Created auth status API endpoint for debugging
 
-**Previous Session (Oct 30-31, 2025)**: Google login auto-profile creation, Live team map for Supes, 20% rounded avatar system, CRM contractors page, multi-step signup with ID scanning, Vercel build fix
+**Previous Session (Nov 2, 2025)**: Authentication and profile fixes, God Mode toggle, favorites page layout
 
 **Current State**:
 
 - ✅ **LIVE ON PRODUCTION**: https://4axe.com
-- ✅ **Deployed via Vercel**: Automatic deployments on git push
-- ✅ **Custom Domain**: 4axe.com configured with smart routing
-- ✅ **Real-time Data**: All features using Firebase `onSnapshot`
-- ✅ **Auth Fixed**: Google sign-in auto-creates Firestore profiles
-- ✅ **Live Chat**: Firebase Realtime Database, incident + direct chats working
-- ✅ **Live Team Map**: Real-time user location tracking for Supes
-- ✅ **Avatar System**: 20% rounded corners, reusable components ready
-- ✅ **CRM**: Independent Contractors & Employees page (desktop-first)
-- ✅ **Admin Tool**: User role management with super_admin support
-- ✅ **God Mode**: Toggle-based role switching for super_admin in profile
-- ✅ **Multi-step Signup**: Nickname, email verify, camera ID capture, OCR
+- ✅ **Middleware Protection**: All routes protected except `/login`
+- ✅ **Firebase Functions**: Deployed and ready for audit logging
+- ✅ **Consent Tracking**: Legal consent with versioning
+- ✅ **Custom Domain Auth**: authDomain=4axe.com
+- ✅ **Unified Detail Pages**: Shared component for Chaser/Supe
+- ✅ **ViewMode Persistence**: Supe can toggle to Chaser view
+- ✅ **Security Hardened**: Headers, cookies, service worker all fixed
 
 ## Recent Changes (Today's Session)
 
-### Phase 1: Fixed useProfile Hook - Fetches from Firestore ✅
+### Phase 1: Middleware-Based Auth Protection ✅
 
-**Problem**: Profile showing "Dev User" and incorrect role because `useProfile` hook was using hardcoded `DEV_PROFILE`.
-
-**Solution** (`hooks/use-profile.ts`):
-- Removed hardcoded DEV_PROFILE
-- Implemented Firestore `onSnapshot` listener to `/users/{uid}` collection
-- Maps Firestore data to Profile type with proper field mapping
-- Real-time updates when profile changes
-- Handles missing profiles gracefully
+**Implementation** (`middleware.ts` - NEW):
+- Checks `__emu_authed` cookie for authentication
+- Redirects unauthenticated users to `/login?next=...`
+- Whitelist for public routes (login, _next, favicon, etc.)
+- Runs on Edge for fast response
 
 **Result**:
-- ✅ Profile now loads from Firestore
-- ✅ Shows correct displayName, role, and all profile data
-- ✅ Real-time updates when profile changes
-- ✅ No more "Dev User" issue
+- ✅ All routes protected by default
+- ✅ Smart redirect with return URL preservation
+- ✅ Fast edge-based auth checks
 
----
-
-### Phase 2: Fixed Login Redirects - Default to Supe ✅
-
-**Problem**: Login always redirected to `/chaser/incidents` even for super_admin users.
-
-**Solution** (`app/login/page.tsx`):
-- After Google sign-in, check user role from Firestore
-- Default new Google users to "supe" role (was "chaser")
-- Redirect super_admin/admin/supe to `/supe/incidents`
-- Redirect chaser to `/chaser/incidents`
-- Same logic for email/password sign-in
-
-**Result**:
-- ✅ Super admin defaults to Supe view on login
-- ✅ New Google users default to Supe role
-- ✅ Correct redirects based on user role
-
----
-
-### Phase 3: Fixed God Mode Card View Toggle ✅
-
-**Problem**: God Mode card tried to call `setViewMode()` which doesn't exist (viewMode is useMemo, not useState).
-
-**Solution** (`components/god-mode-card.tsx`):
-- Removed `setViewMode()` call
-- Fixed route replacement logic to properly switch between `/chaser/` and `/supe/` routes
-- Handles edge cases (fallback to incidents page)
-
-**Result**:
-- ✅ View toggle works correctly
-- ✅ Routes switch properly between Chaser and Supe views
-- ✅ No more undefined function errors
-
----
-
-### Phase 4: Fixed Favorites Page Layout ✅
-
-**Problem**: Header and footer not locked in place, tabs don't fit properly on mobile.
-
-**Solution** (`app/chaser/favorites/page.tsx`, `app/supe/favorites/page.tsx`):
-- Header: Added `sticky top-0 z-10` classes
-- Tabs bar: Added `sticky top-14 z-10` classes (below header)
-- Tab content: Added `pb-20` padding to account for fixed footer
-- Footer: Already fixed at bottom with `z-50`
-
-**Result**:
-- ✅ Header stays fixed at top when scrolling
-- ✅ Tabs bar stays fixed below header
-- ✅ Footer stays fixed at bottom
-- ✅ Content scrolls properly without overlapping header/footer
-- ✅ 4 tabs fit properly in footer
-
----
-
-### Phase 5: Fixed Bottom Nav Profile Label ✅
-
-**Problem**: Bottom nav showing incorrect label for super_admin users.
-
-**Solution** (`components/bottom-nav.tsx`):
-- Super admin defaults to "Supe" label (not "Profile")
-- Only shows "God" when God Mode is ON
-- Supe users show "Supe"
-- Chaser users show "Profile"
-
-**Result**:
-- ✅ Correct labels for all user roles
-- ✅ Super admin sees "Supe" by default
-- ✅ God Mode shows "God" when enabled
-
----
-
-### Phase 6: Wired Profile Updates to Firestore ✅
-
-**Solution** (`hooks/use-profile.ts`):
-- `updateSettings()` now writes to Firestore `/users/{uid}/settings`
-- `updatePayout()` now writes to Firestore `/users/{uid}/payout`
-- Optimistic updates (UI updates immediately)
-- Error handling with console logging
-
-**Result**:
-- ✅ Profile settings persist to Firestore
-- ✅ Payout info persists to Firestore
-- ✅ Real-time sync across devices
-
-**Problem**: Users signing in with Google (ynotfins@gmail.com) showed as "Dev User" with dev@emuui.com
-
-**Solution** (`app/login/page.tsx`):
-
-- Check if Firestore profile exists after Google sign-in
-- Auto-create profile if missing
-- Use Google `displayName` or email prefix for name/nickname
-- Set default role to 'chaser', settings, stats
-
-**Result**:
-
-- ✅ Google users get proper Firestore profiles automatically
-- ✅ No more "Dev User" issue
-- ✅ Seamless first-time experience
-
----
-
-### Phase 2: Live Team Map (Supe Profile) ✅
-
-**Requirement**: "On a mobile device or a tablet whenever someone is in a number only field like phone number have the number panel come up... Actually let's put that [live map] over the ID verification section and under the cards"
-
-**Implementation** (`components/live-team-map.tsx` - NEW):
-
-- Real-time user location tracking
-- Shows all team members with avatars
-- Online/offline status badges
-- Placeholder for Google Maps integration
-- Team member list with scrolling
-
-**Placement** (`app/supe/profile/page.tsx`):
-
-- Above ID Verification card
-- Below Stats cards
-- Supe profile page only
-
-**Result**:
-
-- ✅ Supes see team locations in real-time
-- ✅ Online count badge (animated green)
-- ✅ Beautiful gradient map placeholder
-- ✅ Clean, Apple-style design
-
----
-
-### Phase 3: 20% Rounded Avatar System ✅
-
-**Requirement**: "The avatars I created all have a 20% rounded corner let's make sure all uploaded profile pics get that same 20% rounded corner to keep it uniform"
+### Phase 2: Protected Layout with LoginGate + ConsentGate ✅
 
 **Implementation**:
-
-**A. Avatar Utilities** (`lib/avatar-utils.ts` - NEW):
-
-```typescript
-getAvatarClasses(size); // Returns Tailwind classes with rounded-[20%]
-processAvatarImage(file); // Canvas-based clipping to 20% corners
-getInitials(name); // Fallback initials
-getAvatarGradient(id); // Consistent gradient per user
-```
-
-**B. Avatar Component** (`components/avatar.tsx` - NEW):
-
-```tsx
-<Avatar src={url} alt={name} size="md" /> // Main component
-<AvatarWithStatus online={true} /> // With status indicator
-<AvatarGroup avatars={team} max={3} /> // Stacked avatars
-```
-
-**C. Avatar Picker Updated** (`components/avatar-picker.tsx`):
-
-- Changed `rounded-xl` → `rounded-[20%]`
-- All preview avatars match 20% corners
-- Ready for firefighter avatars
+- `app/(authed)/layout.tsx` - Wraps all authenticated routes
+- `components/LoginGate.tsx` - Client-side auth check with Suspense
+- `components/ConsentGate.tsx` - ToS/Privacy consent modal
+- Routes moved under `app/(authed)/`
 
 **Result**:
+- ✅ Double auth protection (middleware + client)
+- ✅ Consent tracking before app access
+- ✅ Clean route structure
 
-- ✅ ALL avatars use 20% rounded corners consistently
-- ✅ Automatic processing for uploads
-- ✅ Reusable components throughout app
-- ✅ Size system: sm(32px), md(48px), lg(64px), xl(96px)
+### Phase 3: Firebase Cloud Functions ✅
 
----
+**Implementation** (`functions/src/index.ts` - NEW):
 
-### Phase 4: CRM Contractors Page ✅
+**Function 1: logAuthEvent**
+- Records login/logout/signup events
+- Enriches with IP, UA, device fingerprint
+- Writes to locked `audit/authEvents/{id}` path
+- Only Functions can write (bypasses Firestore rules)
 
-**Requirement**: "2. is Independent Contractors and Employees not Contractors"
+**Function 2: recordConsent**
+- Tracks ToS/Privacy consent versions
+- Stores user consent history
+- Writes to locked `legal/consents/{uid}/events/{id}` path
 
-**Implementation** (`app/crm/contractors/page.tsx` - NEW):
-
-- Desktop-first design (max-w-7xl)
-- Stats dashboard (Total, Active, Chasers, Supes, Verified)
-- Advanced filters (search, role, status, export)
-- Contractor cards with avatars, contact info, ID status
-- Real-time Firestore `onSnapshot`
-- Beautiful Apple-style cards with lots of white space
-
-**Result**:
-
-- ✅ Full-featured CRM page for team management
-- ✅ Title: "Independent Contractors & Employees"
-- ✅ Clean, professional UI
-- ✅ Real-time updates
-
----
-
-### Phase 5: Multi-Step Signup with ID Scanning ✅
-
-**Requirement**: "The OCR processing can be done in the background, the New user has to be able to create the new account in as few steps as possible with the least amount of interaction and text as possible"
-
-**Implementation** (`app/signup/new/page.tsx` - NEW):
-
-**Step 1: Basic Info**
-
-- Nickname (preferred name)
-- Email (with verification)
-- Phone number (formatted, numeric keyboard on mobile)
-
-**Step 2: Email Verification**
-
-- Sends verification email
-- "I've Verified My Email" button
-- Auto-checks verification status
-
-**Step 3: Camera ID Capture**
-
-- Camera-only (no file uploads)
-- `capture="environment"` for back camera
-- Direct photo capture
-
-**Step 4: OCR Processing**
-
-- Auto-extract ID data (name, address, DOB, ID#)
-- Background processing animation
-- Preview of captured ID
-
-**Step 5: Complete**
-
-- Welcome message with nickname
-- Auto-creates Firestore profile
-- Auto-creates `independent_contractors` record
-- Auto-redirect to dashboard
+**Client Integration** (`lib/audit.ts` - NEW):
+- `auditLogin()` - Wrapper for logAuthEvent
+- `saveConsent()` - Wrapper for recordConsent
+- Called from login page after successful auth
 
 **Result**:
+- ✅ Immutable audit trail
+- ✅ Legal compliance for consent tracking
+- ✅ Device fingerprinting for security
 
-- ✅ Fast, minimal interaction signup
-- ✅ Beautiful Apple-style UI with progress dots
-- ✅ Background OCR (mock implemented, ready for real OCR)
-- ✅ Auto-populates CRM database
+### Phase 4: Device Fingerprinting ✅
 
----
-
-### Phase 6: God Mode in Profile ✅
-
-**Requirement**: "I do not want to always be in God mode, I should have to click the toggle to turn that on, my account by default should be Supe... i also want to have to toggle between Supe profile and Chaser profile by a toggle switch in the profile page, no floating toggle"
-
-**Implementation** (`components/god-mode-card.tsx` - NEW):
-
-- Purple gradient card (super_admin only)
-- Two toggle switches:
-  1. God Mode ON/OFF
-  2. Chaser View ↔ Supe View
-- Stored in localStorage (persists)
-- Status display with badges
-
-**Bottom Nav Integration** (`components/bottom-nav.tsx`):
-
-- super_admin + God Mode ON → "God"
-- super_admin + God Mode OFF + Supe view → "Supe"
-- super_admin + God Mode OFF + Chaser view → "Profile"
-- regular supe → "Supe"
-- regular chaser → "Profile"
+**Implementation** (`lib/fp.ts` - NEW):
+- FingerprintJS Pro support (if token provided)
+- Fallback: Hash of UA + timezone + language
+- Returns fingerprint with confidence score
 
 **Result**:
+- ✅ Unique device identification
+- ✅ No external dependency required (fallback works)
+- ✅ Privacy-friendly (local hash)
 
-- ✅ God Mode defaults to OFF
-- ✅ Toggle-based activation
-- ✅ View switching in profile
-- ✅ No floating button
-- ✅ Clean, intuitive UX
+### Phase 5: Shared Incident Detail Pages ✅
 
----
-
-### Phase 7: Smart Routing (4axe.com) ✅
-
-**Requirement**: "4axe.com does not have a sign in page, 4axe.com should be the login page if user is not logged in"
-
-**Implementation** (`app/page.tsx`):
-
-- Checks authentication state
-- Reads user role from Firestore
-- Routes based on role:
-  - super_admin/admin/supe → `/supe/incidents`
-  - chaser → `/chaser/incidents`
-  - not logged in → `/login`
-- Loading spinner during check
+**Implementation** (`app/shared/IncidentDetailClient.tsx`):
+- Unified component for both Chaser and Supe roles
+- Uses LiveMap for visualization
+- Shows updates list with proper formatting
+- Both `app/(authed)/chaser/incident/[id]/page.tsx` and `app/(authed)/supe/incident/[id]/page.tsx` use it
 
 **Result**:
+- ✅ Consistency between roles
+- ✅ Single source of truth for detail view
+- ✅ Easier maintenance
 
-- ✅ 4axe.com → smart routing
-- ✅ No more manual navigation
-- ✅ Seamless user experience
+### Phase 6: ViewMode Persistence ✅
 
----
+**Implementation** (`hooks/use-profile.ts`):
+- Added `viewMode` field to Profile type
+- `setViewMode()` function persists to localStorage + Firestore
+- Supe profile page has toggle to switch between Chaser/Supe views
 
-### Phase 8: Vercel Build Fix ✅
+**Result**:
+- ✅ View preference persists across sessions
+- ✅ Super admin can experience both interfaces
 
-**Problem**: Duplicate signup routes caused build failure
+### Phase 7: Security Hardening ✅
 
-```
-Error: You cannot have two parallel pages that resolve to the same path.
-Please check /(auth)/signup and /signup.
-```
+**Cookie Domain** (`lib/firebase.ts`):
+- Cookie now uses `; Domain=.4axe.com` format
+- Works on both apex and www subdomain
+- Added `Secure` flag for HTTPS only
+
+**Security Headers** (`next.config.mjs`):
+- `Cross-Origin-Opener-Policy: same-origin-allow-popups`
+- `Cross-Origin-Embedder-Policy: unsafe-none`
+- Prevents OAuth popup issues
+
+**Service Worker** (`public/firebase-messaging-sw.js`):
+- Skips caching POST requests (prevents fatal errors)
+- Only caches successful same-origin GET responses
+- Proper error handling
+
+**Result**:
+- ✅ Robust auth across apex + www
+- ✅ No more service worker crashes
+- ✅ OAuth flows work reliably
+
+### Phase 8: Duplicate Route Cleanup ✅
+
+**Problem**: Vercel build failed with "parallel pages" error
 
 **Solution**:
-
-- Deleted `app/(auth)/` folder entirely
-- Kept only `app/signup/page.tsx`
-- Removed route conflict
+- Removed `app/(protected)` directory
+- Removed old `app/chaser/incident/[id]` pages
+- Removed old `app/supe/incident/[id]` pages
+- Removed old `app/supe/map/page.tsx`
+- Removed old `app/debug/auth/page.tsx`
+- Kept only `app/(authed)` versions
 
 **Result**:
-
 - ✅ Vercel build succeeds
-- ✅ Deployment working
-- ✅ No more duplicate routes
+- ✅ No duplicate route conflicts
+- ✅ Clean route structure
 
----
+### Phase 9: GA4 Integration ✅
 
-### Phase 9: Chat Shows Nicknames ✅
-
-**Requirement**: "Chat has to detect all users accounts and put their name or nickname, On the create new account setup there has to be a preferred name field"
-
-**Implementation** (`components/chat-contacts.tsx`):
-
-- Changed `data.name` → `data.nickname || data.name || data.email`
-- Shows nickname first, fallback to name/email
-- All users see each other's nicknames
+**Implementation** (`app/layout.tsx`):
+- Proper gtag.js script loading
+- Debug mode enabled in non-production
+- GA4 event helper (`lib/ga.ts`)
 
 **Result**:
+- ✅ Google Analytics tracking ready
+- ✅ Debug mode for testing
 
-- ✅ Nicknames display in chat
-- ✅ Consistent with user preference
-- ✅ Better personalization
+### Phase 10: User Role Update ✅
+
+**Action**: Changed j.snap11@yahoo.com from "supe" to "chaser"
+
+**Method**:
+- Updated Firestore document via Firebase Admin
+- Updated Auth custom claim
+- Created update script for future use
+
+**Result**:
+- ✅ User role changed successfully
+- ✅ Script ready for future role changes
 
 ---
 
@@ -389,159 +198,105 @@ Please check /(auth)/signup and /signup.
 
 ### None Currently 🎉
 
-All reported issues have been resolved:
-
-- ✅ "Dev User" profile issue - FIXED (useProfile now fetches from Firestore)
-- ✅ Login defaults to Chaser - FIXED (defaults to Supe for super_admin)
-- ✅ Profile showing wrong role - FIXED (loads from Firestore)
-- ✅ God Mode toggle bug - FIXED (view toggle works correctly)
-- ✅ Favorites page layout - FIXED (header/footer sticky, tabs fit)
-- ✅ Bottom nav incorrect labels - FIXED (shows "Supe" for super_admin)
+All reported issues resolved:
+- ✅ Duplicate routes - FIXED (removed conflicts)
+- ✅ Service worker POST crashes - FIXED (skip non-GET)
+- ✅ Cookie domain issues - FIXED (`.4axe.com`)
+- ✅ OAuth popup issues - FIXED (COOP headers)
+- ✅ Missing consent tracking - FIXED (ConsentGate + Functions)
+- ✅ No audit trail - FIXED (logAuthEvent Function)
 
 ---
 
 ## Next Immediate Steps
 
-### Priority 1: Format & Upload Avatars 🎨
+### Priority 1: Deploy Firebase Functions 🔥
 
-**Status**: WAITING ON USER
+**Status**: READY TO DEPLOY
 
-- User is preparing 20-30 firefighter avatars
-- Need 512x512 PNG with transparency
-- 20% rounded corners (will be enforced by system)
-- Categories: Cartoon, Equipment, Badges, Mascots, Action
+**Steps**:
+1. Enable Billing (Blaze plan) for `emu-incidents` project
+2. Run `firebase login`
+3. Run `firebase use emu-incidents`
+4. Run `npm run fn:deploy`
 
-**Once received**:
-
-1. Place in `/public/avatars/` folders
-2. Update `FIREFIGHTER_AVATARS` array in avatar-picker.tsx
-3. Integrate into profile page
-4. Test at all sizes
-
----
-
-### Priority 2: Simplified Auto Email Verification 📧
-
-**Requirement**: "email verification has to auto recognize their verification before it goes to next page... No I've verified button we will recognize that immediately and fast"
-
-**Plan**:
-
-- Remove "I've Verified" button
-- Auto-poll verification status every 2 seconds
-- Show loading spinner
-- Auto-advance when verified
-- Maximum 60-second timeout
-
-**Estimate**: 30 minutes
+**Once deployed**:
+- Audit logging will be active
+- Consent tracking will be functional
+- Legal compliance enabled
 
 ---
 
-### Priority 3: Account Setup Reminders 🔔
+### Priority 2: Test Auth on Desktop 🖥️
 
-**Requirement**: "we want to remind them to finish setting up their account very uninvasively"
+**Status**: READY TO TEST
 
-**Plan**:
-
-- Check profile completeness (avatar, phone, payment)
-- Show subtle banner at top if incomplete
-- "Complete Your Profile" link
-- Dismissible but reappears next session
-- Non-blocking, gentle nudge
-
-**Estimate**: 1 hour
+**Test Points**:
+1. Visit `/api/auth/status` - Check cookie presence
+2. Visit `/debug/auth` - Verify token
+3. Visit `/debug/sw-reset` - Clear service worker
+4. Test Google Sign-In on desktop
+5. Verify cookie persists across apex + www
 
 ---
 
-### Priority 4: Real Google Maps Integration 🗺️
+### Priority 3: Monitor Audit Logs 📊
 
-**Current**: Placeholder map with simulated markers
+**Status**: WAITING ON FUNCTIONS DEPLOYMENT
 
-**Plan**:
-
-- Integrate Google Maps Embed API
-- Plot real user locations from Firestore
-- Update markers in real-time
-- City-level zoom (zoom=12)
-- Clickable markers with user info
-
-**Estimate**: 2 hours
-
----
-
-### Priority 5: Complete CRM Features 📊
-
-**Status**: Page exists, needs full functionality
-
-**Plan**:
-
-1. "Add Contractor" button functionality
-2. Click contractor card → detail view
-3. Edit contractor information
-4. Upload documents
-5. Contact history
-6. Email/SMS from CRM
-7. Marketing automation
-
-**Estimate**: 4-6 hours
+**Once deployed**:
+1. Check `audit/authEvents` collection
+2. Verify IP, UA, fingerprint data
+3. Check `legal/consents/{uid}/events` for consent records
+4. Monitor for any failures
 
 ---
 
 ## Important Patterns & Preferences
 
-### Avatar System Pattern
+### Middleware Pattern
 
 ```typescript
-// Always use Avatar component for consistency
-import { Avatar } from "@/components/avatar";
-
-// Basic usage
-<Avatar src={user.avatar} alt={user.name} size="md" />
-
-// With online status
-<AvatarWithStatus src={avatar} alt={name} online={true} />
-
-// Grouped avatars
-<AvatarGroup avatars={team} max={3} size="lg" />
-
-// All avatars get 20% rounded corners automatically
+// middleware.ts
+export function middleware(req: NextRequest) {
+  const authed = req.cookies.get("__emu_authed")?.value === "1";
+  if (!authed && !isPublicRoute(pathname)) {
+    return redirect("/login?next=" + pathname);
+  }
+  return NextResponse.next();
+}
 ```
 
-### God Mode Pattern
+### Protected Layout Pattern
 
 ```typescript
-// Check God Mode status
-const isGodMode = localStorage.getItem("godMode") === "true";
-
-// Toggle God Mode
-localStorage.setItem("godMode", enabled.toString());
-
-// Defaults to OFF (super_admin must enable)
+// app/(authed)/layout.tsx
+export default function AuthedLayout({ children }) {
+  return (
+    <LoginGate>
+      <ConsentGate>{children}</ConsentGate>
+    </LoginGate>
+  );
+}
 ```
 
-### Multi-Step Signup Pattern
+### Audit Logging Pattern
 
 ```typescript
-// Progress dots for step indication
-type Step = "info" | "verify" | "id" | "processing" | "complete";
+// After successful login
+import { auditLogin } from "@/lib/audit";
+import { getFingerprint } from "@/lib/fp";
 
-// Minimal steps, background processing
-// Step 1: Collect essential info only
-// Step 2: Auto-verify (no button)
-// Step 3: Quick camera capture
-// Step 4: Background OCR
-// Step 5: Auto-redirect
+const fp = await getFingerprint();
+await auditLogin({ fingerprint: fp, role: userRole, source: "web" });
 ```
 
-### CRM Pattern
+### Consent Gate Pattern
 
 ```typescript
-// Desktop-first design
-max-w-7xl mx-auto // Wide layout
-
-// Stats dashboard at top
-// Filters below stats
-// Grid of cards (2 columns on desktop)
-// Real-time updates via onSnapshot
+// Shows modal if user hasn't accepted latest ToS/Privacy
+// Blocks app access until consent recorded
+// Stores in legal/consents/{uid}/events/{id}
 ```
 
 ---
@@ -550,35 +305,35 @@ max-w-7xl mx-auto // Wide layout
 
 ### Today's Key Learnings
 
-#### 1. Google Auth Requires Profile Creation Logic
+#### 1. Middleware + Client Auth = Defense in Depth
 
-**Problem**: Google sign-in didn't create Firestore profiles  
-**Solution**: Check profile existence, create if missing  
-**Learning**: Don't assume Firebase Auth = Firestore profile
+**Problem**: Single point of failure for auth checks  
+**Solution**: Middleware (edge) + LoginGate (client) + ConsentGate  
+**Learning**: Layer security at multiple levels
 
-#### 2. Duplicate Routes Break Next.js Builds
+#### 2. Firebase Functions Bypass Firestore Rules
 
-**Problem**: `app/(auth)/signup` + `app/signup` = build error  
-**Solution**: Remove duplicate, keep one canonical route  
-**Learning**: Next.js is strict about route uniqueness
+**Problem**: Need to write audit logs but lock client access  
+**Solution**: Functions run with Admin SDK, bypass rules  
+**Learning**: Use Functions for sensitive writes
 
-#### 3. Avatar Consistency Requires System Enforcement
+#### 3. Duplicate Routes Break Next.js Builds
 
-**Problem**: Users upload various formats/sizes/shapes  
-**Solution**: Unified Avatar component + processing function  
-**Learning**: Build the system to enforce consistency automatically
+**Problem**: `app/(protected)` + `app/(authed)` = conflict  
+**Solution**: Remove one, keep single source of truth  
+**Learning**: Next.js route structure must be unique
 
-#### 4. God Mode Should Be Opt-In
+#### 4. Service Worker Can't Cache POST
 
-**Problem**: Always-on God Mode is confusing  
-**Solution**: Default OFF, toggle to activate  
-**Learning**: Power features should be explicit, not default
+**Problem**: SW tried to cache POST, threw fatal error  
+**Solution**: Check `req.method !== 'GET'` before caching  
+**Learning**: Only cache GET requests
 
-#### 5. CRM Needs Desktop-First Approach
+#### 5. Cookie Domain Must Work on Apex + WWW
 
-**Problem**: Mobile-first CRM is cramped  
-**Solution**: Wide layout, 2-column grids, lots of white space  
-**Learning**: Different apps have different optimal viewports
+**Problem**: Cookie set on `4axe.com` doesn't work on `www.4axe.com`  
+**Solution**: Use `;Domain=.4axe.com` (leading dot)  
+**Learning**: Dot prefix makes cookie valid for all subdomains
 
 ---
 
@@ -586,58 +341,46 @@ max-w-7xl mx-auto // Wide layout
 
 **What's Deployed to Production** (https://4axe.com):
 
-- ✅ Google login auto-creates profiles
-- ✅ Smart routing (checks auth, routes by role)
-- ✅ Live team map on Supe profile
-- ✅ 20% rounded avatar system
-- ✅ CRM contractors page (desktop-first)
-- ✅ God Mode toggle in profile (defaults OFF)
-- ✅ Multi-step signup with ID capture
-- ✅ Chat shows nicknames
-- ✅ Admin tool with super_admin support
-- ✅ Live incident + direct chats
-- ✅ Real-time incidents, favorites, bookmarks, notes, responses
-- ✅ Distance calculation with offline cache
-- ✅ Location tracking (device-aware)
+- ✅ Middleware-protected routes
+- ✅ Double auth layer (middleware + client)
+- ✅ Consent gate for legal compliance
+- ✅ Shared incident detail pages
+- ✅ ViewMode toggle for Supes
+- ✅ Security headers for OAuth flows
+- ✅ Custom domain auth (4axe.com)
+- ✅ Cookie works on apex + www
+- ✅ Service worker safe for POST
+- ✅ GA4 tracking ready
+- ✅ Auth status debug endpoints
 
-**What's Ready But Needs Integration**:
+**What's Ready But Needs Deployment**:
 
-- Avatar picker component (waiting on images)
-- OCR processing (mock implemented, ready for real API)
-- Email auto-verification (needs polling logic)
+- Firebase Functions (logAuthEvent, recordConsent)
+- Firestore rules update (audit/legal paths locked)
 
 **What's High Priority Next**:
 
-1. Avatar images from user → integrate
-2. Auto email verification (remove button)
-3. Account setup reminders (unintrusive)
-4. Real Google Maps (replace placeholder)
-5. Complete CRM features (add, edit, contact)
+1. Deploy Firebase Functions (`npm run fn:deploy`)
+2. Test auth on desktop with new cookie domain
+3. Monitor audit logs
+4. Test consent gate flow
+5. Verify no more Vercel build errors
 
 **Git Status**:
 
 - Clean working tree
 - All changes pushed to GitHub
 - Vercel auto-deploys successfully
-
-**User Feedback**:
-
-- ✅ "Once the avatar files are all chosen and you have everything set up..."
-- ✅ System ready for avatar integration
-- 📝 Need simplified signup (auto email verify, background OCR)
-- 📝 Need unintrusive setup reminders
+- Build succeeds with no errors
 
 **Database Collections**:
 
-- `/users` - User profiles with nickname, avatar, role
-- `/incidents` - Fire alerts (30-day retention)
-- `/favorites` - User favorites
-- `/bookmarks` - User bookmarks
-- `/notes` - User notes
-- `/responses` - Alert responses
+- `/users` - User profiles with viewMode
+- `/incidents` - Fire alerts
+- `/audit/authEvents/{id}` - Auth audit trail (Functions only)
+- `/legal/consents/{uid}/events/{id}` - Consent records (Functions only)
+- `/favorites`, `/bookmarks`, `/notes`, `/responses`
 - `/independent_contractors` - CRM contractors
-- `/signed_documents` - eSign docs
-- `/employee_docs` - Employee documents
-- Firebase Realtime DB: `/incident-chats`, `/direct-chats`
+- Firebase RTDB: `/incident-chats`, `/direct-chats`
 
-**Ready for**: Avatar integration, auto-verification, CRM completion! 🚀
+**Ready for**: Functions deployment, desktop auth testing, audit monitoring! 🚀

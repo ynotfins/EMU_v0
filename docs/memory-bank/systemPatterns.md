@@ -14,28 +14,31 @@ Next.js 16 App Router
 
 ### Key Technical Decisions
 
-#### 1. **Next.js App Router**
+#### 1. **Next.js App Router with Middleware**
 
-- **Why**: Modern React patterns, built-in routing, server components
-- **Pattern**: File-based routing with role-based directory structure
+- **Why**: Modern React patterns, built-in routing, server components, Edge middleware
+- **Pattern**: File-based routing with protected layout and middleware auth
 - **Trade-off**: Learning curve for App Router patterns
 
-#### 2. **Role-Based Directory Structure**
+#### 2. **Protected Route Structure**
 
 ```
 /app
-  /login       # Login page (public)
-  /signup      # Signup pages (public)
-  /chaser      # Chaser-only routes
-  /supe        # Supe-only routes (includes chaser features)
-  /admin       # Admin-only routes
-  /crm         # CRM pages (contractors management)
-  /role        # Role selection page
+  /login              # Login page (public)
+  /signup             # Signup pages (public)
+  /(authed)           # Protected layout with LoginGate + ConsentGate
+    /chaser           # Chaser-only routes
+    /supe             # Supe-only routes
+    /debug            # Debug utilities
+  /admin              # Admin-only routes (separate protection)
+  /crm                # CRM pages (separate protection)
+  /shared             # Shared components used by multiple roles
+middleware.ts         # Edge middleware for route protection
 ```
 
-- **Why**: Clear separation, easier to secure with protected routes
-- **Pattern**: Parallel route trees for each role, no route groups needed
-- **Trade-off**: Some component duplication between roles (e.g., incident pages)
+- **Why**: Defense in depth (middleware + client + layout)
+- **Pattern**: Protected route group with double auth layer
+- **Trade-off**: Slight complexity for Suspense boundaries
 
 #### 3. **Component Architecture**
 
@@ -90,15 +93,41 @@ export type Profile = { ... }
 
 ## Component Relationships
 
+### Auth Flow (Multi-Layer)
+
+```
+User Request
+  ├── middleware.ts (Edge)
+  │     ├── Check __emu_authed cookie
+  │     └── Redirect to /login if not authed
+  ├── app/(authed)/layout.tsx
+  │     ├── <LoginGate> - Client auth check
+  │     └── <ConsentGate> - Legal consent check
+  └── Page Component (protected)
+```
+
 ### Incident Management Flow
 
 ```
-Page (chaser/incidents)
+Page (chaser/incidents or supe/incidents)
   ├── useIncidents() hook
-  │     └── Firestore: /incidents collection
+  │     └── Firestore: /incidents collection (onSnapshot)
   ├── useFilters() hook (client state)
   └── <FilterBar /> + <IncidentListItem />
         └── Events: onToggleFavorite, onToggleSilence, etc.
+              └── lib/audit.ts - Audit logging (optional)
+```
+
+### Incident Detail Flow (Shared)
+
+```
+Page ((authed)/chaser/incident/[id] or (authed)/supe/incident/[id])
+  └── <IncidentDetailClient> (shared component)
+        ├── useIncident(id) hook
+        │     └── Firestore: /incidents/{id} + /incidents/{id}/updates
+        ├── <LiveMap> - Incident location
+        ├── Details section
+        └── Updates list
 ```
 
 ### Chat System Flow
@@ -112,6 +141,19 @@ Page (chaser/chat/[threadId] or incident/[id] with Chat tab)
   ├── subscribeToIncidentChat() - Real-time listener
   └── <IncidentChat /> or <ChatRoom />
         └── <MessageList /> + <MessageInput />
+```
+
+### Audit Logging Flow
+
+```
+Login Success
+  ├── getFingerprint() - Device fingerprint
+  ├── auditLogin({ fingerprint, role, source })
+  │     └── Firebase Functions: logAuthEvent
+  │           └── Firestore: /audit/authEvents/{id} (locked)
+  └── recordConsent({ version, accepted, scopes })
+        └── Firebase Functions: recordConsent
+              └── Firestore: /legal/consents/{uid}/events/{id} (locked)
 ```
 
 ### Profile Management Flow

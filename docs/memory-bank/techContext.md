@@ -39,13 +39,19 @@
 - **Firestore**: NoSQL database for incidents, users, favorites, bookmarks, notes, responses, contractors
   - Real-time listeners with `onSnapshot`
   - Offline persistence with IndexedDB (multi-tab support)
-  - Security rules deployed
+  - Security rules deployed with audit/legal paths locked
 - **Firebase Realtime Database**: Chat system (incident chats + direct messages)
   - `/incident-chats/{chatId}/messages`
   - `/direct-chats/{chatId}/messages`
 - **Firebase Auth**: User authentication (email/password + Google Sign-In)
   - `browserLocalPersistence` (never expires)
   - Triple-layer auth persistence (localStorage + sessionStorage + cookies)
+  - Custom domain: authDomain=4axe.com
+  - Cookie domain: `.4axe.com` (apex + www)
+- **Firebase Cloud Functions**: TypeScript Cloud Functions (Node 20)
+  - `logAuthEvent` - Audit logging with IP, UA, device fingerprint
+  - `recordConsent` - Legal consent tracking with versioning
+  - Writes to locked Firestore paths (only Functions can write)
 - **Firebase Storage**: File uploads (initialized, not yet wired to UI)
 - **Firebase Cloud Messaging (FCM)**: Push notifications (initialized, not yet wired)
 
@@ -58,6 +64,9 @@
 - **vaul**: Drawer component (mobile-optimized)
 - **sonner**: Toast notifications
 - **cmdk**: Command palette (future search)
+- **firebase-admin**: Server-side Firebase SDK (for Cloud Functions)
+- **firebase-functions**: Cloud Functions SDK v6
+- **@fingerprintjs/fingerprintjs-pro**: Device fingerprinting (optional, has fallback)
 
 ## Development Setup
 
@@ -106,6 +115,11 @@ npm run start        # Production server
 npm run typecheck    # Run TypeScript type checking
 npm run lint         # Run ESLint
 npm run check-env    # Verify environment variables (requires tsx)
+npm run fn:build     # Build Firebase Functions TypeScript
+npm run fn:deploy    # Deploy Cloud Functions to Firebase
+npm run fn:emulate   # Run local Firebase emulators
+npm run wiring:test  # Test Firebase wiring
+npm run rules:deploy # Deploy Firestore security rules
 ```
 
 ### Development Workflow
