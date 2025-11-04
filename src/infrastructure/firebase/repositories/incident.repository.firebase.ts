@@ -10,7 +10,8 @@ import {
   Timestamp as FirestoreTimestamp,
   Query,
   DocumentData,
-  QuerySnapshot
+  QuerySnapshot,
+  CollectionReference
 } from 'firebase-admin/firestore';
 import {
   Incident,

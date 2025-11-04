@@ -2,8 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   typescript: {
-    // TODO: Temporary for initial deployment - remove after fixing TypeScript errors
-    ignoreBuildErrors: true,
+    // Strict type checking enabled
+    ignoreBuildErrors: false,
   },
   experimental: {
     serverActions: {

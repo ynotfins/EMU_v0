@@ -135,9 +135,9 @@ export class SignUpUseCase extends UseCase<SignUpRequest, SignUpResponse> {
    */
   private validatePassword(password: string): Either<Error, void> {
     if (password.length < 8) {
-      return left(new ApplicationError(
-        'Password must be at least 8 characters long',
-        'WEAK_PASSWORD'
+      return left(new UseCaseError(
+        'SignUp',
+        'Password must be at least 8 characters long'
       ));
     }
 

@@ -6,10 +6,10 @@
  */
 
 import { injectable, inject } from 'inversify';
-import { UseCase } from '@application/shared/interfaces/use-case.interface';
+import type { UseCase } from '@application/shared/interfaces/use-case.interface';
 import { Either, left, right } from '@domain/shared/errors';
 import { UserId } from '@domain/shared/value-objects';
-import { IUserRepository } from '@domain/repositories';
+import type { IUserRepository } from '@domain/repositories';
 import { UserNotFoundError } from '@domain/entities/user/user.errors';
 import { TOKENS } from '@infrastructure/di/tokens';
 import { GetCurrentUserRequest, GetCurrentUserResponse } from './get-current-user.dto';
@@ -17,7 +17,7 @@ import {
   SessionError,
   toApplicationError 
 } from '@application/shared/errors/application.error';
-import { ISessionService } from '@application/shared/interfaces/services.interface';
+import type { ISessionService } from '@application/shared/interfaces/services.interface';
 
 @injectable()
 export class GetCurrentUserUseCase extends UseCase<GetCurrentUserRequest, GetCurrentUserResponse> {

@@ -137,9 +137,9 @@ export class SignInWithGoogleUseCase extends UseCase<SignInWithGoogleRequest, Si
       if (!user) {
         // In a real app, you might want to create the user here
         // For now, we'll return an error
-        return left(new ApplicationError(
-          'User not found. Please sign up first.',
-          'USER_NOT_FOUND'
+        return left(new UseCaseError(
+          'SignInWithPhone',
+          'User not found. Please sign up first.'
         ));
       }
 
