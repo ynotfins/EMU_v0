@@ -2,25 +2,70 @@
 
 ## Overview
 
-EMU Alerts is a comprehensive emergency management system built with Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, and shadcn/ui. The application provides role-based interfaces for emergency responders (chasers), supervisors (supes), administrators, and super administrators (God Mode) to manage incidents, communicate via chat, track locations, and handle documentation including e-signatures. Currently deployed live at **https://4axe.com** on Vercel.
+EMU Alerts is a comprehensive emergency management system built with Clean Architecture, Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, and Firebase. The application provides role-based interfaces for emergency responders (chasers) and supervisors (supes) to manage fire incidents, communicate via real-time chat, track locations on live maps, and handle documentation including e-signatures.
+
+**Deployments**:
+- Production: https://4axe.com (main branch - original architecture)
+- Staging/Rebuild: https://rebuild.4axe.com (rebuild-proper-architecture branch - Clean Architecture)
+
+### Correction 2025-01-05T01:30:00Z
+[status]: active
+[id]: c_20250105_013000_readme1
+[source]: action
+[reason]: Updating README with current accurate state
+
+Previous statement about "currently deployed at 4axe.com" was incomplete. The application has two active deployments serving different purposes during the architecture migration.
 
 ## Key Features
 
-- **Role-Based Access**: Three distinct user roles (chaser, supe, admin) with tailored interfaces
-- **Incident Management**: Create, track, and respond to emergency incidents with real-time updates
-- **Live Chat**: Team, incident-specific, and direct messaging with real-time notifications
-- **Document Management**: Upload photos, documents, and manage files per incident
-- **E-Signature Workflow**: Send documents for signature or sign live on device
-- **Live Map Tracking**: Supervisors can view active responder locations in real-time
-- **Favorites & Bookmarks**: Star incidents, bookmark items, and save notes for quick access
-- **High Alert System**: Configurable audio alerts for high-priority incidents
-- **Profile Management**: ID verification, preferences, emergency payment info
+### Core Functionality
+- **Real-Time Incident Alerts**: MacroDroid ingests BNN fire alerts → Firestore → Instant display
+- **Auto-Geocoding**: Cloud Functions geocode addresses server-side, add lat/lng coordinates
+- **Live Maps**: Three different maps (incident detail, live alerts, team tracking)
+- **Distance Calculation**: Show distance from user to each incident
+- **Response Tracking**: Chasers respond to alerts, Supes get notified automatically
+
+### Communication
+- **Incident Group Chat**: Opens chat → ALL Supes added automatically
+- **Direct Messages**: Chaser↔Supe and Chaser↔Chaser private messaging
+- **Real-Time Sync**: Firebase Realtime Database, < 1 second latency
+- **Push Notifications**: New incidents, responses, messages
+
+### Documentation
+- **Auto-Save Notes**: Type notes, auto-saves on blur, appears in Notes tab
+- **Homeowner Forms**: Collect property owner info, links to CRM
+- **Document Upload**: Photos and PDFs to Firebase Storage
+- **E-Signatures**: Send for signature or sign live on device
+
+### Maps & Location
+- **Incident Detail Map**: Embedded Google Map on each incident (city zoom)
+- **Live Alert Map**: Interactive map with last 10 incidents (pinch to zoom)
+- **Live Team Map** (Supe only): Real-time GPS tracking of all Chasers
+
+### CRM Integration
+- **Contact Management**: Auto-created per unique address
+- **Incident History**: Track all incidents at same property
+- **Homeowner Data**: Pre-populate for repeat locations
+
+### Correction 2025-01-05T01:35:00Z
+[status]: active
+[id]: c_20250105_013500_features1
+[source]: action
+[reason]: Previous feature list was generic, now specific to actual implementation
+
+Added specific details about:
+- Auto-geocoding via Cloud Functions
+- Three distinct map types
+- CRM contact auto-creation
+- Incident group chat behavior
+- Note auto-save functionality
 
 ## Tech Stack
 
 - **Framework**: Next.js 16.0.0 with App Router
 - **Runtime**: React 19.2.0 (RC)
-- **Language**: TypeScript 5.x (strict mode, 0 errors)
+- **Architecture**: Clean Architecture (Domain, Application, Infrastructure, Presentation layers)
+- **Language**: TypeScript 5.x (strict mode, ~429 errors being fixed)
 - **Styling**: Tailwind CSS v4.1.9 with shadcn/ui components (57 components)
 - **State Management**: React hooks with real-time Firebase listeners
 - **Backend**: Firebase (Firestore + Realtime Database + Auth + Storage + FCM)

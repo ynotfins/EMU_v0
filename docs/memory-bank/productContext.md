@@ -144,3 +144,33 @@
 - Average response time
 - Customer satisfaction
 - Team utilization
+
+### Update 2025-01-05T01:40:00Z
+[status]: active
+[id]: u_20250105_014000_prod1
+[source]: action
+[reason]: Adding specific implementation details and current state
+
+**Current Implementation Details**:
+
+**Bottom Navigation** (4 tabs, not 5):
+- Home (Incidents list) - Landing page after login
+- Favorites (4 sub-tabs: Favorites, Bookmarks, Notes, Responses)
+- Chat (Incident chats + Direct messages)
+- Profile (Settings + Live Team Map for Supes)
+
+**Chat System Specifics**:
+- Incident Chat: Automatically adds ALL Supes when Chaser opens chat
+- Direct Messages: Chaser↔Supe and Chaser↔Chaser private messaging
+- Uses Firebase Realtime Database for real-time sync
+
+**Maps Implementation**:
+- Map #1 (Detail): Google Maps Embed iframe, zoom 12, on incident detail page
+- Map #2 (Live Alerts): GoogleMapLive component via @googlemaps/js-api-loader, shows last 10 incidents from past 4 hours
+- Map #3 (Team): Supe profile page only, shows Chaser GPS locations updated < 5 minutes
+
+**Current Deployment Status**:
+- Production (4axe.com): Original architecture, stable
+- Rebuild (rebuild.4axe.com): Clean Architecture, active development
+- Both use same Firebase project
+- TypeScript: 429 errors exist, ignoreBuildErrors enabled temporarily

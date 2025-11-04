@@ -127,3 +127,45 @@ pnpm lint        # Run ESLint
 - Server-side authorization
 - Input validation with value objects
 - Firebase Security Rules
+
+### Update 2025-01-05T01:45:00Z
+[status]: active
+[id]: u_20250105_014500_tech1
+[source]: action
+[reason]: Adding current technical implementation details
+
+**Cloud Functions** (Created, Deployment In Progress):
+- Runtime: Node.js 20
+- API: Firebase Functions v2 (2nd Gen)
+- Functions:
+  - `autoGeocodeIncident`: onCreate trigger for /incidents
+  - `scheduleGeocodeMissing`: Scheduled every 15 minutes
+- Dependencies:
+  - firebase-admin@^12.0.0
+  - firebase-functions@^5.0.0
+  - @googlemaps/google-maps-services-js@^3.3.42
+
+**Google Maps Integration**:
+- Client-side: @googlemaps/js-api-loader@2.0.2
+- Server-side: @googlemaps/google-maps-services-js@3.3.42  
+- Geocoding: Server-side via Cloud Functions (prevents duplicate geocoding)
+- Map Display: GoogleMapLive component with Loader API
+- Embed Maps: iframe embeds on detail pages (zoom 12)
+
+**Architecture Issues Identified**:
+- Duplicate page implementations (/chaser/* and /supe/* are separate)
+- Should be using shared components with role-based rendering
+- Consolidation plan created in ARCHITECTURE_CONSOLIDATION_PLAN.md
+- Maintenance burden due to code duplication
+
+**Build Status**:
+- TypeScript errors: 429 (ignoreBuildErrors: true enabled)
+- ESLint: Circular reference error in config (known issue)
+- Deployment: Working on rebuild.4axe.com via Vercel
+- Cloud Functions: Pending deployment (waiting for user)
+
+**Development Environment**:
+- Primary IDE: VS Code with custom profile
+- Extensions: Optimized for Next.js/Firebase development
+- Package Manager: pnpm v10.15.0
+- Git Branch: rebuild-proper-architecture
