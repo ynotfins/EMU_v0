@@ -2,7 +2,13 @@
 
 ## Current Status
 - **Production**: 4axe.com (main branch) - Old architecture
-- **Development**: rebuild.4axe.com - NOT YET CONFIGURED
+- **Development**: rebuild.4axe.com - CONFIGURATION IN PROGRESS
+
+### ✅ Completed Setup
+- Created `vercel.json` with optimized settings
+- Created deployment script (`scripts/deploy-rebuild.ps1`)
+- Created GitHub Actions workflow (`.github/workflows/deploy-rebuild.yml`)
+- Created comprehensive deployment checklist
 
 ## Steps to Set Up rebuild.4axe.com
 
