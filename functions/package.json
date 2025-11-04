@@ -2,6 +2,7 @@
   "name": "emu-functions",
   "version": "1.0.0",
   "description": "Firebase Cloud Functions for EMU Alerts",
+  "packageManager": "pnpm@10.15.0",
   "main": "lib/index.js",
   "scripts": {
     "build": "tsc",
