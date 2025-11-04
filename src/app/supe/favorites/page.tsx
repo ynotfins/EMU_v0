@@ -33,7 +33,7 @@ export default function SupeFavoritesPage() {
   const safeIncidents = Array.isArray(allIncidents) ? allIncidents : []
   const favoritedIncidents = safeIncidents.filter((inc) => inc.isFavorited)
   const bookmarkedIncidents = safeIncidents.filter((inc) => inc.isBookmarked)
-  const notedIncidents = safeIncidents.filter((inc) => inc.id === "inc-001" || inc.id === "inc-003")
+  const notedIncidents = safeIncidents.filter((inc) => inc.notes && inc.notes.length > 0)
   
   // Get incidents for responses
   const responseIncidents = responses.map(response => {
