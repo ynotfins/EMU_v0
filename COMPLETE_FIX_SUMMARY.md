@@ -97,7 +97,7 @@ Before making changes, I now:
 ### To Deploy Cloud Functions
 ```bash
 cd functions
-npm install
+pnpm install
 cd ..
 firebase deploy --only functions
 ```
@@ -154,7 +154,7 @@ All updates follow append-only temporal rules:
 ### Option 1: Deploy Cloud Functions (Recommended)
 ```bash
 cd functions
-npm install
+pnpm install
 cd ..
 firebase deploy --only functions
 ```

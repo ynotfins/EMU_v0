@@ -3,7 +3,7 @@
 
 Write-Host "[1/5] Building Cloud Functions..." -ForegroundColor Cyan
 Set-Location functions
-npm run build
+pnpm run build
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "[X] Build failed" -ForegroundColor Red
@@ -28,8 +28,8 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "[OK] Functions deployed successfully!" -ForegroundColor Green
     Write-Host ""
     Write-Host "Active Functions:" -ForegroundColor Cyan
-    Write-Host "  - geocodeNewIncident (onCreate trigger)" -ForegroundColor White
-    Write-Host "  - geocodeMissingIncidents (scheduled every 15 min)" -ForegroundColor White
+    Write-Host "  - autoGeocodeIncident (onCreate trigger)" -ForegroundColor White
+    Write-Host "  - scheduleGeocodeMissing (scheduled every 15 min)" -ForegroundColor White
     Write-Host ""
     Write-Host "Next:" -ForegroundColor Yellow
     Write-Host "  1. Test with a new incident" -ForegroundColor White

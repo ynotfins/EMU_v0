@@ -243,6 +243,8 @@ export default function LoginPage() {
         setError("No account found with this email.");
       } else if (err.code === "auth/wrong-password") {
         setError("Incorrect password.");
+      } else if (err.code === "auth/invalid-credential") {
+        setError("Invalid email or password.");
       } else if (err.code === "auth/invalid-email") {
         setError("Invalid email address.");
       } else if (err.code === "auth/too-many-requests") {

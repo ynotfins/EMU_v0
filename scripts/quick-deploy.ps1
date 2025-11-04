@@ -8,7 +8,7 @@ Write-Host "========================" -ForegroundColor Cyan
 $vercelCmd = Get-Command vercel -ErrorAction SilentlyContinue
 if (-not $vercelCmd) {
     Write-Host "`n📦 Installing Vercel CLI..." -ForegroundColor Yellow
-    npm i -g vercel
+    pnpm add -g vercel
 }
 
 # Quick build check

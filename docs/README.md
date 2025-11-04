@@ -111,11 +111,11 @@ Added specific details about:
 
 # Install dependencies (if needed)
 
-npm install
+pnpm install
 
 # Run development server
 
-npm run dev
+pnpm dev
 \`\`\`
 
 The app will be available at `http://localhost:3000`
@@ -126,11 +126,11 @@ The app will be available at `http://localhost:3000`
 
 # Create production build
 
-npm run build
+pnpm build
 
 # Run production server
 
-npm start
+pnpm start
 \`\`\`
 
 ### Type Checking
@@ -139,7 +139,7 @@ npm start
 
 # Run TypeScript compiler without emitting files
 
-npm run type-check
+pnpm typecheck
 
 # or
 
@@ -152,7 +152,7 @@ npx tsc --noEmit
 
 # Run ESLint
 
-npm run lint
+pnpm lint
 \`\`\`
 
 ## Environment Variables
@@ -211,7 +211,7 @@ Before wiring Firebase, verify all required environment variables are set:
 
 # Check if all Firebase env vars are configured
 
-npm run check-env
+pnpm check
 
 # or
 
@@ -246,7 +246,7 @@ The application is **LIVE and fully integrated with Firebase**:
 1. Set up Firebase project in Firebase Console
 2. Enable Firestore, Auth, Storage, and FCM
 3. Add all environment variables to Vercel project (see `/docs/ENV.md`)
-4. Run `npm run check-env` to verify configuration
+4. Run `pnpm check` to verify configuration
 5. Implement Firestore queries in hooks (replace TODOs)
 6. Add real-time listeners (onSnapshot)
 7. Configure Firebase Extensions per `/docs/EXTENSIONS.md`

@@ -13,7 +13,7 @@ These Firebase Cloud Functions provide server-side processing for EMU Alerts:
 ### 1. Install Dependencies
 ```bash
 cd functions
-npm install
+pnpm install
 ```
 
 ### 2. Configure API Key
@@ -29,7 +29,7 @@ GOOGLE_MAPS_API_KEY=your-api-key-here
 
 ### 3. Build Functions
 ```bash
-npm run build
+pnpm build
 ```
 
 ### 4. Deploy to Firebase
@@ -39,19 +39,19 @@ firebase deploy --only functions
 
 Or deploy specific functions:
 ```bash
-firebase deploy --only functions:geocodeNewIncident
-firebase deploy --only functions:geocodeMissingIncidents
+firebase deploy --only functions:autoGeocodeIncident
+firebase deploy --only functions:scheduleGeocodeMissing
 ```
 
 ## Functions
 
-### `geocodeNewIncident`
+### `autoGeocodeIncident`
 - **Trigger**: onCreate in /incidents collection
 - **Purpose**: Auto-geocode new incidents
 - **Prevents**: Duplicate geocoding (checks for existing lat/lng)
 - **Creates**: CRM contact record automatically
 
-### `geocodeMissingIncidents`
+### `scheduleGeocodeMissing`
 - **Trigger**: Scheduled (every 15 minutes)
 - **Purpose**: Fallback geocoding for incidents that were missed
 - **Rate Limit**: 20 incidents per run, 1 request/second
@@ -125,7 +125,7 @@ firebase functions:log
 ## Production Deployment
 
 1. Ensure Google Maps API key is configured
-2. Build functions: `npm run build`
+2. Build functions: `pnpm build`
 3. Deploy: `firebase deploy --only functions`
 4. Monitor logs: `firebase functions:log`
 
