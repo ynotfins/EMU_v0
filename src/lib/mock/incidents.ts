@@ -1,4 +1,4 @@
-﻿import type { Incident, IncidentLite } from "@/types/domain"
+﻿import type { Incident, IncidentLite } from "@/types/extended-domain"
 
 export const mockIncidents: Incident[] = [
   {

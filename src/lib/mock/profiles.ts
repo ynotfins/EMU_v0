@@ -1,4 +1,4 @@
-﻿import type { Profile } from "@/types/domain"
+﻿import type { Profile } from "@/types/extended-domain"
 
 export const mockProfiles: Record<string, Profile> = {
   "user-001": {

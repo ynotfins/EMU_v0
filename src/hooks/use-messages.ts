@@ -1,7 +1,7 @@
 ﻿"use client"
 
 import { useState } from "react"
-import type { Message } from "@/types/domain"
+import type { Message } from "@/types/extended-domain"
 
 export function useMessages(threadId: string) {
   const [data] = useState<Message[]>([])

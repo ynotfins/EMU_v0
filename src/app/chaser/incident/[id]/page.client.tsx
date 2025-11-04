@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heart, MessageCircle } from "lucide-react";
-import type { HomeownerForm as HomeownerFormType } from "@/types/domain";
+import type { HomeownerForm as HomeownerFormType } from "@/types/extended-domain";
 import { recordAlertResponse } from "@/lib/actions/responses";
 import { useProfile } from "@/hooks/use-profile";
 import { auth } from "@/lib/firebase/firebase";

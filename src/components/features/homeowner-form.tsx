@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Save, Edit2, Lock } from "lucide-react"
-import type { HomeownerForm as HomeownerFormType } from "@/types/domain"
+import type { HomeownerForm as HomeownerFormType } from "@/types/extended-domain"
 import { INSURANCE_CARRIERS, getCarrierByName } from "@/lib/utils/insurance-carriers"
 
 interface HomeownerFormProps {

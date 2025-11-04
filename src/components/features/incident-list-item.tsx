@@ -5,7 +5,7 @@ import { Heart, Bookmark, Bell, BellOff, EyeOff } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { IncidentLite } from "@/types/domain";
+import type { IncidentLite } from "@/types/extended-domain";
 import { formatListLines } from "@/hooks/use-incidents";
 import { isSilenced, toggleSilenceLocal } from "@/lib/utils/silence";
 import { logger } from "@/lib/utils/logger";

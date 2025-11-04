@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import type { FileMeta } from "@/types/domain"
+import type { FileMeta } from "@/types/extended-domain"
 
 interface DocsManagerProps {
   files: FileMeta[]

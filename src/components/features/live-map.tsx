@@ -4,7 +4,7 @@ import { MapPin, Users } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import type { LocationMarker } from "@/hooks/use-live-locations"
-import type { IncidentLite } from "@/types/domain"
+import type { IncidentLite } from "@/types/extended-domain"
 
 interface LiveMapProps {
   markers: LocationMarker[]

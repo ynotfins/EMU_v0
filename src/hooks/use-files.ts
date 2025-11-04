@@ -1,7 +1,7 @@
 ﻿"use client"
 
 import { useState } from "react"
-import type { FileMeta } from "@/types/domain"
+import type { FileMeta } from "@/types/extended-domain"
 
 export function useFiles(incidentId: string) {
   const [data] = useState<FileMeta[]>([])

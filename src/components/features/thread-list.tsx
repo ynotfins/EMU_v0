@@ -3,7 +3,7 @@
 import { MessageSquare, Users, AlertCircle } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import type { Thread } from "@/types/domain"
+import type { Thread } from "@/types/extended-domain"
 
 interface ThreadListProps {
   threads: Thread[]

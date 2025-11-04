@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore"
 import { db, auth } from "@/lib/firebase/firebase"
-import type { Profile } from "@/types/domain"
+import type { Profile } from "@/types/extended-domain"
 
 export function useProfile(uid?: string | null) {
   const [data, setData] = useState<Profile | null>(null)

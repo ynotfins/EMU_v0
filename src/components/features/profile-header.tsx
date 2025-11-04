@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import type { Profile } from "@/types/domain"
+import type { Profile } from "@/types/extended-domain"
 
 interface ProfileHeaderProps {
   profile: Profile

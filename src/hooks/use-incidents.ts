@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { logger } from "@/lib/utils/logger";
-import type { IncidentLite, IncidentUpdate } from "@/types/domain";
+import type { IncidentLite, IncidentUpdate } from "@/types/extended-domain";
 import {
   collection,
   onSnapshot,
@@ -16,7 +16,7 @@ import {
   arrayRemove,
 } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase/firebase";
-import type { IncidentLite, IncidentUpdate } from "@/types/domain";
+import type { IncidentLite, IncidentUpdate } from "@/types/extended-domain";
 import { useFavoritesContext } from "@/lib/context/favorites-context";
 
 // NYC Borough to County mapping

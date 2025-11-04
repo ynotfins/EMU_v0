@@ -1,4 +1,4 @@
-﻿import type { Thread, Message } from "@/types/domain"
+﻿import type { Thread, Message } from "@/types/extended-domain"
 
 export const mockThreads: Thread[] = [
   {

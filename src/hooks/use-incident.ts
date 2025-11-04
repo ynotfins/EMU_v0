@@ -13,7 +13,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { logError } from "@/lib/utils/logger";
-import type { Incident } from "@/types/domain";
+import type { Incident } from "@/types/extended-domain";
 import { getUid } from "@/lib/utils/dev";
 
 // NYC Borough to County mapping
