@@ -10,7 +10,7 @@ import { useIncidentsWithDistance } from "@/hooks/use-incidents-with-distance"
 import { useFilters } from "@/hooks/use-filters"
 import { useProfile } from "@/hooks/use-profile"
 import { useFavoritesContext } from "@/lib/context/favorites-context"
-import { MapPin, AlertCircle, ArrowUpDown } from "lucide-react"
+import { Map, MapPin, AlertCircle, ArrowUpDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export default function ChaserIncidentsPage() {
@@ -118,7 +118,7 @@ export default function ChaserIncidentsPage() {
             <h1 className="text-xl font-bold text-[#6B7280]">FIRE ALERTS</h1>
           </div>
           
-          {/* Right: Collapse Button + High Alert Button */}
+          {/* Right: Collapse Button + High Alert + Live Map */}
           <div className="flex items-end gap-2">
             {/* Collapse Filters Button - Pinching Hand */}
             <button
@@ -151,6 +151,11 @@ export default function ChaserIncidentsPage() {
                 </div>
               )}
             </button>
+            
+            <Button onClick={() => router.push("/chaser/map")} size="sm" className="bg-[#007AFF] hover:bg-[#0051D5] text-xs px-3 py-1 h-7">
+              <Map className="h-3 w-3 mr-1" />
+              Live Map
+            </Button>
           </div>
         </div>
 

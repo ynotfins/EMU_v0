@@ -199,3 +199,35 @@ Remaining Issues:
 - Need to add Live Map to home pages
 - Note auto-save still needs implementation
 - Architecture still has duplicate pages instead of shared components
+
+### Update 2025-01-05T00:10:00Z
+[status]: active
+[id]: u_20250105_001000_arch2
+[source]: human
+[reason]: User reports fixes not working, identified root architecture issue
+
+Critical Architecture Issue Confirmed:
+1. **Duplicate Page Structure**: 
+   - `/app/chaser/*` - Complete set of chaser pages
+   - `/app/supe/*` - Complete set of supe pages
+   - These are SEPARATE implementations, not shared components
+
+2. **Navigation Routes Separately**:
+   - BottomNav routes to `/{role}/incidents`, `/{role}/favorites`, etc.
+   - This causes completely different pages to load for each role
+   - No code sharing between roles
+
+3. **Feature Discrepancies**:
+   - Supe incidents page has "Live Map" button → `/supe/map`
+   - Chaser incidents page has NO Live Map feature
+   - Different headers, different features, different implementations
+
+4. **Notes Not Working**:
+   - Notes filter was fixed to show `inc.notes && inc.notes.length > 0`
+   - But notes may not be saving properly to incidents
+
+User Recommendation (Correct):
+- Throw away duplicate supe pages
+- Force both roles to use same page components
+- Add role-based permissions within shared components
+- This will ensure feature parity and reduce maintenance

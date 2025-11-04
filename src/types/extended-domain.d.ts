@@ -51,6 +51,13 @@ export interface IncidentLite {
   
   // Updates
   updates?: IncidentUpdate[];
+  
+  // Notes
+  notes?: Array<{
+    text: string;
+    createdAt: string;
+    createdBy: string;
+  }>;
 }
 
 export interface IncidentUpdate {

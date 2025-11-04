@@ -59,6 +59,11 @@ interface FirestoreIncidentData {
   lat?: number;
   lng?: number;
   geocodedAt?: string;
+  notes?: Array<{
+    text: string;
+    createdAt: string;
+    createdBy: string;
+  }>;
   [key: string]: unknown; // Allow other fields
 }
 
@@ -117,6 +122,8 @@ function normalize(docId: string, data: FirestoreIncidentData): IncidentLite {
     bookmarkedBy: data.bookmarkedBy || [],
     // CRITICAL: Store the actual firestoreDocId field for routing/querying
     incidentId: data.firestoreDocId || String(data.incidentId || docId),
+    // Include notes for the Notes tab
+    notes: data.notes || [],
   } satisfies IncidentLite;
 
   // DEBUG: Log what we're storing for routing (only in development)
