@@ -1,0 +1,51 @@
+EXTENSIONS TO DISABLE IN YOUR VS CODE PROFILE:
+============================================
+
+JAVA EXTENSIONS (8):
+- redhat.java
+- vscjava.vscode-gradle
+- vscjava.vscode-java-debug
+- vscjava.vscode-java-dependency
+- vscjava.vscode-java-pack
+- vscjava.vscode-java-test
+- vscjava.vscode-maven
+- josevseb.google-java-format-for-vs-code
+
+PYTHON EXTENSIONS (3):
+- ms-pyright.pyright
+- ms-python.debugpy
+- ms-python.python
+
+MOBILE/ANDROID DEV (5):
+- adelphes.android-dev-ext
+- expo.vscode-expo-tools
+- loyieking.smalise
+- mathiasfrohlich.kotlin
+- surendrajat.apklab
+
+DOCKER/CONTAINERS (3):
+- ms-azuretools.vscode-containers
+- ms-azuretools.vscode-docker
+- anysphere.remote-containers
+
+AI TOOLS (3):
+- ai-dl.enlighter
+- giga-ai.giga-ai
+- google.geminicodeassist
+
+OTHER TOOLS (6):
+- googlecloudtools.cloudcode
+- grapecity.gc-excelviewer
+- graphql.vscode-graphql-syntax
+- lokalise.i18n-ally
+- mechatroner.rainbow-csv
+- sonarsource.sonarlint-vscode
+- redhat.vscode-xml
+
+HOW TO DISABLE IN YOUR PROFILE:
+1. Open Extensions panel (Ctrl + Shift + X)
+2. Search for each extension name
+3. Click the gear icon → "Disable (Workspace)"
+4. Repeat for all 28 extensions above
+
+
