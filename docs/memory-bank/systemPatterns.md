@@ -209,3 +209,29 @@ function ErrorBoundary({ children }) {
 - Performance monitoring
 - User analytics
 - Custom metrics
+
+### Correction 2025-01-05T00:30:00Z
+[status]: superseded
+[id]: c_20250105_003000_arch1
+[supersedes]: entire document
+[source]: action
+[reason]: Current implementation doesn't follow documented patterns
+
+**This document describes intended patterns, but current implementation differs:**
+
+1. **Page Architecture Issue**:
+   - Document implies shared components with role-based access
+   - Reality: Duplicate pages in `/chaser/*` and `/supe/*` folders
+   - No code sharing between roles
+   - Different features for same functionality
+
+2. **Missing Shared Architecture**:
+   - Should have: Single page implementation with role checks
+   - Actually have: Completely separate page implementations
+   - Navigation routes to `/{role}/page` not shared `/page`
+
+3. **Recommended Fix**:
+   - Create `/app/(shared)/*` pages
+   - Update navigation to remove role prefix
+   - Add role-based permissions within pages
+   - Delete duplicate implementations
