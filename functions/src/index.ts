@@ -1,5 +1,5 @@
 /**
- * EMU Alerts - Firebase Cloud Functions
+ * EMU Alerts - Firebase Cloud Functions (2nd Gen)
  * 
  * Functions:
  * 1. Auto-geocode new incidents
@@ -7,7 +7,8 @@
  * 3. Send notifications for new incidents
  */
 
-import * as functions from 'firebase-functions';
+import { onDocumentCreated } from 'firebase-functions/v2/firestore';
+import { onSchedule } from 'firebase-functions/v2/scheduler';
 import * as admin from 'firebase-admin';
 import { Client } from '@googlemaps/google-maps-services-js';
 
@@ -26,65 +27,72 @@ const mapsClient = new Client({});
  * - Skips if lat/lng already exist
  * - Skips if no address provided
  */
-export const geocodeNewIncident = functions.firestore
-  .document('incidents/{incidentId}')
-  .onCreate(async (snapshot, context) => {
-    const data = snapshot.data();
-    const incidentId = context.params.incidentId;
+export const autoGeocodeIncident = onDocumentCreated('incidents/{incidentId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) {
+    console.log('[Geocode] No data in snapshot');
+    return;
+  }
+
+  const data = snapshot.data();
+  const incidentId = event.params.incidentId;
+  
+  console.log('[Geocode] New incident created:', incidentId);
+  
+  // Skip if already geocoded
+  if (data.lat && data.lng) {
+    console.log('[Geocode] Already has coordinates, skipping');
+    return;
+  }
+  
+  // Skip if no address
+  if (!data.address) {
+    console.warn('[Geocode] No address provided for incident:', incidentId);
+    return;
+  }
+  
+  try {
+    // Build full address
+    const fullAddress = `${data.address}, ${data.city || ''}, ${data.state || ''}`.trim();
+    console.log('[Geocode] Geocoding address:', fullAddress);
     
-    console.log('[Geocode] New incident created:', incidentId);
-    
-    // Skip if already geocoded
-    if (data.lat && data.lng) {
-      console.log('[Geocode] Already has coordinates, skipping');
-      return null;
+    // Geocode using Google Maps API
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    if (!apiKey) {
+      console.error('[Geocode] No API key configured');
+      return;
     }
     
-    // Skip if no address
-    if (!data.address) {
-      console.warn('[Geocode] No address provided for incident:', incidentId);
-      return null;
+    const response = await mapsClient.geocode({
+      params: {
+        address: fullAddress,
+        key: apiKey,
+      },
+    });
+    
+    if (response.data.results.length === 0) {
+      console.error('[Geocode] No results found for:', fullAddress);
+      return;
     }
     
-    try {
-      // Build full address
-      const fullAddress = `${data.address}, ${data.city || ''}, ${data.state || ''}`.trim();
-      console.log('[Geocode] Geocoding address:', fullAddress);
-      
-      // Geocode using Google Maps API
-      const response = await mapsClient.geocode({
-        params: {
-          address: fullAddress,
-          key: functions.config().google?.maps_api_key || process.env.GOOGLE_MAPS_API_KEY || '',
-        },
-      });
-      
-      if (response.data.results.length === 0) {
-        console.error('[Geocode] No results found for:', fullAddress);
-        return null;
-      }
-      
-      const location = response.data.results[0].geometry.location;
-      console.log('[Geocode] Success:', { lat: location.lat, lng: location.lng });
-      
-      // Update incident with coordinates
-      await snapshot.ref.update({
-        lat: location.lat,
-        lng: location.lng,
-        geocodedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-      
-      console.log('[Geocode] Updated incident with coordinates');
-      
-      // Create/update CRM contact
-      await createOrUpdateContact(fullAddress, location.lat, location.lng, incidentId, data);
-      
-      return null;
-    } catch (error) {
-      console.error('[Geocode] Error geocoding incident:', error);
-      return null;
-    }
-  });
+    const location = response.data.results[0].geometry.location;
+    console.log('[Geocode] Success:', { lat: location.lat, lng: location.lng });
+    
+    // Update incident with coordinates
+    await snapshot.ref.update({
+      lat: location.lat,
+      lng: location.lng,
+      geocodedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    
+    console.log('[Geocode] Updated incident with coordinates');
+    
+    // Create/update CRM contact
+    await createOrUpdateContact(fullAddress, location.lat, location.lng, incidentId, data);
+  } catch (error) {
+    console.error('[Geocode] Error geocoding incident:', error);
+  }
+});
 
 /**
  * Create or Update CRM Contact
@@ -106,7 +114,7 @@ async function createOrUpdateContact(
     
     const contactSnap = await contactRef.get();
     
-    if (contactSnap.exists()) {
+    if (contactSnap.exists) {
       // Update existing contact
       console.log('[CRM] Updating existing contact:', address);
       await contactRef.update({
@@ -160,57 +168,59 @@ async function createOrUpdateContact(
  * Runs every 15 minutes to catch any incidents that weren't geocoded on creation.
  * This is a fallback in case the onCreate trigger fails or is disabled.
  */
-export const geocodeMissingIncidents = functions.pubsub
-  .schedule('every 15 minutes')
-  .onRun(async (context) => {
-    console.log('[Scheduled Geocode] Running...');
+export const scheduleGeocodeMissing = onSchedule('every 15 minutes', async (event) => {
+  console.log('[Scheduled Geocode] Running...');
+  
+  const snapshot = await db.collection('incidents')
+    .where('lat', '==', null)
+    .where('address', '!=', null)
+    .limit(20)
+    .get();
+  
+  if (snapshot.empty) {
+    console.log('[Scheduled Geocode] No incidents need geocoding');
+    return;
+  }
+  
+  console.log(`[Scheduled Geocode] Found ${snapshot.size} incidents to geocode`);
+  
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (!apiKey) {
+    console.error('[Scheduled Geocode] No API key configured');
+    return;
+  }
+  
+  for (const doc of snapshot.docs) {
+    const data = doc.data();
+    const fullAddress = `${data.address}, ${data.city || ''}, ${data.state || ''}`.trim();
     
-    const snapshot = await db.collection('incidents')
-      .where('lat', '==', null)
-      .where('address', '!=', null)
-      .limit(20)
-      .get();
-    
-    if (snapshot.empty) {
-      console.log('[Scheduled Geocode] No incidents need geocoding');
-      return null;
-    }
-    
-    console.log(`[Scheduled Geocode] Found ${snapshot.size} incidents to geocode`);
-    
-    for (const doc of snapshot.docs) {
-      const data = doc.data();
-      const fullAddress = `${data.address}, ${data.city || ''}, ${data.state || ''}`.trim();
+    try {
+      const response = await mapsClient.geocode({
+        params: {
+          address: fullAddress,
+          key: apiKey,
+        },
+      });
       
-      try {
-        const response = await mapsClient.geocode({
-          params: {
-            address: fullAddress,
-            key: functions.config().google?.maps_api_key || process.env.GOOGLE_MAPS_API_KEY || '',
-          },
+      if (response.data.results.length > 0) {
+        const location = response.data.results[0].geometry.location;
+        
+        await doc.ref.update({
+          lat: location.lat,
+          lng: location.lng,
+          geocodedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
         
-        if (response.data.results.length > 0) {
-          const location = response.data.results[0].geometry.location;
-          
-          await doc.ref.update({
-            lat: location.lat,
-            lng: location.lng,
-            geocodedAt: admin.firestore.FieldValue.serverTimestamp(),
-          });
-          
-          console.log('[Scheduled Geocode] Geocoded:', doc.id);
-          
-          // Create/update CRM contact
-          await createOrUpdateContact(fullAddress, location.lat, location.lng, doc.id, data);
-        }
+        console.log('[Scheduled Geocode] Geocoded:', doc.id);
         
-        // Rate limit: 1 request per second
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      } catch (error) {
-        console.error('[Scheduled Geocode] Error:', error);
+        // Create/update CRM contact
+        await createOrUpdateContact(fullAddress, location.lat, location.lng, doc.id, data);
       }
+      
+      // Rate limit: 1 request per second
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      console.error('[Scheduled Geocode] Error:', error);
     }
-    
-    return null;
-  });
+  }
+});
