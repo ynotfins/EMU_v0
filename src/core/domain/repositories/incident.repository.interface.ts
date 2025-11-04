@@ -33,6 +33,11 @@ export interface LocationBounds {
   southWest: { lat: number; lng: number };
 }
 
+export interface Pagination {
+  page: number;
+  limit: number;
+}
+
 export interface IIncidentRepository {
   /**
    * Saves an incident to the repository

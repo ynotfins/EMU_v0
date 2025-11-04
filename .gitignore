@@ -64,3 +64,4 @@ scripts/*.vsix
 # Misc
 .turbo
 # Build trigger
+.vercel

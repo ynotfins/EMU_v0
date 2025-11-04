@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "next build",
+    "build": "next build --no-experimental-app-only",
     "check-env": "tsx scripts/check-env.ts",
     "dev": "next dev",
     "dev:debug": "NODE_OPTIONS='--inspect' next dev",
