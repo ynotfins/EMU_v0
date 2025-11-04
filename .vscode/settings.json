@@ -1,74 +1,10 @@
 {
-  // Core project behavior
-  "files.autoSave": "afterDelay",
-  "git.autofetch": true,
-  "git.openRepositoryInParentFolders": "always",
-
-  // Format + lint
-  "editor.formatOnSave": true,
-  "eslint.enable": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "[javascript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-  "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-  "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-  "[css]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-
-  // Enable-only we need
-  "tailwindCSS.enable": true,
-  "gitlens.enabled": true,
-  "errorLens.enabled": true,
-  "todo-tree.highlights.enabled": true,
-  "cSpell.enabled": true,
-  "typescript.validate.enable": true,
-  "git.enabled": true,
-  "yaml.validate": true,
-
-  // Disable heavy, irrelevant language servers/tools for this workspace
-  "python.enabled": false,
-  "python.analysis.typeCheckingMode": "off",
-  "python.testing.pytestEnabled": false,
-  "python.languageServer": "None",
-  "python.terminal.activateEnvironment": false,
-  "python.autoComplete.extraPaths": [],
-
-  "docker.languageserver.formatter.enabled": false,
-  "docker.explorerRefreshInterval": 0,
-  "docker.commands.build": "",
-  "docker.commands.run": "",
-
-  "cloudcode.duetai.enabled": false,
-  "cloudcode.autoDependencies": false,
-  "cloudcode.skaffold.replaceTags": false,
-
-  "firebase.dataconnect.enabled": false,
-
-  "graphql-config.load.enabled": false,
-  "graphql.enableCodeLens": false,
-
-  "powershell.enableProfileLoading": false,
-  "powershell.integratedConsole.showOnStartup": false,
-
-  "sonarlint.automaticAnalysis": false,
-  "sonarlint.focusOnNewCode": false,
-  "sonarlint.disableTelemetry": true,
-
-  "java.server.launchMode": "Standard",
-  "java.configuration.runtimes": [],
-  "java.reloadProjects.automatic": false,
-
-  "xml.validation.enabled": false,
-  "xml.fileAssociations": [],
-
-  "android.enableGradle": false,
-
-  "expo.enableTelemetry": false,
-
-  // Cursor-specific UX prefs kept
-  "cursor.composer.shouldChimeAfterChatFinishes": true,
-  "cursor.composer.backspaceRemoveContext": false,
-  "cursor.composer.shouldAllowCustomModes": true,
-  "cursor.enable_agent_window_setting": true,
-  "cursor.agent_layout_browser_beta_setting": true,
-  "cursor.enable_git_worktrees_setting": true
+  // Turbo Console Log settings
+  "turboConsoleLog.quote": "'",
+  "turboConsoleLog.logMessagePrefix": "🚀",
+  "turboConsoleLog.includeFileNameAndLineNum": true,
+  "turboConsoleLog.delimiterInsideMessage": " ~",
+  "turboConsoleLog.insertEnclosingClass": false,
+  "turboConsoleLog.insertEnclosingFunction": true,
+  "turboConsoleLog.dedupeLogMessages": true
 }

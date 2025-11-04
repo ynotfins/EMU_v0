@@ -1,0 +1,63 @@
+﻿# EMU Clean Architecture Profile Extensions
+
+## âœ… ENABLED (Keep these checked)
+- dbaeumer.vscode-eslint
+- esbenp.prettier-vscode
+- bradlc.vscode-tailwindcss
+- usernamehw.errorlens
+- yoavbls.pretty-ts-errors
+- eamodio.gitlens
+- github.vscode-github-actions
+- christian-kohler.path-intellisense
+- gruntfuggly.todo-tree
+- streetsidesoftware.code-spell-checker
+- editorconfig.editorconfig
+- chakrounanas.turbo-console-log
+- formulahendry.auto-rename-tag
+- dsznajder.es7-react-js-snippets
+- steoates.autoimport
+- vincaslt.highlight-matching-tag
+- googlecloudtools.firebase-dataconnect-vscode
+- redhat.vscode-yaml
+- mikestead.dotenv
+- firsttris.vscode-jest-runner
+- orta.vscode-jest
+- aaron-bond.better-comments
+- wayou.vscode-todo-highlight
+- naumovs.color-highlight
+- sleistner.vscode-fileutils
+- wix.vscode-import-cost
+- ms-vscode.powershell
+- anysphere.cursorpyright
+
+
+## âŒ DISABLED (Uncheck these)
+- adelphes.android-dev-ext
+- ai-dl.enlighter
+- expo.vscode-expo-tools
+- giga-ai.giga-ai
+- google.geminicodeassist
+- googlecloudtools.cloudcode
+- grapecity.gc-excelviewer
+- graphql.vscode-graphql-syntax
+- josevseb.google-java-format-for-vs-code
+- lokalise.i18n-ally
+- loyieking.smalise
+- mathiasfrohlich.kotlin
+- mechatroner.rainbow-csv
+- ms-azuretools.vscode-containers
+- ms-azuretools.vscode-docker
+- ms-pyright.pyright
+- ms-python.debugpy
+- ms-python.python
+- redhat.java
+- redhat.vscode-xml
+- sonarsource.sonarlint-vscode
+- surendrajat.apklab
+- vscjava.vscode-gradle
+- vscjava.vscode-java-debug
+- vscjava.vscode-java-dependency
+- vscjava.vscode-java-pack
+- vscjava.vscode-java-test
+- vscjava.vscode-maven
+- anysphere.remote-containers
