@@ -7,7 +7,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { IncidentListItem } from "@/components/features/incident-list-item"
 import { useIncidents, toggleFavorite, unfavorite, toggleBookmark, unbookmark } from "@/hooks/use-incidents"
 import { useFavoritesContext } from "@/lib/context/favorites-context"
-import { Star, Bookmark, FileText, type LucideIcon } from "lucide-react"
+import { Star, Bookmark, FileText, Navigation, type LucideIcon } from "lucide-react"
+import { useResponses } from "@/hooks/use-responses"
+import { useProfile } from "@/hooks/use-profile"
+import { auth } from "@/lib/firebase/firebase"
 
 // Empty state component (moved outside to fix ESLint rule)
 function EmptyState({ icon: Icon, message }: { icon: LucideIcon; message: string }) {
@@ -23,12 +26,19 @@ export default function SupeFavoritesPage() {
   const router = useRouter()
   const { data: allIncidents } = useIncidents()
   const { toggleSilence } = useFavoritesContext()
+  const { data: profile } = useProfile(auth.currentUser?.uid)
+  const { responses, loading: responsesLoading } = useResponses(profile?.uid)
   const [activeTab, setActiveTab] = useState("favorites")
 
   const safeIncidents = Array.isArray(allIncidents) ? allIncidents : []
   const favoritedIncidents = safeIncidents.filter((inc) => inc.isFavorited)
   const bookmarkedIncidents = safeIncidents.filter((inc) => inc.isBookmarked)
   const notedIncidents = safeIncidents.filter((inc) => inc.id === "inc-001" || inc.id === "inc-003")
+  
+  // Get incidents for responses
+  const responseIncidents = responses.map(response => {
+    return safeIncidents.find(inc => inc.id === response.incidentId)
+  }).filter(Boolean)
 
   // Handle favorite/bookmark with Firestore toggle logic
   const handleToggleFavorite = async (id: string) => {
@@ -79,6 +89,10 @@ export default function SupeFavoritesPage() {
               <FileText className="h-4 w-4" />
               Notes
             </TabsTrigger>
+            <TabsTrigger value="responses" className="gap-2">
+              <Navigation className="h-4 w-4" />
+              Responses ({responses.length})
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="favorites" className="flex-1 overflow-y-auto p-4 space-y-3 pt-28 pb-20 min-h-0">
@@ -126,6 +140,23 @@ export default function SupeFavoritesPage() {
                   onOpen={handleOpenIncident}
                 onToggleFavorite={handleToggleFavorite}
                 onToggleBookmark={handleToggleBookmark}
+                  onToggleSilence={toggleSilence}
+                />
+              ))
+            )}
+          </TabsContent>
+
+          <TabsContent value="responses" className="flex-1 overflow-y-auto p-4 space-y-3 pt-28 pb-20 min-h-0">
+            {responseIncidents.length === 0 ? (
+              <EmptyState icon={Navigation} message="No responses yet" />
+            ) : (
+              responseIncidents.map((incident) => (
+                <IncidentListItem
+                  key={incident.id}
+                  incident={incident}
+                  onOpen={handleOpenIncident}
+                  onToggleFavorite={handleToggleFavorite}
+                  onToggleBookmark={handleToggleBookmark}
                   onToggleSilence={toggleSilence}
                 />
               ))
