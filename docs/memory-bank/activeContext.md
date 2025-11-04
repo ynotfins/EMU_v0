@@ -144,3 +144,21 @@ Cleanup Progress:
 - Created extended-domain.d.ts for backward compatibility types
 - Updated all imports from @/types/domain to @/types/extended-domain
 - Started implementing PROJECT_CLEANUP_PLAN.md phases
+
+### Update 2025-01-04T22:45:00Z
+[status]: active
+[id]: u_20250104_224500_maps1
+[source]: human
+[reason]: User reported maps not working on live site
+
+Critical Issue Found:
+- Google Maps not working on rebuild.4axe.com
+- Environment variable NEXT_PUBLIC_GOOGLE_MAPS_API_KEY not set in Vercel
+- Hardcoded fallback API key was a demo key (now removed)
+- Created GOOGLE_MAPS_SETUP.md with instructions
+- Added proper error handling to show "Map Unavailable" message
+- User needs to:
+  1. Get Google Maps API key from Google Cloud Console
+  2. Add rebuild.4axe.com to allowed domains
+  3. Set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in Vercel
+  4. Redeploy the application
