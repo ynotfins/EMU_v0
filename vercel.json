@@ -4,14 +4,6 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "regions": ["iad1"],
-  "functions": {
-    "src/app/**/*.ts": {
-      "maxDuration": 10
-    },
-    "src/presentation/actions/**/*.ts": {
-      "maxDuration": 10
-    }
-  },
   "rewrites": [
     {
       "source": "/(.*)",
