@@ -230,8 +230,14 @@ function mapToFirestoreIncident(parsedIncident: Incident, notificationReceivedAt
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('[Webhook] POST request received');
+    console.log('[Webhook] Request method:', request.method);
+    console.log('[Webhook] Request URL:', request.url);
+    console.log('[Webhook] Request headers:', Object.fromEntries(request.headers.entries()));
+    
     // Parse request body first
     const body = await request.json();
+    console.log('[Webhook] Request body parsed:', { ...body, message: body.message?.substring(0, 100) });
     
     // Authenticate request (check headers and body authToken)
     const isAuthenticated = await authenticateRequest(request, body.authToken);
@@ -437,5 +443,75 @@ export async function OPTIONS(request: NextRequest) {
       'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Webhook-Token',
     },
   });
+}
+
+// Handle unsupported methods with helpful error message
+export async function GET(request: NextRequest) {
+  return NextResponse.json(
+    {
+      error: 'Method Not Allowed',
+      message: 'This endpoint only accepts POST requests. Please use POST method.',
+      allowedMethods: ['POST', 'OPTIONS'],
+    },
+    {
+      status: 405,
+      headers: {
+        'Allow': 'POST, OPTIONS',
+        'Access-Control-Allow-Origin': '*',
+      },
+    }
+  );
+}
+
+// Handle PUT, PATCH, DELETE with helpful error
+export async function PUT(request: NextRequest) {
+  return NextResponse.json(
+    {
+      error: 'Method Not Allowed',
+      message: 'This endpoint only accepts POST requests.',
+      allowedMethods: ['POST', 'OPTIONS'],
+    },
+    {
+      status: 405,
+      headers: {
+        'Allow': 'POST, OPTIONS',
+        'Access-Control-Allow-Origin': '*',
+      },
+    }
+  );
+}
+
+export async function PATCH(request: NextRequest) {
+  return NextResponse.json(
+    {
+      error: 'Method Not Allowed',
+      message: 'This endpoint only accepts POST requests.',
+      allowedMethods: ['POST', 'OPTIONS'],
+    },
+    {
+      status: 405,
+      headers: {
+        'Allow': 'POST, OPTIONS',
+        'Access-Control-Allow-Origin': '*',
+      },
+    }
+  );
+}
+
+export async function DELETE(request: NextRequest) {
+  return NextResponse.json(
+    {
+      error: 'Method Not Allowed',
+      message: 'This endpoint only accepts POST requests.',
+      allowedMethods: ['POST', 'OPTIONS'],
+    },
+    {
+      status: 405,
+      headers: {
+        'Allow': 'POST, OPTIONS',
+        'Access-Control-Allow-Origin': '*',
+      },
+    }
+  );
 }
 
