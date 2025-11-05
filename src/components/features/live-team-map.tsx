@@ -61,92 +61,6 @@ export function LiveTeamMap() {
     );
   }, [teamMembers]);
 
-  return (
-    <Card className="border-0 shadow-md">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-              <MapPin className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <CardTitle className="text-xl">Live Team Map</CardTitle>
-              <CardDescription>Real-time locations of all users</CardDescription>
-            </div>
-          </div>
-
-          <Badge className="bg-green-500">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-              <span>{onlineMembers.length} Online</span>
-            </div>
-          </Badge>
-        </div>
-      </CardHeader>
-
-"use client";
-
-import { useState, useEffect, useMemo } from "react";
-import { collection, query, onSnapshot } from "firebase/firestore";
-import { db } from "@/lib/firebase/firebase";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
-import { Badge } from "../ui/badge";
-import { MapPin, Users } from "lucide-react";
-import { logger } from "@/lib/utils/logger";
-import { GoogleMapLive } from "./google-map-live";
-
-interface TeamMember {
-  id: string;
-  name: string;
-  nickname: string;
-  email?: string;
-  role: string;
-  location?: {
-    lat: number;
-    lng: number;
-    lastUpdated: string;
-  };
-}
-
-export function LiveTeamMap() {
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    logger.debug("Loading team locations", { code: 'LiveTeamMap' });
-
-    const q = query(collection(db, "users"));
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const members = snapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          name: data.name || "Unknown",
-          nickname: data.nickname || data.name || "Unknown",
-          email: data.email || "",
-          role: data.role || "chaser",
-          location: data.location,
-        };
-      }) as TeamMember[];
-
-      logger.info(`Loaded ${members.length} team members`, {
-        code: 'LiveTeamMap',
-        memberCount: members.length,
-      });
-      setTeamMembers(members);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  const onlineMembers = useMemo(() => {
-    return teamMembers.filter(
-      (m) => m.location && m.location.lat && m.location.lng
-    );
-  }, [teamMembers]);
-
   // Convert team members with locations to incidents format for the map
   const mapIncidents = useMemo(() => {
     return onlineMembers.map((member) => ({
@@ -266,4 +180,3 @@ export function LiveTeamMap() {
     </Card>
   );
 }
-
