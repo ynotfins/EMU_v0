@@ -472,3 +472,49 @@ Documentation Cleanup Summary:
   ├── presentation/         # Actions, stores, hooks
   └── types/                # TypeScript types
 ```
+
+### Update 2025-01-05T02:45:00Z
+[status]: active
+[id]: u_20250105_024500_scripts1
+[source]: human
+[reason]: Remove unnecessary setup and maintenance scripts
+
+**Script Cleanup - 26 Files Removed (2,733 lines):**
+
+1. **Extension management scripts (11 files):**
+   - All VS Code/Cursor extension optimization scripts
+   - Profile creation and setup scripts
+   - Extension disable/enable automation
+   - No longer needed - extensions managed via UI
+
+2. **Old fix scripts (7 files):**
+   - fix-all-imports.ps1, fix-final-imports.ps1, fix-imports-v2.ps1, etc.
+   - fix-utf8-encoding.ps1, fix-utf8.js
+   - One-time fixes, no longer needed
+
+3. **Verification scripts (3 files):**
+   - verify-components.ts, verify-routes.ts
+   - e2e-login.ts
+   - Old test scripts, no longer used
+
+4. **Configuration files (4 files):**
+   - install-profile-extensions.bat
+   - vscode-settings-recommended.json
+   - wrangler.toml (Cloudflare Workers - not used)
+   - desktop.ini
+   - docs/manifest.json (duplicate)
+
+5. **User-specific (1 file):**
+   - fix-ynotfins-account.ts (one-time fix)
+
+**Kept Essential Scripts (17 files):**
+- User management: create-super-admin.ts, make-admin.ts, make-jsnap-supe.ts, create-users-now.ts, update-users.ts
+- Database seeding: seed-admin.ts, seed-incidents.ts, seed-roles.ts
+- Deployment: deploy-force.ps1, deploy-functions.ps1, deploy-now.ps1, deploy-rebuild.ps1, quick-deploy.ps1, vercel-deploy-manual.ps1
+- Validation: check-env.ts, pre-build-check.ts
+- Setup: create-firestore-profile.ts
+
+**Total Project Cleanup Summary:**
+- **147 files deleted** (36,745 lines removed)
+- **3 empty folders removed**
+- Clean, minimal codebase focused on essential functionality
