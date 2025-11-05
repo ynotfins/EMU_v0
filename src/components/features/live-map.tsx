@@ -10,5 +10,9 @@ interface LiveMapProps {
 }
 
 export function LiveMap({ markers, incidents = [] }: LiveMapProps) {
-  return <GoogleMapLive incidents={incidents} className="w-full h-full" />
+  return (
+    <div className="w-full h-full min-h-[500px]">
+      <GoogleMapLive incidents={incidents} className="w-full h-full" />
+    </div>
+  )
 }
