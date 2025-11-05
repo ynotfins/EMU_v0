@@ -3,17 +3,32 @@
 import { useState, useEffect } from "react"
 import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore"
 import { db, auth } from "@/lib/firebase/firebase"
+import { onAuthStateChanged } from "firebase/auth"
 import type { Profile } from "@/types/extended-domain"
 
 export function useProfile(uid?: string | null) {
   const [data, setData] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
+  const [authReady, setAuthReady] = useState(false)
 
-  // Use provided uid or get from auth.currentUser
-  const userId = uid || auth.currentUser?.uid
+  // Wait for auth to initialize before checking for user
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setAuthReady(true)
+    })
+    return () => unsubscribe()
+  }, [])
+
+  // Use provided uid or get from auth.currentUser (only after auth is ready)
+  const userId = uid || (authReady ? auth.currentUser?.uid : null)
 
   useEffect(() => {
+    // Wait for auth to be ready
+    if (!authReady) {
+      return
+    }
+
     if (!userId) {
       console.log("[useProfile] No user ID, setting to null")
       setData(null)
@@ -75,7 +90,7 @@ export function useProfile(uid?: string | null) {
     )
 
     return () => unsubscribe()
-  }, [userId])
+  }, [userId, authReady])
 
   const updateSettings = async (settings: Partial<Profile["settings"]>) => {
     if (!userId) return
