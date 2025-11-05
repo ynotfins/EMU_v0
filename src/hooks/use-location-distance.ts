@@ -61,8 +61,15 @@ function toRad(degrees: number): number {
 async function geocodeAddress(address: string): Promise<Location | null> {
   console.log('[geocodeAddress] ??? Geocoding:', address);
 
+  // Validate address - skip if empty or just punctuation
+  const cleanAddress = address.trim().replace(/^[,\s]+$/, '');
+  if (!cleanAddress || cleanAddress.length < 3) {
+    console.warn('[geocodeAddress] ⚠️ Invalid or empty address, skipping:', address);
+    return null;
+  }
+
   // OFFLINE FIRST: Check localStorage cache
-  const cached = geocodeCache.get(address);
+  const cached = geocodeCache.get(cleanAddress);
   if (cached) {
     console.log('[geocodeAddress] ? Using offline cache:', { lat: cached.lat, lng: cached.lng });
     return { lat: cached.lat, lng: cached.lng };
@@ -75,7 +82,7 @@ async function geocodeAddress(address: string): Promise<Location | null> {
     try {
       const response = await fetch(
         `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-          address
+          cleanAddress
         )}&key=${apiKey}`
       );
       const data = await response.json();
@@ -85,7 +92,7 @@ async function geocodeAddress(address: string): Promise<Location | null> {
         console.log('[geocodeAddress] ? Google Maps result:', { lat, lng });
         
         // SAVE TO OFFLINE CACHE
-        geocodeCache.set(address, lat, lng);
+        geocodeCache.set(cleanAddress, lat, lng);
         
         return { lat, lng };
       }
@@ -101,7 +108,7 @@ async function geocodeAddress(address: string): Promise<Location | null> {
   try {
     const response = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-        address
+        cleanAddress
       )}&format=json&limit=1`,
       {
         headers: {
@@ -117,7 +124,7 @@ async function geocodeAddress(address: string): Promise<Location | null> {
       console.log('[geocodeAddress] ? OSM Nominatim result:', { lat, lng });
       
       // SAVE TO OFFLINE CACHE
-      geocodeCache.set(address, lat, lng);
+      geocodeCache.set(cleanAddress, lat, lng);
       
       return { lat, lng };
     }

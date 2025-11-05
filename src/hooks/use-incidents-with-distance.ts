@@ -75,6 +75,20 @@ export function useIncidentsWithDistance(filters?: Partial<IncidentFilters>) {
         // Process batch in parallel
         await Promise.all(
           batch.map(async (incident) => {
+            // Build address string - skip if no valid address data
+            const addressParts = [
+              incident.address,
+              incident.city,
+              incident.state
+            ].filter(part => part && part.trim().length > 0);
+            
+            if (addressParts.length === 0) {
+              // No valid address data, skip geocoding
+              console.log(`[useIncidentsWithDistance] ⚠️ Skipping incident ${incident.id}: no valid address`);
+              return;
+            }
+            
+            const fullAddress = addressParts.join(', ');
             let distance: number | undefined;
             
             // If we have cached lat/lng, calculate distance (fast!)
@@ -82,7 +96,7 @@ export function useIncidentsWithDistance(filters?: Partial<IncidentFilters>) {
                 incident.lng !== null && incident.lng !== undefined) {
               distance = await getIncidentDistance(
                 incident.id,
-                `${incident.address}, ${incident.city}, ${incident.state}`,
+                fullAddress,
                 incident.lat,
                 incident.lng
               );
@@ -90,7 +104,7 @@ export function useIncidentsWithDistance(filters?: Partial<IncidentFilters>) {
               // No cached lat/lng, need to geocode (slower)
               distance = await getIncidentDistance(
                 incident.id,
-                `${incident.address}, ${incident.city}, ${incident.state}`,
+                fullAddress,
                 undefined,
                 undefined
               );
