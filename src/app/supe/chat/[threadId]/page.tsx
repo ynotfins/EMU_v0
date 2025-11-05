@@ -32,7 +32,7 @@ export default function SupeChatRoomPage({ params }: { params: { threadId: strin
 
   return (
     <ChatRoom
-      threadTitle={thread.title}
+      threadTitle={thread.title || 'Chat'}
       messages={messages}
       currentUserId={profile.uid}
       onBack={() => router.back()}

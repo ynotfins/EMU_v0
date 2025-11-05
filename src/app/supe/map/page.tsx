@@ -8,6 +8,14 @@ import { Button } from "@/components/ui/button"
 import { RefreshCw } from "lucide-react"
 import { useMemo } from "react"
 
+// Helper to normalize Firestore timestamps
+function normalizeTimestamp(ts: string | Date | { seconds: number }): number {
+  if (typeof ts === 'string') return new Date(ts).getTime();
+  if (ts instanceof Date) return ts.getTime();
+  if (ts && typeof ts === 'object' && 'seconds' in ts) return ts.seconds * 1000;
+  return Date.now();
+}
+
 export default function SupeMapPage() {
   const { data: allIncidents } = useIncidents()
 
@@ -15,13 +23,13 @@ export default function SupeMapPage() {
   const recentIncidents = useMemo(() => {
     const fourHoursAgo = Date.now() - (4 * 60 * 60 * 1000)
     return (allIncidents || []).filter((inc) => {
-      const incidentTime = new Date(inc.updatedAt).getTime()
+      const incidentTime = normalizeTimestamp(inc.updatedAt)
       // Include if incident updated in last 4 hours OR has updates in last 4 hours
       if (incidentTime >= fourHoursAgo) return true
       if (inc.updates && inc.updates.length > 0) {
         const latestUpdate = inc.updates[0]
-        const updateTime = typeof latestUpdate.ts === 'string' 
-          ? new Date(latestUpdate.ts).getTime() 
+        const updateTime = latestUpdate.ts 
+          ? normalizeTimestamp(latestUpdate.ts) 
           : incidentTime
         return updateTime >= fourHoursAgo
       }

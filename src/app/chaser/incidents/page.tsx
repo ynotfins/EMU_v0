@@ -3,6 +3,14 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { RoleLayout } from "@/components/features/role-layout"
+
+// Helper to normalize Firestore timestamps
+function normalizeTimestamp(ts: string | Date | { seconds: number }): number {
+  if (typeof ts === 'string') return new Date(ts).getTime();
+  if (ts instanceof Date) return ts.getTime();
+  if (ts && typeof ts === 'object' && 'seconds' in ts) return ts.seconds * 1000;
+  return Date.now();
+}
 import { FilterBar } from "@/components/features/filter-bar"
 import { IncidentListItem } from "@/components/features/incident-list-item"
 import { toggleFavorite, unfavorite, toggleBookmark, unbookmark } from "@/hooks/use-incidents"
@@ -84,7 +92,7 @@ export default function ChaserIncidentsPage() {
         if (sortByDistance) {
           const fourHoursAgo = Date.now() - (4 * 60 * 60 * 1000);
           filtered = filtered.filter(inc => {
-            const incidentTime = new Date(inc.updatedAt).getTime();
+            const incidentTime = normalizeTimestamp(inc.updatedAt);
             return incidentTime >= fourHoursAgo;
           });
           
@@ -96,7 +104,7 @@ export default function ChaserIncidentsPage() {
           });
         } else {
           // Default: sort by updatedAt descending (newest first)
-          filtered.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+          filtered.sort((a, b) => normalizeTimestamp(b.updatedAt) - normalizeTimestamp(a.updatedAt));
         }
         
         return filtered;

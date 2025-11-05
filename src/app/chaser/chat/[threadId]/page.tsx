@@ -32,7 +32,7 @@ export default function ChaserChatRoomPage({ params }: { params: { threadId: str
 
   return (
     <ChatRoom
-      threadTitle={thread.title}
+      threadTitle={thread.title || 'Chat'}
       messages={messages}
       currentUserId={profile.uid}
       onBack={() => router.back()}

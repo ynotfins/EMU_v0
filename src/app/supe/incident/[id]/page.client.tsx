@@ -24,7 +24,10 @@ export default function Client({ id }: { id: string }) {
   const { data: files } = useFiles(id);
   const { data: profile } = useProfile(auth.currentUser?.uid);
   const [noteText, setNoteText] = useState("");
-  const [homeownerData, setHomeownerData] = useState<HomeownerFormType>({});
+  const [homeownerData, setHomeownerData] = useState<HomeownerFormType>({
+    insuranceCompany: '',
+    policyNumber: ''
+  });
 
   if (error) {
     return (
