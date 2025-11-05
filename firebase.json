@@ -23,14 +23,11 @@
   "storage": {
     "rules": "firebase-rules/storage.rules"
   },
-  "functions": [
-    {
-      "source": "functions",
-      "codebase": "default",
-      "predeploy": [
-        "pnpm -C \"$RESOURCE_DIR\" run build"
-      ],
-      "runtime": "nodejs20"
-    }
-  ]
+  "functions": {
+    "source": "functions",
+    "predeploy": [
+      "pnpm -C \"$RESOURCE_DIR\" run build"
+    ],
+    "runtime": "nodejs20"
+  }
 }

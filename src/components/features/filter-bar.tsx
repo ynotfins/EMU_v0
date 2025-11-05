@@ -8,7 +8,14 @@ import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
-import { mockHighAlertSounds } from "@/lib/mock/sounds"
+// Alert sounds will be loaded from user settings/preferences
+const ALERT_SOUNDS = [
+  { id: "sound-001", name: "Classic Alarm" },
+  { id: "sound-002", name: "Emergency Siren" },
+  { id: "sound-003", name: "Fire Bell" },
+  { id: "sound-004", name: "Air Horn" },
+  { id: "sound-005", name: "Urgent Beep" },
+]
 
 interface FilterBarProps {
   distanceMi?: number

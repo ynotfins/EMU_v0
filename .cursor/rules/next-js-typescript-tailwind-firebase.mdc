@@ -1,0 +1,277 @@
+Next.js 14 & Firebase Stack: Best Practices for Live Fire Incident App
+
+Project: Live Fire Incident Response App
+Stack: Next.js 14 (App Router), TypeScript, Tailwind/shadcn, Firebase (Auth, Firestore, RTDB, Storage, FCM), Google Maps, Vercel
+Use Case: A real-time, map-based application for in-field employees and supervisors to respond to fire incidents. Includes a custom CRM (Firestore) and navigation/proximity features (Google Maps).
+
+1. Core Architecture Philosophy
+
+Your application is not a standard website; it's a real-time, stateful, location-aware tool. The architecture must prioritize real-time data, security, and offline capability.
+
+Server Components (RSC) by Default: Use Server Components (/app/page.tsx) to load the application shell, perform initial data fetches (e.g., user profile, API keys), and pass this static data to Client Components.
+
+Client Components ('use client') for Real-Time: Your main dashboard, map view, and incident lists must be Client Components. These components will manage all real-time data by subscribing to Firebase listeners (onSnapshot, onValue) and handling map state.
+
+Server Actions for Mutations: All data modification (creating incidents, updating user status, adding CRM notes) must be handled by Next.js Server Actions. This keeps your logic secure on the server, simplifies API management, and prevents exposing sensitive logic to the client.
+
+Firebase SDKs: The Critical Separation
+
+Client SDK (src/lib/firebase-client.ts): Used only in Client Components. Initializes with NEXT_PUBLIC_ keys. Used for auth state (onAuthStateChanged), real-time listeners (onSnapshot), and FCM token management.
+
+Admin SDK (src/lib/firebase-admin.ts): Used only in Server Components, Server Actions, and API Routes. Initializes with a service account (e.g., FIREBASE_ADMIN_PRIVATE_KEY). Has full, unchecked access to your database. Keep its credentials secret.
+
+(NEW) 1.5. Modular Development
+
+Structure by Feature, Not Type: Instead of a single large /app/(dashboard) layout, break your app into feature-based route groups. This colocates all components, Server Actions, and logic for a specific feature.
+
+/src/app/(app)/incidents (Handles incident creation, listing, details)
+
+/src/app/(app)/map (Handles the main real-time map view)
+
+/src/app/(app)/crm (Handles supervisor CRM features)
+
+/src/app/(app)/profile
+
+Shared Logic in lib:
+
+src/lib/firebase-client.ts & src/lib/firebase-admin.ts: For SDK initialization.
+
+src/lib/types.ts: For all shared TypeScript interfaces (Incident, UserProfile, etc.).
+
+src/lib/actions/: House all Server Actions, named by feature (e.g., incident.actions.ts, user.actions.ts).
+
+src/lib/hooks/: House all client-side custom hooks (e.g., useRealtimeIncidents(), useUserLocation()).
+
+Shared Components:
+
+src/components/ui/: For shadcn/ui components.
+
+src/components/shared/: For your app's reusable components (e.g., IncidentMarker, UserProfileAvatar).
+
+src/components/features/: For complex components specific to a feature (e.g., IncidentResponseForm, CrmCustomerChart).
+
+2. Next.js 14 & TypeScript
+
+App Router: Use the src/ directory for cleaner project organization.
+
+Type-Safe Schemas: Define your Firestore document structures in src/lib/types.ts.
+
+// src/lib/types.ts
+import { Timestamp, GeoPoint } from "firebase/firestore";
+
+export interface Incident {
+  id: string;
+  title: string;
+  status: 'new' | 'active' | 'contained';
+  location: GeoPoint;
+  reportedAt: Timestamp;
+  notes?: string[];
+}
+
+export interface UserProfile {
+  uid: string;
+  email: string;
+  role: 'employee' | 'supervisor';
+  fcmToken?: string;
+  lastKnownLocation?: GeoPoint;
+}
+
+
+Type-Safe Navigation: Enable typedRoutes: true in next.config.mjs to catch broken links at compile time.
+
+3. Tailwind & shadcn/ui
+
+shadcn/ui: This is the correct choice. You own the components, so you can customize them for your app.
+
+Custom Theming: Extend your tailwind.config.ts with app-specific colors for incident statuses. This creates a single source of truth for your UI.
+
+// tailwind.config.ts
+theme: {
+  extend: {
+    colors: {
+      incident: {
+        new: 'colors.blue.500',
+        active: 'colors.red.600',
+        contained: 'colors.green.500',
+      },
+    },
+  },
+},
+
+
+cn Utility: Use the cn() utility (from src/lib/utils.ts) for all conditional styling.
+
+4. Firebase Authentication (Auth)
+
+Server-Side Session Cookies: This is the most secure and modern pattern for the App Router. Do not use client-side onAuthStateChanged for route protection.
+
+Client: User signs in (e.g., signInWithEmailAndPassword) in a Client Component.
+
+Client: On success, get the idToken from the user.
+
+Client: Call a Server Action (createSession(idToken)).
+
+Server Action: Use the Admin SDK to verify the token, create a session cookie, and set it on the browser.
+
+Role-Based Access (Employee vs. Supervisor): Use Custom Claims. This is critical.
+
+When a user account is created, use a Firebase Function (functions.auth.user().onCreate()) to check their email or a pre-defined list, then set their role:
+
+// In a Firebase Function
+await adminAuth.setCustomUserClaims(user.uid, { role: 'supervisor' });
+
+
+This role is now securely attached to the user's idToken and session.
+
+Middleware Protection: Use src/middleware.ts to protect routes. This checks for the session cookie before the page is rendered.
+
+// src/middleware.ts
+import { NextRequest, NextResponse } from 'next/server';
+// (Logic to verify your session cookie)
+
+export async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+  const session = await getSessionFromCookie(req); // Your verification logic
+  const userRole = session?.role;
+
+  // Redirect supervisors away from employee-only pages
+  if (pathname.startsWith('/employee') && userRole === 'supervisor') {
+    return NextResponse.redirect(new URL('/supervisor', req.url));
+  }
+
+  // Protect supervisor dashboard
+  if (pathname.startsWith('/supervisor') && userRole !== 'supervisor') {
+    return NextResponse.redirect(new URL('/login', req.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ['/supervisor/:path*', '/employee/:path*'],
+};
+
+
+5. Firebase Firestore (CRM & Incidents)
+
+Data Model:
+
+incidents: (Collection) Stores all incident documents.
+
+users: (Collection) Stores user profiles, roles, and FCM tokens.
+
+crm_customers: (Collection) Stores your CRM data.
+
+Real-Time Data: Use onSnapshot (Client SDK) in your main map/dashboard Client Component to listen for live changes to the incidents collection.
+
+Offline-First: This is mandatory for in-field use. Enable Firestore's offline persistence in your client-side init. If signal is lost, the app will continue to work and will sync when reconnected.
+
+// src/lib/firebase-client.ts
+import { enableIndexedDbPersistence } from "firebase/firestore";
+// ...
+enableIndexedDbPersistence(db)
+  .catch((err) => console.error("Error enabling offline persistence: ", err));
+
+
+Security Rules: Use Custom Claims (request.auth.token.role) to secure your data.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Supervisors can do anything.
+    match /incidents/{docId} {
+      allow read, write: if request.auth.token.role == 'supervisor';
+      // Employees can read all incidents and only create new ones.
+      allow read, create: if request.auth.token.role == 'employee';
+    }
+
+    // Users can only see and update their own profile.
+    match /users/{userId} {
+      allow read, write: if request.auth.uid == userId;
+    }
+
+    // Only supervisors can access the CRM.
+    match /crm_customers/{docId=**} {
+      allow read, write: if request.auth.token.role == 'supervisor';
+    }
+  }
+}
+
+
+6. Firebase Realtime DB (RTDB)
+
+Use RTDB for one specific purpose: high-frequency, ephemeral data.
+
+Best Use Case: Live location tracking.
+
+Pattern: Have employee/supervisor apps write their (lat, long) to RTDB (e.g., /locations/{userId}) every 10 seconds. This is significantly cheaper and faster at scale than writing to a Firestore document every 10 seconds. Your supervisor map can then listen for onValue changes to this /locations path to show live-updating user markers.
+
+7. Firebase Storage
+
+Use Case: Uploading incident photos/videos.
+
+Pattern: Use v4 Signed URLs. Never upload directly from the client SDK, as it's complex to secure.
+
+Client: User selects a file.
+
+Client: Calls a Server Action (async function getUploadUrl(fileName)).
+
+Server Action: Uses the Admin SDK to generate a signed URL: storage.bucket().file(fileName).getSignedUrl({ action: 'write', ... }).
+
+Client: Receives the URL and uses a simple fetch(url, { method: 'PUT', body: file }) to upload the file directly to Google's servers.
+
+Security Rules:
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow uploads only to a user's own folder, and only if authenticated.
+    match /incident_media/{userId}/{fileName} {
+      allow write: if request.auth.uid == userId;
+      allow read: if request.auth != null;
+    }
+  }
+}
+
+
+8. Firebase Cloud Messaging (FCM)
+
+Use Case: Instantly alert all users of a new fire incident.
+
+Pattern: This logic must live in Firebase Functions (not Vercel Serverless Functions) because it needs to be triggered by a Firestore event.
+
+Client: On app load, get the user's FCM token and save it to their users/{userId} document in Firestore (using a Server Action).
+
+Firebase Function: Create a function that triggers functions.firestore.document('incidents/{incidentId}').onCreate().
+
+Function Logic: When triggered, the function will:
+a.  Get all documents from the users collection.
+b.  Extract the fcmToken from each user.
+c.  Use admin.messaging().sendToDevice(...) to send the new incident alert to everyone.
+
+Service Worker: You must have a public/firebase-messaging-sw.js file to handle notifications when the app is in the background.
+
+9. Google Maps
+
+Implementation: Use the @react-google-maps/api library.
+
+Core Component: Your map must be a Client Component ('use client'). It will be the "heart" of your app.
+
+State: This component will manage multiple real-time states:
+
+Incident markers (from Firestore onSnapshot).
+
+User markers (from RTDB onValue).
+
+The user's own device location (from the browser's Geolocation API).
+
+Proximity: Use the google.maps.geometry.spherical.computeDistanceBetween() function (from the Maps SDK) to calculate the distance between the user and the incidents for display.
+
+Navigation: A click on an incident marker should open Google Maps navigation: window.open('https://www.google.com/maps/dir/?api=1&destination=LAT,LNG').
+
+10. Vercel Deployment
+
+Environment Variables: Add all your NEXT_PUBLIC_ keys and your secret Admin SDK (service account) keys to the Vercel project's Environment Variables settings. Never commit secret keys to Git.
+
+Caching: Vercel aggressively caches Server Components. For your incident list page, you may need to use export const revalidate = 0; or export const dynamic = 'force-dynamic' to ensure the initial load is always fresh, before your real-time listeners take over.
