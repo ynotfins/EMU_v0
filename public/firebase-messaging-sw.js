@@ -54,6 +54,12 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
   
+  // Skip caching non-GET requests (POST, PUT, DELETE, etc.)
+  // Cache API only supports GET requests
+  if (request.method !== "GET") {
+    return;
+  }
+  
   // Skip cross-origin requests
   if (url.origin !== self.location.origin) {
     return;
@@ -74,11 +80,13 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          // Cache successful responses
-          const responseClone = response.clone();
-          caches.open(RUNTIME_CACHE).then((cache) => {
-            cache.put(request, responseClone);
-          });
+          // Cache successful responses (only GET requests)
+          if (response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(RUNTIME_CACHE).then((cache) => {
+              cache.put(request, responseClone);
+            });
+          }
           return response;
         })
         .catch(() => {
@@ -103,7 +111,7 @@ self.addEventListener("fetch", (event) => {
       }
       
       return fetch(request).then((response) => {
-        // Cache new resources
+        // Cache new resources (only GET requests with 200 status)
         if (response.status === 200) {
           const responseClone = response.clone();
           caches.open(RUNTIME_CACHE).then((cache) => {
