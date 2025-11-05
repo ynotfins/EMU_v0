@@ -17,37 +17,40 @@ export function GoogleMapLive({ incidents, className = '', zoom = 10 }: GoogleMa
   const markersRef = useRef<google.maps.Marker[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string>('')
 
-  // Initialize map
+  // Initialize map - wait for container to be rendered
   useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
     if (!apiKey) {
       console.error('[GoogleMapLive] No API key configured')
       setError(true)
+      setErrorMessage('Google Maps API key not configured')
       setLoading(false)
       return
     }
 
-    // Ensure mapRef is available before proceeding
-    if (!mapRef.current) {
-      console.warn('[GoogleMapLive] Map ref not ready, retrying...')
-      const timer = setTimeout(() => {
-        if (mapRef.current) {
-          initializeMap(apiKey)
-        } else {
-          console.error('[GoogleMapLive] Map ref never became available')
-          setError(true)
-          setLoading(false)
-        }
-      }, 100)
-      return () => clearTimeout(timer)
-    }
+    console.log('[GoogleMapLive] Starting map initialization...')
+    
+    // Wait for next tick to ensure DOM is ready
+    const initTimer = setTimeout(() => {
+      if (!mapRef.current) {
+        console.error('[GoogleMapLive] Map ref still not available after timeout')
+        setError(true)
+        setErrorMessage('Map container not found')
+        setLoading(false)
+        return
+      }
 
-    initializeMap(apiKey)
+      console.log('[GoogleMapLive] Map ref ready, initializing...')
+      initializeMap(apiKey)
+    }, 50)
+
+    return () => clearTimeout(initTimer)
   }, [])
 
   const initializeMap = (apiKey: string) => {
-    console.log('[GoogleMapLive] Initializing map...')
+    console.log('[GoogleMapLive] Initializing map with API key:', apiKey.substring(0, 10) + '...')
     
     const loader = new Loader({
       apiKey,
@@ -58,9 +61,12 @@ export function GoogleMapLive({ incidents, className = '', zoom = 10 }: GoogleMa
     loader
       .load()
       .then((google) => {
+        console.log('[GoogleMapLive] Google Maps API loaded successfully')
+        
         if (!mapRef.current) {
           console.error('[GoogleMapLive] Map ref disappeared during load')
           setError(true)
+          setErrorMessage('Map container not found')
           setLoading(false)
           return
         }
@@ -75,24 +81,33 @@ export function GoogleMapLive({ incidents, className = '', zoom = 10 }: GoogleMa
           center = { lat: avgLat, lng: avgLng }
         }
 
-        console.log('[GoogleMapLive] Creating map with center:', center)
-        const newMap = new google.maps.Map(mapRef.current, {
-          center,
-          zoom,
-          disableDefaultUI: false,
-          zoomControl: true,
-          mapTypeControl: false,
-          streetViewControl: false,
-          fullscreenControl: true,
-        })
+        console.log('[GoogleMapLive] Creating map with center:', center, 'zoom:', zoom)
+        
+        try {
+          const newMap = new google.maps.Map(mapRef.current, {
+            center,
+            zoom,
+            disableDefaultUI: false,
+            zoomControl: true,
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: true,
+          })
 
-        console.log('[GoogleMapLive] Map created successfully')
-        setMap(newMap)
-        setLoading(false)
+          console.log('[GoogleMapLive] Map created successfully')
+          setMap(newMap)
+          setLoading(false)
+        } catch (err: any) {
+          console.error('[GoogleMapLive] Error creating map:', err)
+          setError(true)
+          setErrorMessage(err.message || 'Failed to create map')
+          setLoading(false)
+        }
       })
       .catch((err) => {
-        console.error('[GoogleMapLive] Error loading Google Maps:', err)
+        console.error('[GoogleMapLive] Error loading Google Maps API:', err)
         setError(true)
+        setErrorMessage(err.message || 'Failed to load Google Maps API')
         setLoading(false)
       })
   }
@@ -154,26 +169,35 @@ export function GoogleMapLive({ incidents, className = '', zoom = 10 }: GoogleMa
       <div className={`flex flex-col items-center justify-center h-full bg-gray-100 rounded-lg ${className}`}>
         <MapPin className="w-12 h-12 mb-3 text-gray-500" />
         <p className="text-sm font-medium text-gray-600">Map Unavailable</p>
-        <p className="text-xs text-gray-500 mt-1">
-          {!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY 
-            ? "Google Maps API key not configured" 
-            : "Failed to load Google Maps. Check console for details."}
-        </p>
-      </div>
-    )
-  }
-
-  if (loading) {
-    return (
-      <div className={`flex flex-col items-center justify-center h-full bg-gray-100 rounded-lg ${className}`}>
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-2" />
-        <p className="text-sm text-gray-600">Loading map...</p>
+        <p className="text-xs text-gray-500 mt-1">{errorMessage || 'Failed to load Google Maps'}</p>
+        <button 
+          onClick={() => {
+            setError(false)
+            setLoading(true)
+            const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+            if (apiKey) {
+              initializeMap(apiKey)
+            }
+          }}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+        >
+          Retry
+        </button>
       </div>
     )
   }
 
   return (
-    <div className={`relative rounded-lg overflow-hidden ${className}`}>
+    <div className={`relative rounded-lg overflow-hidden ${className}`} style={{ minHeight: '500px' }}>
+      {/* Loading Overlay */}
+      {loading && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100/90 z-50 rounded-lg">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-2" />
+          <p className="text-sm text-gray-600">Loading map...</p>
+          <p className="text-xs text-gray-400 mt-1">Initializing Google Maps</p>
+        </div>
+      )}
+      
       {/* 4 Hours Text */}
       <div className="absolute top-4 right-4 z-10">
         <p className="text-xs text-gray-600 bg-white/90 backdrop-blur-sm px-2 py-1 rounded shadow">
@@ -181,15 +205,17 @@ export function GoogleMapLive({ incidents, className = '', zoom = 10 }: GoogleMa
         </p>
       </div>
       
-      {/* Map Container */}
-      <div ref={mapRef} className="w-full h-full" />
+      {/* Map Container - Always rendered so ref can be set */}
+      <div ref={mapRef} className="w-full h-full" style={{ minHeight: '500px', height: '100%' }} />
       
       {/* Incident Count Badge */}
-      <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-sm px-3 py-1 rounded shadow">
-        <p className="text-sm font-medium">
-          {incidents.filter(inc => inc.lat && inc.lng).length} alerts
-        </p>
-      </div>
+      {!loading && (
+        <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-sm px-3 py-1 rounded shadow">
+          <p className="text-sm font-medium">
+            {incidents.filter(inc => inc.lat && inc.lng).length} alerts
+          </p>
+        </div>
+      )}
     </div>
   )
 }
