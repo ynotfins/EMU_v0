@@ -55,28 +55,13 @@ export interface BatchOperation {
 
 class DatabaseModule {
   private db: Firestore;
-  private offlineEnabled: boolean = false;
+  private offlineEnabled: boolean = true; // Persistence is now handled at initialization
 
   constructor() {
     this.db = db;
-    this.initializeOfflineSupport();
-  }
-
-  /**
-   * Initialize offline support
-   */
-  private async initializeOfflineSupport() {
-    try {
-      await enableIndexedDbPersistence(this.db);
-      this.offlineEnabled = true;
-      console.log('[Database Module] Offline persistence enabled');
-    } catch (err: any) {
-      if (err.code === 'failed-precondition') {
-        console.warn('[Database Module] Multiple tabs open, offline persistence disabled');
-      } else if (err.code === 'unimplemented') {
-        console.warn('[Database Module] Browser does not support offline persistence');
-      }
-    }
+    // Offline persistence is configured at Firestore initialization level
+    // in firebase.ts using initializeFirestore with persistentLocalCache
+    console.log('[Database Module] Using persistent cache configured at initialization');
   }
 
   /**

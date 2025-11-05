@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from 'react'
-import { Loader } from '@googlemaps/js-api-loader'
+import { setOptions, importLibrary } from '@googlemaps/js-api-loader'
 import type { IncidentLite } from '@/types/extended-domain'
 import { MapPin } from 'lucide-react'
 
@@ -49,67 +49,61 @@ export function GoogleMapLive({ incidents, className = '', zoom = 10 }: GoogleMa
     return () => clearTimeout(initTimer)
   }, [])
 
-  const initializeMap = (apiKey: string) => {
+  const initializeMap = async (apiKey: string) => {
     console.log('[GoogleMapLive] Initializing map with API key:', apiKey.substring(0, 10) + '...')
     
-    const loader = new Loader({
-      apiKey,
-      version: 'weekly',
-      libraries: ['places']
-    })
-
-    loader
-      .load()
-      .then((google) => {
-        console.log('[GoogleMapLive] Google Maps API loaded successfully')
-        
-        if (!mapRef.current) {
-          console.error('[GoogleMapLive] Map ref disappeared during load')
-          setError(true)
-          setErrorMessage('Map container not found')
-          setLoading(false)
-          return
-        }
-
-        // Calculate center based on incidents or default to NJ area
-        const validIncidents = incidents.filter(inc => inc.lat && inc.lng)
-        let center = { lat: 40.0583, lng: -74.4057 } // Default: New Jersey
-        
-        if (validIncidents.length > 0) {
-          const avgLat = validIncidents.reduce((sum, inc) => sum + inc.lat!, 0) / validIncidents.length
-          const avgLng = validIncidents.reduce((sum, inc) => sum + inc.lng!, 0) / validIncidents.length
-          center = { lat: avgLat, lng: avgLng }
-        }
-
-        console.log('[GoogleMapLive] Creating map with center:', center, 'zoom:', zoom)
-        
-        try {
-          const newMap = new google.maps.Map(mapRef.current, {
-            center,
-            zoom,
-            disableDefaultUI: false,
-            zoomControl: true,
-            mapTypeControl: false,
-            streetViewControl: false,
-            fullscreenControl: true,
-          })
-
-          console.log('[GoogleMapLive] Map created successfully')
-          setMap(newMap)
-          setLoading(false)
-        } catch (err: any) {
-          console.error('[GoogleMapLive] Error creating map:', err)
-          setError(true)
-          setErrorMessage(err.message || 'Failed to create map')
-          setLoading(false)
-        }
+    try {
+      // Set options for the Google Maps API
+      setOptions({
+        key: apiKey,
+        v: 'weekly',
+        libraries: ['places'],
       })
-      .catch((err) => {
-        console.error('[GoogleMapLive] Error loading Google Maps API:', err)
+
+      // Import the maps library
+      const { Map } = await importLibrary('maps')
+
+      console.log('[GoogleMapLive] Google Maps API loaded successfully')
+      
+      if (!mapRef.current) {
+        console.error('[GoogleMapLive] Map ref disappeared during load')
         setError(true)
-        setErrorMessage(err.message || 'Failed to load Google Maps API')
+        setErrorMessage('Map container not found')
         setLoading(false)
+        return
+      }
+
+      // Calculate center based on incidents or default to NJ area
+      const validIncidents = incidents.filter(inc => inc.lat && inc.lng)
+      let center = { lat: 40.0583, lng: -74.4057 } // Default: New Jersey
+      
+      if (validIncidents.length > 0) {
+        const avgLat = validIncidents.reduce((sum, inc) => sum + inc.lat!, 0) / validIncidents.length
+        const avgLng = validIncidents.reduce((sum, inc) => sum + inc.lng!, 0) / validIncidents.length
+        center = { lat: avgLat, lng: avgLng }
+      }
+
+      console.log('[GoogleMapLive] Creating map with center:', center, 'zoom:', zoom)
+      
+      const newMap = new Map(mapRef.current, {
+        center,
+        zoom,
+        disableDefaultUI: false,
+        zoomControl: true,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: true,
       })
+
+      console.log('[GoogleMapLive] Map created successfully')
+      setMap(newMap as google.maps.Map)
+      setLoading(false)
+    } catch (err: any) {
+      console.error('[GoogleMapLive] Error initializing map:', err)
+      setError(true)
+      setErrorMessage(err.message || 'Failed to load Google Maps API')
+      setLoading(false)
+    }
   }
 
   // Update markers when map or incidents change
@@ -135,12 +129,20 @@ export function GoogleMapLive({ incidents, className = '', zoom = 10 }: GoogleMa
       })
 
       // Add info window
+      const updatedAtDate = incident.updatedAt instanceof Date 
+        ? incident.updatedAt 
+        : typeof incident.updatedAt === 'string' 
+          ? new Date(incident.updatedAt)
+          : typeof incident.updatedAt === 'object' && 'seconds' in incident.updatedAt
+            ? new Date((incident.updatedAt as { seconds: number }).seconds * 1000)
+            : new Date()
+      
       const infoWindow = new google.maps.InfoWindow({
         content: `
           <div class="p-3">
             <h3 class="font-bold text-sm">${incident.type}</h3>
             <p class="text-xs text-gray-600">${incident.address}</p>
-            <p class="text-xs text-gray-500 mt-1">${new Date(incident.updatedAt).toLocaleString()}</p>
+            <p class="text-xs text-gray-500 mt-1">${updatedAtDate.toLocaleString()}</p>
           </div>
         `,
       })

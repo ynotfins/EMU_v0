@@ -1,6 +1,6 @@
 ﻿import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth, setPersistence, browserLocalPersistence, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, type Firestore, enableIndexedDbPersistence, enableMultiTabIndexedDbPersistence } from "firebase/firestore";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, type Firestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getMessaging, type Messaging } from "firebase/messaging";
 import { saveAuthState, loadAuthState } from "./auth-persistence";
@@ -25,25 +25,20 @@ if (!getApps().length) {
 
 // Export Firebase services
 export const auth: Auth = getAuth(app);
-export const db: Firestore = getFirestore(app);
 export const storage = getStorage(app);
 
-// Enable Firestore offline persistence (CRITICAL for PWA)
-if (typeof window !== "undefined") {
-  enableMultiTabIndexedDbPersistence(db)
-    .then(() => {
-      console.log("[Firestore] [OK] Offline persistence enabled (multi-tab support)");
-      console.log("[Firestore] [MOBILE] App will work offline with cached data!");
+// Initialize Firestore with multi-tab persistent cache (CRITICAL for PWA)
+export const db: Firestore = typeof window !== "undefined" 
+  ? initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+      }),
     })
-    .catch((err) => {
-      if (err.code === "failed-precondition") {
-        console.warn("[Firestore] [WARN] Multiple tabs open, persistence enabled in first tab only");
-      } else if (err.code === "unimplemented") {
-        console.warn("[Firestore] [WARN] Browser doesn't support persistence");
-      } else {
-        console.error("[Firestore] [X] Failed to enable persistence:", err);
-      }
-    });
+  : initializeFirestore(app, {}); // Server-side: empty config
+
+if (typeof window !== "undefined") {
+  console.log("[Firestore] [OK] Offline persistence enabled (multi-tab support)");
+  console.log("[Firestore] [MOBILE] App will work offline with cached data!");
 }
 
 // Set auth persistence to LOCAL (never expires until explicit sign out)
