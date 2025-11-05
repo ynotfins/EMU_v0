@@ -74,7 +74,7 @@ export function BottomNav({ role }: BottomNavProps) {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] safe-area-inset-bottom z-50">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] safe-area-inset-bottom z-[100] pointer-events-auto">
       <div className="flex items-center justify-around h-16 max-w-screen-xl mx-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -83,9 +83,13 @@ export function BottomNav({ role }: BottomNavProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors",
+                "flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors pointer-events-auto cursor-pointer",
                 item.active ? "text-[#007AFF]" : "text-[#6B7280]"
               )}
+              onClick={(e) => {
+                // Ensure navigation works
+                e.stopPropagation();
+              }}
             >
               {item.label === "Favorites" ? (
                 item.active ? (
