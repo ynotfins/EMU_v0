@@ -25,10 +25,14 @@
 
 import { getDatabase, ref, push, set, onValue, off, serverTimestamp, type Database } from 'firebase/database';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import app, { auth, db } from '../firebase/firebase';
+import { auth, db, rtdb } from '../firebase/firebase';
 
-// Initialize Realtime Database
-export const rtdb: Database = getDatabase(app);
+// Use rtdb from firebase-client if available, otherwise throw error
+if (!rtdb) {
+  throw new Error('Realtime Database not configured. Set NEXT_PUBLIC_FIREBASE_DATABASE_URL in .env.local');
+}
+
+export const rtdbInstance: Database = rtdb;
 
 export interface ChatMessage {
   id: string;
@@ -68,7 +72,7 @@ export async function createIncidentChat(
   chaserUserName: string,
   supes: Array<{ userId: string; userName: string }>
 ): Promise<void> {
-  const chatRef = ref(rtdb, `incident-chats/${incidentId}`);
+  const chatRef = ref(rtdbInstance, `incident-chats/${incidentId}`);
   
   // Build participants object: chaser + all supes
   const participants: Record<string, string> = {
@@ -104,7 +108,7 @@ export async function sendIncidentMessage(
     throw new Error('User not authenticated');
   }
 
-  const messagesRef = ref(rtdb, `incident-chats/${incidentId}/messages`);
+  const messagesRef = ref(rtdbInstance, `incident-chats/${incidentId}/messages`);
   const newMessageRef = push(messagesRef);
 
   await set(newMessageRef, {
@@ -126,7 +130,7 @@ export function subscribeToIncidentChat(
   incidentId: string,
   callback: (messages: ChatMessage[]) => void
 ): () => void {
-  const messagesRef = ref(rtdb, `incident-chats/${incidentId}/messages`);
+  const messagesRef = ref(rtdbInstance, `incident-chats/${incidentId}/messages`);
 
   const listener = onValue(messagesRef, (snapshot) => {
     const data = snapshot.val();
@@ -180,7 +184,7 @@ export async function createDirectChat(
   }
 
   const chatId = getChatId(userId, otherUserId);
-  const chatRef = ref(rtdb, `direct-chats/${chatId}`);
+  const chatRef = ref(rtdbInstance, `direct-chats/${chatId}`);
 
   await set(chatRef, {
     participants: {
@@ -211,7 +215,7 @@ export async function sendDirectMessage(
   }
 
   const chatId = getChatId(userId, otherUserId);
-  const messagesRef = ref(rtdb, `direct-chats/${chatId}/messages`);
+  const messagesRef = ref(rtdbInstance, `direct-chats/${chatId}/messages`);
   const newMessageRef = push(messagesRef);
 
   await set(newMessageRef, {
@@ -224,7 +228,7 @@ export async function sendDirectMessage(
   });
 
   // Update last message
-  const chatRef = ref(rtdb, `direct-chats/${chatId}`);
+  const chatRef = ref(rtdbInstance, `direct-chats/${chatId}`);
   await set(chatRef, {
     lastMessage: message,
     lastMessageTime: serverTimestamp(),
@@ -246,7 +250,7 @@ export function subscribeToDirectChat(
   }
 
   const chatId = getChatId(userId, otherUserId);
-  const messagesRef = ref(rtdb, `direct-chats/${chatId}/messages`);
+  const messagesRef = ref(rtdbInstance, `direct-chats/${chatId}/messages`);
 
   const listener = onValue(messagesRef, (snapshot) => {
     const data = snapshot.val();
@@ -282,7 +286,7 @@ export async function markMessageAsRead(
   incidentId: string,
   messageId: string
 ): Promise<void> {
-  const messageRef = ref(rtdb, `chats/${incidentId}/messages/${messageId}`);
+  const messageRef = ref(rtdbInstance, `chats/${incidentId}/messages/${messageId}`);
   await set(messageRef, { read: true }, { onlyIf: { exists: true } });
 }
 
@@ -294,7 +298,7 @@ export function subscribeToUnreadCount(
   userId: string,
   callback: (count: number) => void
 ): () => void {
-  const messagesRef = ref(rtdb, `chats/${incidentId}/messages`);
+  const messagesRef = ref(rtdbInstance, `chats/${incidentId}/messages`);
 
   const listener = onValue(messagesRef, (snapshot) => {
     const data = snapshot.val();

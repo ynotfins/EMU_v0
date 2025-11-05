@@ -86,6 +86,9 @@ export const database: Database | null = firebaseConfig.databaseURL
   ? getDatabase(app)
   : null;
 
+// Export as rtdb for backward compatibility
+export const rtdb = database;
+
 // Initialize Messaging (only in browser context)
 export const messaging: Messaging | null = (() => {
   if (typeof window === "undefined") return null;
