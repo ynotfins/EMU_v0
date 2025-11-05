@@ -127,7 +127,7 @@ export interface Profile {
     locationTracking?: boolean;
     trackingEnabled?: boolean;
     silencedAlerts?: string[];
-    highAlertSound?: boolean;
+    highAlertSound?: string;
     muted?: boolean;
   };
   stats?: {

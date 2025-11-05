@@ -10,12 +10,15 @@ import type { HomeownerForm as HomeownerFormType } from "@/types/extended-domain
 import { INSURANCE_CARRIERS, getCarrierByName } from "@/lib/utils/insurance-carriers"
 
 interface HomeownerFormProps {
-  value: HomeownerFormType
+  data?: HomeownerFormType
+  value?: HomeownerFormType
   onChange: (partial: Partial<HomeownerFormType>) => void
-  onSave: () => void
+  onSave?: () => void
+  incidentId?: string
 }
 
-export function HomeownerForm({ value, onChange, onSave }: HomeownerFormProps) {
+export function HomeownerForm({ data, value, onChange, onSave, incidentId }: HomeownerFormProps) {
+  const formData = data || value || {};
   const [isEditing, setIsEditing] = useState(false);
 
   // Handle carrier selection - auto-populate claims phone
@@ -52,7 +55,7 @@ export function HomeownerForm({ value, onChange, onSave }: HomeownerFormProps) {
           </label>
           <Input
             id="homeownerName"
-            value={value.homeownerName || ""}
+            value={formData.homeownerName || ""}
             onChange={(e) => onChange({ homeownerName: e.target.value })}
             placeholder="Enter homeowner name"
             disabled={!isEditing}
@@ -65,7 +68,7 @@ export function HomeownerForm({ value, onChange, onSave }: HomeownerFormProps) {
           </label>
           <Input
             id="contactPerson"
-            value={value.contactPerson || ""}
+            value={formData.contactPerson || ""}
             onChange={(e) => onChange({ contactPerson: e.target.value })}
             placeholder="Enter contact person"
             disabled={!isEditing}
@@ -80,7 +83,7 @@ export function HomeownerForm({ value, onChange, onSave }: HomeownerFormProps) {
             <Input
               id="phone"
               type="tel"
-              value={value.phone || ""}
+              value={formData.phone || ""}
               onChange={(e) => onChange({ phone: e.target.value })}
               placeholder="(555) 123-4567"
               disabled={!isEditing}
@@ -94,7 +97,7 @@ export function HomeownerForm({ value, onChange, onSave }: HomeownerFormProps) {
             <Input
               id="email"
               type="email"
-              value={value.email || ""}
+              value={formData.email || ""}
               onChange={(e) => onChange({ email: e.target.value })}
               placeholder="email@example.com"
               disabled={!isEditing}
@@ -125,7 +128,7 @@ export function HomeownerForm({ value, onChange, onSave }: HomeownerFormProps) {
           </label>
           <Input
             id="policyNumber"
-            value={value.policyNumber || ""}
+            value={formData.policyNumber || ""}
             onChange={(e) => onChange({ policyNumber: e.target.value })}
             placeholder="Enter policy number"
             disabled={!isEditing}

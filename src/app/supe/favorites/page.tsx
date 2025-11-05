@@ -10,6 +10,7 @@ import { useFavoritesContext } from "@/lib/context/favorites-context"
 import { Star, Bookmark, FileText, Navigation, type LucideIcon } from "lucide-react"
 import { useResponses } from "@/hooks/use-responses"
 import { useProfile } from "@/hooks/use-profile"
+import type { IncidentLite } from "@/types/extended-domain"
 import { auth } from "@/lib/firebase/firebase"
 
 // Empty state component (moved outside to fix ESLint rule)
