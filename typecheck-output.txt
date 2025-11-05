@@ -1,0 +1,505 @@
+
+> my-v0-project@0.1.0 typecheck D:\github\EMU_v0
+> tsc --noEmit
+
+scripts/clear-bad-distance-cache.ts(13,20): error TS2307: Cannot find module '../lib/firebase' or its corresponding type declarations.
+scripts/wiring-test.ts(14,36): error TS2307: Cannot find module '../lib/diagnostics' or its corresponding type declarations.
+src/app/admin/page.tsx(48,48): error TS2367: This comparison appears to be unintentional because the types '"supe" | "chaser"' and '"super_admin"' have no overlap.
+src/app/admin/page.tsx(83,9): error TS2367: This comparison appears to be unintentional because the types '"admin" | "supe" | "chaser" | undefined' and '"super_admin"' have no overlap.
+src/app/admin/page.tsx(90,47): error TS2367: This comparison appears to be unintentional because the types '"admin" | "supe" | "chaser" | undefined' and '"super_admin"' have no overlap.
+src/app/admin/page.tsx(141,41): error TS2367: This comparison appears to be unintentional because the types '"admin" | "supe" | "chaser"' and '"super_admin"' have no overlap.
+src/app/admin/page.tsx(142,18): error TS2367: This comparison appears to be unintentional because the types '"admin" | "supe" | "chaser"' and '"super_admin"' have no overlap.
+src/app/admin/page.tsx(191,93): error TS2367: This comparison appears to be unintentional because the types '"admin" | "supe" | "chaser"' and '"super_admin"' have no overlap.
+src/app/admin/page.tsx(200,91): error TS2367: This comparison appears to be unintentional because the types '"admin" | "supe" | "chaser"' and '"super_admin"' have no overlap.
+src/app/admin/page.tsx(205,24): error TS2367: This comparison appears to be unintentional because the types '"admin" | "supe" | "chaser"' and '"super_admin"' have no overlap.
+src/app/chaser/chat/[threadId]/page.tsx(35,27): error TS2339: Property 'title' does not exist on type 'Thread'.
+src/app/chaser/chat/[threadId]/page.tsx(37,30): error TS2339: Property 'uid' does not exist on type 'Profile'.
+src/app/chaser/chat/page.tsx(84,39): error TS2339: Property 'uid' does not exist on type 'Profile'.
+src/app/chaser/chat/page.tsx(136,58): error TS2339: Property 'uid' does not exist on type 'Profile'.
+src/app/chaser/favorites/page.tsx(64,74): error TS2339: Property 'uid' does not exist on type 'Profile'.
+src/app/chaser/incident/[id]/page.client.tsx(28,73): error TS2345: Argument of type '{}' is not assignable to parameter of type 'HomeownerForm | (() => HomeownerForm)'.
+src/app/chaser/incident/[id]/page.client.tsx(38,54): error TS2339: Property 'address' does not exist on type 'Incident'.
+src/app/chaser/incident/[id]/page.client.tsx(38,75): error TS2339: Property 'city' does not exist on type 'Incident'.
+src/app/chaser/incident/[id]/page.client.tsx(38,93): error TS2339: Property 'state' does not exist on type 'Incident'.
+src/app/chaser/incident/[id]/page.client.tsx(44,9): error TS2345: Argument of type 'IncidentId' is not assignable to parameter of type 'string'.
+src/app/chaser/incident/[id]/page.client.tsx(45,17): error TS2339: Property 'uid' does not exist on type 'Profile'.
+src/app/chaser/incident/[id]/page.client.tsx(48,18): error TS2339: Property 'address' does not exist on type 'Incident'.
+src/app/chaser/incident/[id]/page.client.tsx(130,153): error TS2339: Property 'address' does not exist on type 'Incident'.
+src/app/chaser/incident/[id]/page.client.tsx(130,179): error TS2339: Property 'city' does not exist on type 'Incident'.
+src/app/chaser/incident/[id]/page.client.tsx(130,202): error TS2339: Property 'state' does not exist on type 'Incident'.
+src/app/chaser/incident/[id]/page.client.tsx(174,34): error TS2339: Property 'incidentNumber' does not exist on type 'Incident'.
+src/app/chaser/incident/[id]/page.client.tsx(194,32): error TS2339: Property 'isFavorited' does not exist on type 'Incident'.
+src/app/chaser/incident/[id]/page.client.tsx(201,34): error TS2339: Property 'isFavorited' does not exist on type 'Incident'.
+src/app/chaser/incident/[id]/page.client.tsx(208,69): error TS2339: Property 'address' does not exist on type 'Incident'.
+src/app/chaser/incident/[id]/page.client.tsx(210,29): error TS2339: Property 'state' does not exist on type 'Incident'.
+src/app/chaser/incident/[id]/page.client.tsx(210,47): error TS2339: Property 'county' does not exist on type 'Incident'.
+src/app/chaser/incident/[id]/page.client.tsx(210,66): error TS2339: Property 'city' does not exist on type 'Incident'.
+src/app/chaser/incident/[id]/page.client.tsx(262,33): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'Timestamp' is not assignable to parameter of type 'string | number | Date'.
+      Type 'Timestamp' is missing the following properties from type 'Date': toDateString, toTimeString, toLocaleDateString, toLocaleTimeString, and 35 more.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'Timestamp' is not assignable to parameter of type 'string | number'.
+src/app/chaser/incident/[id]/page.client.tsx(268,33): error TS2339: Property 'message' does not exist on type 'Incident'.
+src/app/chaser/incident/[id]/page.client.tsx(268,53): error TS2339: Property 'address' does not exist on type 'Incident'.
+src/app/chaser/incident/[id]/page.client.tsx(291,37): error TS2345: Argument of type 'IncidentId' is not assignable to parameter of type 'string'.
+src/app/chaser/incident/[id]/page.client.tsx(300,27): error TS2339: Property 'notes' does not exist on type 'Incident'.
+src/app/chaser/incident/[id]/page.client.tsx(300,45): error TS2339: Property 'notes' does not exist on type 'Incident'.
+src/app/chaser/incident/[id]/page.client.tsx(303,46): error TS2339: Property 'notes' does not exist on type 'Incident'.
+src/app/chaser/incident/[id]/page.client.tsx(305,31): error TS2339: Property 'notes' does not exist on type 'Incident'.
+src/app/chaser/incident/[id]/page.client.tsx(326,57): error TS2339: Property 'name' does not exist on type 'FileMeta'.
+src/app/chaser/incident/[id]/page.client.tsx(377,43): error TS2339: Property 'address' does not exist on type 'Incident'.
+src/app/chaser/incidents/page.tsx(87,43): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number | Date'.
+      Type '{ seconds: number; }' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number'.
+      Type 'Date' is not assignable to type 'string | number'.
+src/app/chaser/incidents/page.tsx(99,44): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number | Date'.
+      Type '{ seconds: number; }' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number'.
+      Type 'Date' is not assignable to type 'string | number'.
+src/app/chaser/incidents/page.tsx(99,78): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number | Date'.
+      Type '{ seconds: number; }' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number'.
+      Type 'Date' is not assignable to type 'string | number'.
+src/app/chaser/incidents/page.tsx(155,48): error TS2345: Argument of type '"/chaser/map"' is not assignable to parameter of type 'RouteImpl<"/chaser/map">'.
+src/app/chaser/incidents/page.tsx(204,37): error TS2339: Property 'settings' does not exist on type 'Profile'.
+src/app/chaser/incidents/page.tsx(206,28): error TS2339: Property 'settings' does not exist on type 'Profile'.
+src/app/chaser/map/page.tsx(18,37): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number | Date'.
+      Type '{ seconds: number; }' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number'.
+      Type 'Date' is not assignable to type 'string | number'.
+src/app/chaser/map/page.tsx(23,48): error TS2339: Property 'ts' does not exist on type 'IncidentUpdate'.
+src/app/chaser/map/page.tsx(24,35): error TS2339: Property 'ts' does not exist on type 'IncidentUpdate'.
+src/app/chaser/profile/page.tsx(58,13): error TS2367: This comparison appears to be unintentional because the types '"admin" | "supe" | "chaser"' and '"super_admin"' have no overlap.
+src/app/chaser/profile/page.tsx(67,51): error TS2367: This comparison appears to be unintentional because the types '"admin" | "supe" | "chaser"' and '"super_admin"' have no overlap.
+src/app/chaser/profile/page.tsx(75,32): error TS2339: Property 'stats' does not exist on type 'Profile'.
+src/app/chaser/profile/page.tsx(76,28): error TS2339: Property 'stats' does not exist on type 'Profile'.
+src/app/chaser/profile/page.tsx(77,33): error TS2339: Property 'stats' does not exist on type 'Profile'.
+src/app/chaser/profile/page.tsx(81,31): error TS2339: Property 'payout' does not exist on type 'Profile'.
+src/app/chaser/profile/page.tsx(86,34): error TS2339: Property 'settings' does not exist on type 'Profile'.
+src/app/chaser/profile/page.tsx(87,38): error TS2339: Property 'settings' does not exist on type 'Profile'.
+src/app/chaser/profile/page.tsx(95,31): error TS2339: Property 'payout' does not exist on type 'Profile'.
+src/app/chaser/profile/page.tsx(96,36): error TS2339: Property 'payout' does not exist on type 'Profile'.
+src/app/chaser/profile/page.tsx(97,34): error TS2339: Property 'payout' does not exist on type 'Profile'.
+src/app/signup/new/page.tsx(414,80): error TS2339: Property 'click' does not exist on type 'Element'.
+src/app/supe/chat/[threadId]/page.tsx(35,27): error TS2339: Property 'title' does not exist on type 'Thread'.
+src/app/supe/chat/[threadId]/page.tsx(37,30): error TS2339: Property 'uid' does not exist on type 'Profile'.
+src/app/supe/chat/page.tsx(74,39): error TS2339: Property 'uid' does not exist on type 'Profile'.
+src/app/supe/chat/page.tsx(128,58): error TS2339: Property 'uid' does not exist on type 'Profile'.
+src/app/supe/favorites/page.tsx(30,74): error TS2339: Property 'uid' does not exist on type 'Profile'.
+src/app/supe/favorites/page.tsx(155,24): error TS18048: 'incident' is possibly 'undefined'.
+src/app/supe/favorites/page.tsx(156,19): error TS2322: Type 'IncidentLite | undefined' is not assignable to type 'IncidentLite'.
+  Type 'undefined' is not assignable to type 'IncidentLite'.
+src/app/supe/incident/[id]/page.client.tsx(27,73): error TS2345: Argument of type '{}' is not assignable to parameter of type 'HomeownerForm | (() => HomeownerForm)'.
+src/app/supe/incident/[id]/page.client.tsx(58,69): error TS2339: Property 'incidentNumber' does not exist on type 'Incident'.
+src/app/supe/incident/[id]/page.client.tsx(98,153): error TS2339: Property 'address' does not exist on type 'Incident'.
+src/app/supe/incident/[id]/page.client.tsx(98,179): error TS2339: Property 'city' does not exist on type 'Incident'.
+src/app/supe/incident/[id]/page.client.tsx(98,202): error TS2339: Property 'state' does not exist on type 'Incident'.
+src/app/supe/incident/[id]/page.client.tsx(116,34): error TS2339: Property 'incidentNumber' does not exist on type 'Incident'.
+src/app/supe/incident/[id]/page.client.tsx(128,32): error TS2339: Property 'isFavorited' does not exist on type 'Incident'.
+src/app/supe/incident/[id]/page.client.tsx(135,34): error TS2339: Property 'isFavorited' does not exist on type 'Incident'.
+src/app/supe/incident/[id]/page.client.tsx(142,69): error TS2339: Property 'address' does not exist on type 'Incident'.
+src/app/supe/incident/[id]/page.client.tsx(144,29): error TS2339: Property 'state' does not exist on type 'Incident'.
+src/app/supe/incident/[id]/page.client.tsx(144,47): error TS2339: Property 'county' does not exist on type 'Incident'.
+src/app/supe/incident/[id]/page.client.tsx(144,66): error TS2339: Property 'city' does not exist on type 'Incident'.
+src/app/supe/incident/[id]/page.client.tsx(196,33): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'Timestamp' is not assignable to parameter of type 'string | number | Date'.
+      Type 'Timestamp' is missing the following properties from type 'Date': toDateString, toTimeString, toLocaleDateString, toLocaleTimeString, and 35 more.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'Timestamp' is not assignable to parameter of type 'string | number'.
+src/app/supe/incident/[id]/page.client.tsx(202,33): error TS2339: Property 'message' does not exist on type 'Incident'.
+src/app/supe/incident/[id]/page.client.tsx(202,53): error TS2339: Property 'address' does not exist on type 'Incident'.
+src/app/supe/incident/[id]/page.client.tsx(225,37): error TS2345: Argument of type 'IncidentId' is not assignable to parameter of type 'string'.
+src/app/supe/incident/[id]/page.client.tsx(234,27): error TS2339: Property 'notes' does not exist on type 'Incident'.
+src/app/supe/incident/[id]/page.client.tsx(234,45): error TS2339: Property 'notes' does not exist on type 'Incident'.
+src/app/supe/incident/[id]/page.client.tsx(237,46): error TS2339: Property 'notes' does not exist on type 'Incident'.
+src/app/supe/incident/[id]/page.client.tsx(239,31): error TS2339: Property 'notes' does not exist on type 'Incident'.
+src/app/supe/incident/[id]/page.client.tsx(255,17): error TS2322: Type 'Dispatch<SetStateAction<HomeownerForm>>' is not assignable to type '(partial: Partial<HomeownerForm>) => void'.
+  Types of parameters 'value' and 'partial' are incompatible.
+    Type 'Partial<HomeownerForm>' is not assignable to type 'SetStateAction<HomeownerForm>'.
+      Type 'Partial<HomeownerForm>' is not assignable to type 'HomeownerForm'.
+        Types of property 'phone' are incompatible.
+          Type 'string | undefined' is not assignable to type 'string'.
+            Type 'undefined' is not assignable to type 'string'.
+src/app/supe/incident/[id]/page.client.tsx(261,28): error TS2322: Type '{ incidentId: string; files: FileMeta[]; }' is not assignable to type 'IntrinsicAttributes & DocsManagerProps'.
+  Property 'incidentId' does not exist on type 'IntrinsicAttributes & DocsManagerProps'.
+src/app/supe/incident/[id]/page.client.tsx(266,17): error TS2322: Type '{ incidentId: string; files: FileMeta[]; }' is not assignable to type 'IntrinsicAttributes & ESignManagerProps'.
+  Property 'incidentId' does not exist on type 'IntrinsicAttributes & ESignManagerProps'.
+src/app/supe/incident/[id]/page.client.tsx(267,45): error TS2339: Property 'type' does not exist on type 'FileMeta'.
+src/app/supe/incident/[id]/page.client.tsx(272,16): error TS2741: Property 'incidentAddress' is missing in type '{ incidentId: string; }' but required in type 'IncidentChatProps'.
+src/app/supe/incidents/page.tsx(87,43): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number | Date'.
+      Type '{ seconds: number; }' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number'.
+      Type 'Date' is not assignable to type 'string | number'.
+src/app/supe/incidents/page.tsx(99,44): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number | Date'.
+      Type '{ seconds: number; }' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number'.
+      Type 'Date' is not assignable to type 'string | number'.
+src/app/supe/incidents/page.tsx(99,78): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number | Date'.
+      Type '{ seconds: number; }' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number'.
+      Type 'Date' is not assignable to type 'string | number'.
+src/app/supe/incidents/page.tsx(204,37): error TS2339: Property 'settings' does not exist on type 'Profile'.
+src/app/supe/incidents/page.tsx(206,28): error TS2339: Property 'settings' does not exist on type 'Profile'.
+src/app/supe/map/page.tsx(18,37): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number | Date'.
+      Type '{ seconds: number; }' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number'.
+      Type 'Date' is not assignable to type 'string | number'.
+src/app/supe/map/page.tsx(23,48): error TS2339: Property 'ts' does not exist on type 'IncidentUpdate'.
+src/app/supe/map/page.tsx(24,35): error TS2339: Property 'ts' does not exist on type 'IncidentUpdate'.
+src/app/supe/profile/page.tsx(66,51): error TS2367: This comparison appears to be unintentional because the types '"admin" | "supe" | "chaser"' and '"super_admin"' have no overlap.
+src/app/supe/profile/page.tsx(74,32): error TS2339: Property 'stats' does not exist on type 'Profile'.
+src/app/supe/profile/page.tsx(75,28): error TS2339: Property 'stats' does not exist on type 'Profile'.
+src/app/supe/profile/page.tsx(76,33): error TS2339: Property 'stats' does not exist on type 'Profile'.
+src/app/supe/profile/page.tsx(83,31): error TS2339: Property 'payout' does not exist on type 'Profile'.
+src/app/supe/profile/page.tsx(88,34): error TS2339: Property 'settings' does not exist on type 'Profile'.
+src/app/supe/profile/page.tsx(89,38): error TS2339: Property 'settings' does not exist on type 'Profile'.
+src/app/supe/profile/page.tsx(97,31): error TS2339: Property 'payout' does not exist on type 'Profile'.
+src/app/supe/profile/page.tsx(98,36): error TS2339: Property 'payout' does not exist on type 'Profile'.
+src/app/supe/profile/page.tsx(99,34): error TS2339: Property 'payout' does not exist on type 'Profile'.
+src/components/features/avatar.tsx(9,8): error TS2307: Cannot find module '@/lib/avatar-utils' or its corresponding type declarations.
+src/components/features/avatar.tsx(26,21): error TS7053: Element implicitly has an 'any' type because expression of type 'AvatarProps' can't be used to index type '{ sm: number; md: number; lg: number; xl: number; }'.
+src/components/features/avatar.tsx(55,116): error TS7053: Element implicitly has an 'any' type because expression of type 'AvatarProps' can't be used to index type '{ sm: string; md: string; lg: string; xl: string; }'.
+src/components/features/avatar.tsx(84,51): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ sm: string; md: string; lg: string; xl: string; }'.
+src/components/features/chat-room.tsx(63,33): error TS2345: Argument of type 'string | Date | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/features/docs-manager.tsx(100,25): error TS2339: Property 'kind' does not exist on type 'FileMeta'.
+src/components/features/docs-manager.tsx(107,76): error TS2339: Property 'name' does not exist on type 'FileMeta'.
+src/components/features/docs-manager.tsx(110,40): error TS2339: Property 'name' does not exist on type 'string'.
+src/components/features/docs-manager.tsx(113,40): error TS2339: Property 'role' does not exist on type 'string'.
+src/components/features/docs-manager.tsx(115,79): error TS2339: Property 'ts' does not exist on type 'FileMeta'.
+src/components/features/docs-manager.tsx(117,25): error TS2339: Property 'message' does not exist on type 'FileMeta'.
+src/components/features/docs-manager.tsx(117,85): error TS2339: Property 'message' does not exist on type 'FileMeta'.
+src/components/features/esign-manager.tsx(101,74): error TS2339: Property 'name' does not exist on type 'FileMeta'.
+src/components/features/esign-manager.tsx(103,48): error TS2339: Property 'name' does not exist on type 'string'.
+src/components/features/esign-manager.tsx(103,72): error TS2339: Property 'role' does not exist on type 'string'.
+src/components/features/god-mode-card.tsx(65,17): error TS2345: Argument of type 'string' is not assignable to parameter of type 'RouteImpl<string>'.
+src/components/features/google-map-live.tsx(16,34): error TS2503: Cannot find namespace 'google'.
+src/components/features/google-map-live.tsx(17,29): error TS2503: Cannot find namespace 'google'.
+src/components/features/google-map-live.tsx(37,8): error TS2339: Property 'load' does not exist on type 'Loader'.
+src/components/features/google-map-live.tsx(38,14): error TS7006: Parameter 'google' implicitly has an 'any' type.
+src/components/features/google-map-live.tsx(42,60): error TS2339: Property 'lat' does not exist on type 'IncidentLite'.
+src/components/features/google-map-live.tsx(42,71): error TS2339: Property 'lng' does not exist on type 'IncidentLite'.
+src/components/features/google-map-live.tsx(46,72): error TS2339: Property 'lat' does not exist on type 'IncidentLite'.
+src/components/features/google-map-live.tsx(47,72): error TS2339: Property 'lng' does not exist on type 'IncidentLite'.
+src/components/features/google-map-live.tsx(64,15): error TS7006: Parameter 'err' implicitly has an 'any' type.
+src/components/features/google-map-live.tsx(80,56): error TS2339: Property 'lat' does not exist on type 'IncidentLite'.
+src/components/features/google-map-live.tsx(80,67): error TS2339: Property 'lng' does not exist on type 'IncidentLite'.
+src/components/features/google-map-live.tsx(81,24): error TS2304: Cannot find name 'google'.
+src/components/features/google-map-live.tsx(84,40): error TS2339: Property 'lat' does not exist on type 'IncidentLite'.
+src/components/features/google-map-live.tsx(84,60): error TS2339: Property 'lng' does not exist on type 'IncidentLite'.
+src/components/features/google-map-live.tsx(86,26): error TS2304: Cannot find name 'google'.
+src/components/features/google-map-live.tsx(90,20): error TS2304: Cannot find name 'google'.
+src/components/features/google-map-live.tsx(94,30): error TS2304: Cannot find name 'google'.
+src/components/features/google-map-live.tsx(99,62): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number | Date'.
+      Type '{ seconds: number; }' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number'.
+      Type 'Date' is not assignable to type 'string | number'.
+src/components/features/google-map-live.tsx(116,24): error TS2304: Cannot find name 'google'.
+src/components/features/google-map-live.tsx(118,9): error TS2304: Cannot find name 'google'.
+src/components/features/google-map-live.tsx(156,40): error TS2339: Property 'lat' does not exist on type 'IncidentLite'.
+src/components/features/google-map-live.tsx(156,51): error TS2339: Property 'lng' does not exist on type 'IncidentLite'.
+src/components/features/homeowner-form.tsx(188,13): error TS2322: Type 'string | Date' is not assignable to type 'string | number | readonly string[] | undefined'.
+  Type 'Date' is not assignable to type 'string | number | readonly string[] | undefined'.
+    Type 'Date' is missing the following properties from type 'readonly string[]': length, concat, join, slice, and 26 more.
+src/components/features/incident-chat.tsx(40,19): error TS2339: Property 'name' does not exist on type 'Profile'.
+src/components/features/incident-chat.tsx(83,17): error TS2339: Property 'name' does not exist on type 'Profile'.
+src/components/features/profile-header.tsx(41,22): error TS2339: Property 'agency' does not exist on type 'Profile'.
+src/components/features/profile-header.tsx(41,66): error TS2339: Property 'agency' does not exist on type 'Profile'.
+src/components/features/role-layout.tsx(23,7): error TS2367: This comparison appears to be unintentional because the types '"admin" | "supe" | "chaser"' and '"super_admin"' have no overlap.
+src/components/features/role-layout.tsx(25,5): error TS2322: Type '"super_admin" | "supe"' is not assignable to type '"admin" | "supe" | "chaser"'.
+  Type '"super_admin"' is not assignable to type '"admin" | "supe" | "chaser"'.
+src/components/features/role-layout.tsx(34,20): error TS2322: Type '"admin" | "supe" | "chaser"' is not assignable to type '"super_admin" | "supe" | "chaser"'.
+  Type '"admin"' is not assignable to type '"super_admin" | "supe" | "chaser"'.
+src/components/features/role-switcher.tsx(34,17): error TS2345: Argument of type 'string' is not assignable to parameter of type 'RouteImpl<string>'.
+src/components/features/supe-controls-card.tsx(78,17): error TS2345: Argument of type 'string' is not assignable to parameter of type 'RouteImpl<string>'.
+src/components/features/thread-list.tsx(28,39): error TS2339: Property 'kind' does not exist on type 'Thread'.
+src/components/features/thread-list.tsx(48,57): error TS2339: Property 'kind' does not exist on type 'Thread'.
+src/components/features/thread-list.tsx(51,71): error TS2339: Property 'title' does not exist on type 'Thread'.
+src/components/features/thread-list.tsx(52,25): error TS2339: Property 'lastMessageTimestamp' does not exist on type 'Thread'.
+src/components/features/thread-list.tsx(53,79): error TS2339: Property 'lastMessageTimestamp' does not exist on type 'Thread'.
+src/components/features/thread-list.tsx(56,23): error TS2339: Property 'lastMessageContent' does not exist on type 'Thread'.
+src/components/features/thread-list.tsx(57,76): error TS2339: Property 'lastMessageContent' does not exist on type 'Thread'.
+src/components/features/thread-list.tsx(59,23): error TS2339: Property 'kind' does not exist on type 'Thread'.
+src/components/layouts/bottom-nav.tsx(84,15): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: LinkProps<string>): JSX.Element', gave the following error.
+    Type 'string' is not assignable to type 'RouteImpl<string> | UrlObject'.
+  Overload 2 of 2, '(props: LinkProps<string>): JSX.Element', gave the following error.
+    Type 'string' is not assignable to type 'RouteImpl<string> | UrlObject'.
+src/core/application/auth/get-current-user/get-current-user.use-case.ts(23,44): error TS1361: 'UseCase' cannot be used as a value because it was imported using 'import type'.
+src/core/application/auth/sign-in/sign-in.use-case.ts(32,60): error TS1272: A type referenced in a decorated signature must be imported with 'import type' or a namespace import when 'isolatedModules' and 'emitDecoratorMetadata' are enabled.
+src/core/application/auth/sign-in/sign-in.use-case.ts(33,54): error TS1272: A type referenced in a decorated signature must be imported with 'import type' or a namespace import when 'isolatedModules' and 'emitDecoratorMetadata' are enabled.
+src/core/application/auth/sign-in/sign-in.use-case.ts(105,60): error TS1272: A type referenced in a decorated signature must be imported with 'import type' or a namespace import when 'isolatedModules' and 'emitDecoratorMetadata' are enabled.
+src/core/application/auth/sign-in/sign-in.use-case.ts(106,54): error TS1272: A type referenced in a decorated signature must be imported with 'import type' or a namespace import when 'isolatedModules' and 'emitDecoratorMetadata' are enabled.
+src/core/application/auth/sign-in/sign-in.use-case.ts(140,25): error TS2304: Cannot find name 'UseCaseError'.
+src/core/application/auth/sign-out/sign-out.use-case.ts(21,60): error TS1272: A type referenced in a decorated signature must be imported with 'import type' or a namespace import when 'isolatedModules' and 'emitDecoratorMetadata' are enabled.
+src/core/application/auth/sign-up/sign-up.use-case.ts(30,60): error TS1272: A type referenced in a decorated signature must be imported with 'import type' or a namespace import when 'isolatedModules' and 'emitDecoratorMetadata' are enabled.
+src/core/application/auth/sign-up/sign-up.use-case.ts(31,54): error TS1272: A type referenced in a decorated signature must be imported with 'import type' or a namespace import when 'isolatedModules' and 'emitDecoratorMetadata' are enabled.
+src/core/application/auth/sign-up/sign-up.use-case.ts(32,56): error TS1272: A type referenced in a decorated signature must be imported with 'import type' or a namespace import when 'isolatedModules' and 'emitDecoratorMetadata' are enabled.
+src/core/application/auth/sign-up/sign-up.use-case.ts(138,23): error TS2304: Cannot find name 'UseCaseError'.
+src/core/application/incidents/create-incident/create-incident.use-case.ts(40,60): error TS1272: A type referenced in a decorated signature must be imported with 'import type' or a namespace import when 'isolatedModules' and 'emitDecoratorMetadata' are enabled.
+src/core/application/incidents/create-incident/create-incident.use-case.ts(41,68): error TS1272: A type referenced in a decorated signature must be imported with 'import type' or a namespace import when 'isolatedModules' and 'emitDecoratorMetadata' are enabled.
+src/core/application/incidents/create-incident/create-incident.use-case.ts(42,48): error TS1272: A type referenced in a decorated signature must be imported with 'import type' or a namespace import when 'isolatedModules' and 'emitDecoratorMetadata' are enabled.
+src/core/application/incidents/create-incident/create-incident.use-case.ts(43,70): error TS1272: A type referenced in a decorated signature must be imported with 'import type' or a namespace import when 'isolatedModules' and 'emitDecoratorMetadata' are enabled.
+src/core/application/incidents/create-incident/create-incident.use-case.ts(64,21): error TS2511: Cannot create an instance of an abstract class.
+src/core/application/incidents/get-incidents/get-incidents.use-case.ts(40,60): error TS1272: A type referenced in a decorated signature must be imported with 'import type' or a namespace import when 'isolatedModules' and 'emitDecoratorMetadata' are enabled.
+src/core/application/incidents/get-incidents/get-incidents.use-case.ts(41,68): error TS1272: A type referenced in a decorated signature must be imported with 'import type' or a namespace import when 'isolatedModules' and 'emitDecoratorMetadata' are enabled.
+src/core/application/incidents/get-incidents/get-incidents.use-case.ts(77,9): error TS2353: Object literal may only specify known properties, and 'pageSize' does not exist in type 'Pagination'.
+src/core/application/incidents/get-incidents/get-incidents.use-case.ts(81,11): error TS7034: Variable 'result' implicitly has type 'any' in some locations where its type cannot be determined.
+src/core/application/incidents/get-incidents/get-incidents.use-case.ts(98,58): error TS2339: Property 'pageSize' does not exist on type 'Pagination'.
+src/core/application/incidents/get-incidents/get-incidents.use-case.ts(99,78): error TS2339: Property 'pageSize' does not exist on type 'Pagination'.
+src/core/application/incidents/get-incidents/get-incidents.use-case.ts(105,32): error TS2339: Property 'pageSize' does not exist on type 'Pagination'.
+src/core/application/incidents/get-incidents/get-incidents.use-case.ts(106,63): error TS2339: Property 'pageSize' does not exist on type 'Pagination'.
+src/core/application/incidents/get-incidents/get-incidents.use-case.ts(111,12): error TS7005: Variable 'result' implicitly has an 'any' type.
+src/core/domain/entities/incident/incident.entity.ts(250,9): error TS2322: Type 'Left<Error, void>' is not assignable to type 'Either<Error, Incident>'.
+  Type 'Left<Error, void>' is not assignable to type 'Left<Error, Incident>'.
+    Type 'void' is not assignable to type 'Incident'.
+src/core/domain/repositories/incident.repository.interface.ts(12,27): error TS2459: Module '"./user.repository.interface"' declares 'Pagination' locally, but it is not exported.
+src/hooks/use-incidents-with-distance.ts(20,15): error TS2305: Module '"./use-filters"' has no exported member 'IncidentFilters'.
+src/hooks/use-incidents-with-distance.ts(81,26): error TS2339: Property 'lat' does not exist on type 'IncidentLite'.
+src/hooks/use-incidents-with-distance.ts(81,51): error TS2339: Property 'lat' does not exist on type 'IncidentLite'.
+src/hooks/use-incidents-with-distance.ts(82,26): error TS2339: Property 'lng' does not exist on type 'IncidentLite'.
+src/hooks/use-incidents-with-distance.ts(82,51): error TS2339: Property 'lng' does not exist on type 'IncidentLite'.
+src/hooks/use-incidents-with-distance.ts(86,26): error TS2339: Property 'lat' does not exist on type 'IncidentLite'.
+src/hooks/use-incidents-with-distance.ts(87,26): error TS2339: Property 'lng' does not exist on type 'IncidentLite'.
+src/hooks/use-incidents-with-distance.ts(140,37): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number | Date'.
+      Type '{ seconds: number; }' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number'.
+      Type 'Date' is not assignable to type 'string | number'.
+src/hooks/use-incidents.ts(5,15): error TS2300: Duplicate identifier 'IncidentLite'.
+src/hooks/use-incidents.ts(5,29): error TS2300: Duplicate identifier 'IncidentUpdate'.
+src/hooks/use-incidents.ts(19,15): error TS2300: Duplicate identifier 'IncidentLite'.
+src/hooks/use-incidents.ts(19,29): error TS2300: Duplicate identifier 'IncidentUpdate'.
+src/hooks/use-incidents.ts(109,5): error TS2322: Type 'string' is not assignable to type '"fire" | "accident" | "hazard" | "medical" | "other"'.
+src/hooks/use-incidents.ts(145,3): error TS2740: Type '{ id: string; incidentNumber: string | number; updatedAt: string | { seconds: number; }; state: string; county: string; city: string; address: string; type: string; message: string; highAlert: boolean; ... 11 more ...; notes: { ...; }[]; }' is missing the following properties from type 'IncidentLite': title, description, status, priority, and 2 more.
+src/hooks/use-incidents.ts(153,30): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number | Date'.
+      Type '{ seconds: number; }' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number'.
+      Type 'Date' is not assignable to type 'string | number'.
+src/hooks/use-incidents.ts(271,24): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number | Date'.
+      Type '{ seconds: number; }' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number'.
+      Type 'Date' is not assignable to type 'string | number'.
+src/hooks/use-incidents.ts(271,58): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number | Date'.
+      Type '{ seconds: number; }' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number'.
+      Type 'Date' is not assignable to type 'string | number'.
+src/hooks/use-incidents.ts(309,39): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number | Date'.
+      Type '{ seconds: number; }' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | Date | { seconds: number; }' is not assignable to parameter of type 'string | number'.
+      Type 'Date' is not assignable to type 'string | number'.
+src/hooks/use-incidents.ts(324,11): error TS18048: 'inc.address' is possibly 'undefined'.
+src/hooks/use-incidents.ts(326,11): error TS18048: 'inc.message' is possibly 'undefined'.
+src/hooks/use-profile.ts(37,13): error TS2353: Object literal may only specify known properties, and 'uid' does not exist in type 'Profile'.
+src/hooks/use-profile.ts(80,59): error TS2339: Property 'settings' does not exist on type 'Profile'.
+src/hooks/use-profile.ts(86,62): error TS2339: Property 'settings' does not exist on type 'Profile'.
+src/hooks/use-profile.ts(107,33): error TS2339: Property 'settings' does not exist on type 'Profile'.
+src/hooks/use-profile.ts(120,55): error TS2339: Property 'payout' does not exist on type 'Profile'.
+src/hooks/use-profile.ts(126,60): error TS2339: Property 'payout' does not exist on type 'Profile'.
+src/hooks/use-profile.ts(131,33): error TS2339: Property 'payout' does not exist on type 'Profile'.
+src/infrastructure/di/bindings.ts(34,3): error TS2724: '"@application/shared/interfaces/services.interface"' has no exported member named 'ILocationService'. Did you mean 'INotificationService'?
+src/infrastructure/di/bindings.ts(35,3): error TS2305: Module '"@application/shared/interfaces/services.interface"' has no exported member 'ILoggerService'.
+src/infrastructure/di/bindings.ts(36,3): error TS2724: '"@application/shared/interfaces/services.interface"' has no exported member named 'ICacheService'. Did you mean 'IAuthService'?
+src/infrastructure/di/container.ts(9,21): error TS2305: Module '"inversify"' has no exported member 'interfaces'.
+src/infrastructure/di/container.ts(46,5): error TS2353: Object literal may only specify known properties, and 'skipBaseClassChecks' does not exist in type 'ContainerOptions'.
+src/infrastructure/di/container.ts(95,44): error TS2339: Property 'createChild' does not exist on type 'Container'.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(15,3): error TS2724: '"firebase-admin/firestore"' has no exported member named 'query'. Did you mean 'Query'?
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(16,3): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'where'.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(17,3): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'orderBy'.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(18,3): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'limit'.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(19,3): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'startAfter'.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(20,3): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'getDocs'.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(21,3): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'doc'.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(22,3): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'onSnapshot'.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(23,3): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'deleteDoc'.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(24,3): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'setDoc'.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(25,3): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'collection'.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(64,25): error TS2349: This expression is not callable.
+  Type 'Boolean' has no call signatures.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(65,35): error TS2532: Object is possibly 'undefined'.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(85,20): error TS2349: This expression is not callable.
+  Type 'Boolean' has no call signatures.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(113,31): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(186,34): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(194,34): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(204,36): error TS2339: Property 'pageSize' does not exist on type 'Pagination'.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(209,43): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(251,41): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(256,36): error TS7006: Parameter 'incident' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(265,38): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(312,43): error TS2339: Property 'unsafeCreate' does not exist on type 'Function'.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(352,14): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(353,17): error TS7006: Parameter 'incident' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(376,43): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(408,43): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(433,25): error TS7006: Parameter 'incident' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(434,9): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<IncidentStatus, number>'.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(435,9): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<IncidentType, number>'.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(436,9): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<IncidentPriority, number>'.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(440,27): error TS7006: Parameter 'response' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(477,47): error TS7006: Parameter 'snapshot' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(482,11): error TS7006: Parameter 'error' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(517,42): error TS7006: Parameter 'snapshot' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(518,45): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(526,38): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(530,38): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(534,11): error TS7006: Parameter 'error' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/incident.repository.firebase.ts(565,56): error TS7006: Parameter 'docSnap' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/user.repository.firebase.ts(13,3): error TS2724: '"firebase-admin/firestore"' has no exported member named 'query'. Did you mean 'Query'?
+src/infrastructure/firebase/repositories/user.repository.firebase.ts(14,3): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'where'.
+src/infrastructure/firebase/repositories/user.repository.firebase.ts(15,3): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'orderBy'.
+src/infrastructure/firebase/repositories/user.repository.firebase.ts(16,3): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'limit'.
+src/infrastructure/firebase/repositories/user.repository.firebase.ts(17,3): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'startAfter'.
+src/infrastructure/firebase/repositories/user.repository.firebase.ts(18,3): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'getDocs'.
+src/infrastructure/firebase/repositories/user.repository.firebase.ts(19,3): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'doc'.
+src/infrastructure/firebase/repositories/user.repository.firebase.ts(20,3): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'setDoc'.
+src/infrastructure/firebase/repositories/user.repository.firebase.ts(21,3): error TS2305: Module '"firebase-admin/firestore"' has no exported member 'collection'.
+src/infrastructure/firebase/repositories/user.repository.firebase.ts(49,25): error TS2349: This expression is not callable.
+  Type 'Boolean' has no call signatures.
+src/infrastructure/firebase/repositories/user.repository.firebase.ts(50,35): error TS2532: Object is possibly 'undefined'.
+src/infrastructure/firebase/repositories/user.repository.firebase.ts(70,20): error TS2349: This expression is not callable.
+  Type 'Boolean' has no call signatures.
+src/infrastructure/firebase/repositories/user.repository.firebase.ts(117,31): error TS7006: Parameter 'doc' implicitly has an 'any' type.
+src/infrastructure/firebase/repositories/user.repository.firebase.ts(163,36): error TS2339: Property 'pageSize' does not exist on type 'Pagination'.
+src/lib/mock/incidents.ts(5,5): error TS2322: Type 'string' is not assignable to type 'IncidentId'.
+src/lib/mock/incidents.ts(7,5): error TS2322: Type 'string' is not assignable to type 'Timestamp'.
+src/lib/mock/incidents.ts(13,5): error TS2322: Type '"Working Fire"' is not assignable to type 'IncidentType'.
+src/lib/mock/incidents.ts(18,9): error TS2353: Object literal may only specify known properties, and 'ts' does not exist in type 'IncidentUpdate'.
+src/lib/mock/incidents.ts(19,9): error TS2353: Object literal may only specify known properties, and 'ts' does not exist in type 'IncidentUpdate'.
+src/lib/mock/incidents.ts(20,9): error TS2353: Object literal may only specify known properties, and 'ts' does not exist in type 'IncidentUpdate'.
+src/lib/mock/incidents.ts(60,5): error TS2322: Type 'string' is not assignable to type 'IncidentId'.
+src/lib/mock/incidents.ts(62,5): error TS2322: Type 'string' is not assignable to type 'Timestamp'.
+src/lib/mock/incidents.ts(68,5): error TS2322: Type '"All Hands"' is not assignable to type 'IncidentType'.
+src/lib/mock/incidents.ts(72,17): error TS2353: Object literal may only specify known properties, and 'ts' does not exist in type 'IncidentUpdate'.
+src/lib/mock/incidents.ts(78,5): error TS2322: Type 'string' is not assignable to type 'IncidentId'.
+src/lib/mock/incidents.ts(80,5): error TS2322: Type 'string' is not assignable to type 'Timestamp'.
+src/lib/mock/incidents.ts(86,5): error TS2322: Type '"Smoke Condition"' is not assignable to type 'IncidentType'.
+src/lib/mock/incidents.ts(102,5): error TS2322: Type 'string' is not assignable to type 'IncidentId'.
+src/lib/mock/incidents.ts(104,5): error TS2322: Type 'string' is not assignable to type 'Timestamp'.
+src/lib/mock/incidents.ts(110,5): error TS2322: Type '"Fire Damage"' is not assignable to type 'IncidentType'.
+src/lib/mock/incidents.ts(115,9): error TS2353: Object literal may only specify known properties, and 'ts' does not exist in type 'IncidentUpdate'.
+src/lib/mock/incidents.ts(116,9): error TS2353: Object literal may only specify known properties, and 'ts' does not exist in type 'IncidentUpdate'.
+src/lib/mock/incidents.ts(117,9): error TS2353: Object literal may only specify known properties, and 'ts' does not exist in type 'IncidentUpdate'.
+src/lib/mock/incidents.ts(118,9): error TS2353: Object literal may only specify known properties, and 'ts' does not exist in type 'IncidentUpdate'.
+src/lib/mock/incidents.ts(119,9): error TS2353: Object literal may only specify known properties, and 'ts' does not exist in type 'IncidentUpdate'.
+src/lib/mock/incidents.ts(126,5): error TS2322: Type 'string' is not assignable to type 'IncidentId'.
+src/lib/mock/incidents.ts(128,5): error TS2322: Type 'string' is not assignable to type 'Timestamp'.
+src/lib/mock/incidents.ts(134,5): error TS2322: Type '"Working Fire"' is not assignable to type 'IncidentType'.
+src/lib/mock/incidents.ts(139,9): error TS2353: Object literal may only specify known properties, and 'ts' does not exist in type 'IncidentUpdate'.
+src/lib/mock/incidents.ts(140,9): error TS2353: Object literal may only specify known properties, and 'ts' does not exist in type 'IncidentUpdate'.
+src/lib/mock/incidents.ts(148,14): error TS2322: Type '{ id: IncidentId; incidentNumber: any; updatedAt: Timestamp; distanceMi: any; state: any; county: any; city: any; address: any; type: IncidentType; message: any; isFavorited: any; isBookmarked: any; updates: IncidentUpdate[]; }[]' is not assignable to type 'IncidentLite[]'.
+  Type '{ id: IncidentId; incidentNumber: any; updatedAt: Timestamp; distanceMi: any; state: any; county: any; city: any; address: any; type: IncidentType; message: any; isFavorited: any; isBookmarked: any; updates: IncidentUpdate[]; }' is missing the following properties from type 'IncidentLite': title, description, status, priority, and 2 more.
+src/lib/mock/incidents.ts(150,23): error TS2339: Property 'incidentNumber' does not exist on type 'Incident'.
+src/lib/mock/incidents.ts(152,19): error TS2339: Property 'distanceMi' does not exist on type 'Incident'.
+src/lib/mock/incidents.ts(153,14): error TS2339: Property 'state' does not exist on type 'Incident'.
+src/lib/mock/incidents.ts(154,15): error TS2339: Property 'county' does not exist on type 'Incident'.
+src/lib/mock/incidents.ts(155,13): error TS2339: Property 'city' does not exist on type 'Incident'.
+src/lib/mock/incidents.ts(156,16): error TS2339: Property 'address' does not exist on type 'Incident'.
+src/lib/mock/incidents.ts(158,16): error TS2339: Property 'message' does not exist on type 'Incident'.
+src/lib/mock/incidents.ts(159,20): error TS2339: Property 'isFavorited' does not exist on type 'Incident'.
+src/lib/mock/incidents.ts(160,21): error TS2339: Property 'isBookmarked' does not exist on type 'Incident'.
+src/lib/mock/profiles.ts(5,5): error TS2353: Object literal may only specify known properties, and 'uid' does not exist in type 'Profile'.
+src/lib/mock/profiles.ts(28,5): error TS2353: Object literal may only specify known properties, and 'uid' does not exist in type 'Profile'.
+src/lib/mock/profiles.ts(50,5): error TS2353: Object literal may only specify known properties, and 'uid' does not exist in type 'Profile'.
+src/lib/mock/threads.ts(6,5): error TS2353: Object literal may only specify known properties, and 'kind' does not exist in type 'Thread'.
+src/lib/mock/threads.ts(14,5): error TS2353: Object literal may only specify known properties, and 'kind' does not exist in type 'Thread'.
+src/lib/mock/threads.ts(23,5): error TS2353: Object literal may only specify known properties, and 'kind' does not exist in type 'Thread'.
+src/lib/mock/threads.ts(32,5): error TS2353: Object literal may only specify known properties, and 'kind' does not exist in type 'Thread'.
+src/lib/mock/threads.ts(42,5): error TS2739: Type '{ id: string; threadId: string; senderId: string; content: string; ts: string; }' is missing the following properties from type 'Message': type, readBy, timestamp
+src/lib/mock/threads.ts(49,5): error TS2739: Type '{ id: string; threadId: string; senderId: string; content: string; ts: string; }' is missing the following properties from type 'Message': type, readBy, timestamp
+src/lib/mock/threads.ts(58,5): error TS2739: Type '{ id: string; threadId: string; senderId: string; content: string; ts: string; }' is missing the following properties from type 'Message': type, readBy, timestamp
+src/lib/mock/threads.ts(65,5): error TS2739: Type '{ id: string; threadId: string; senderId: string; content: string; ts: string; }' is missing the following properties from type 'Message': type, readBy, timestamp
+src/lib/modules/auth.module.ts(280,5): error TS2554: Expected 2 arguments, but got 1.
+src/lib/modules/chat.module.ts(21,14): error TS2614: Module '"../firebase/firebase"' has no exported member 'rtdb'. Did you mean to use 'import rtdb from "../firebase/firebase"' instead?
+src/lib/modules/chat.module.ts(250,26): error TS2345: Argument of type 'Unsubscribe' is not assignable to parameter of type 'EventType | undefined'.
+src/lib/modules/database.module.ts(28,3): error TS2395: Individual declarations in merged declaration 'runTransaction' must be all exported or all local.
+src/lib/modules/database.module.ts(28,3): error TS2440: Import declaration conflicts with local declaration of 'runTransaction'.
+src/lib/modules/database.module.ts(313,44): error TS2554: Expected 1 arguments, but got 2.
+src/lib/modules/database.module.ts(401,3): error TS2395: Individual declarations in merged declaration 'runTransaction' must be all exported or all local.
+src/lib/modules/incident.module.ts(203,9): error TS2349: This expression is not callable.
+  Type 'Number' has no call signatures.
+src/lib/repositories/auth.repository.firebase.ts(29,52): error TS2307: Cannot find module '../errors/auth.errors' or its corresponding type declarations.
+src/lib/utils/high-alert.ts(172,9): error TS2353: Object literal may only specify known properties, and 'vibrate' does not exist in type 'NotificationOptions'.
+src/lib/utils/logger.ts(64,58): error TS2698: Spread types may only be created from object types.
+src/lib/utils/realtime-database.ts(231,6): error TS2554: Expected 2 arguments, but got 3.
+src/lib/utils/realtime-database.ts(286,41): error TS2554: Expected 2 arguments, but got 3.
+src/presentation/actions/auth/get-user.action.ts(65,13): error TS2339: Property 'user' does not exist on type 'GetCurrentUserResponse'.
+src/presentation/actions/auth/get-user.action.ts(95,36): error TS2339: Property 'get' does not exist on type 'Promise<ReadonlyRequestCookies>'.
+src/presentation/actions/auth/sign-in.action.ts(56,13): error TS2339: Property 'user' does not exist on type 'SignInResponse'.
+src/presentation/actions/auth/sign-in.action.ts(60,21): error TS2345: Argument of type '["__emu_session", string | undefined, { httpOnly: boolean; secure: boolean; sameSite: "lax"; path: string; maxAge: number; }]' is not assignable to parameter of type '[key: string, value: string, cookie?: Partial<ResponseCookie> | undefined] | [options: ResponseCookie]'.
+  Type '["__emu_session", string | undefined, { httpOnly: boolean; secure: boolean; sameSite: "lax"; path: string; maxAge: number; }]' is not assignable to type '[key: string, value: string, cookie?: Partial<ResponseCookie> | undefined]'.
+    Type at position 1 in source is not compatible with type at position 1 in target.
+      Type 'string | undefined' is not assignable to type 'string'.
+        Type 'undefined' is not assignable to type 'string'.
+src/presentation/actions/auth/sign-in.action.ts(98,13): error TS2339: Property 'user' does not exist on type 'SignInResponse'.
+src/presentation/actions/auth/sign-in.action.ts(102,21): error TS2345: Argument of type '["__emu_session", string | undefined, { httpOnly: boolean; secure: boolean; sameSite: "lax"; path: string; maxAge: number; }]' is not assignable to parameter of type '[key: string, value: string, cookie?: Partial<ResponseCookie> | undefined] | [options: ResponseCookie]'.
+  Type '["__emu_session", string | undefined, { httpOnly: boolean; secure: boolean; sameSite: "lax"; path: string; maxAge: number; }]' is not assignable to type '[key: string, value: string, cookie?: Partial<ResponseCookie> | undefined]'.
+    Type at position 1 in source is not compatible with type at position 1 in target.
+      Type 'string | undefined' is not assignable to type 'string'.
+        Type 'undefined' is not assignable to type 'string'.
+src/presentation/actions/auth/sign-in.action.ts(126,12): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(url: RouteImpl<string>, type?: RedirectType | undefined): never', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'RouteImpl<string>'.
+  Overload 2 of 2, '(url: RouteImpl<string>, type?: RedirectType | undefined): never', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'RouteImpl<string>'.
+src/presentation/actions/auth/sign-up.action.ts(48,7): error TS2353: Object literal may only specify known properties, and 'name' does not exist in type 'SignUpRequest'.
+src/presentation/actions/auth/sign-up.action.ts(59,13): error TS2339: Property 'user' does not exist on type 'SignUpResponse'.
+src/presentation/actions/auth/sign-up.action.ts(59,19): error TS2339: Property 'sessionToken' does not exist on type 'SignUpResponse'.
+src/presentation/actions/incidents/create-incident.action.ts(60,7): error TS2353: Object literal may only specify known properties, and 'title' does not exist in type 'CreateIncidentRequest'.
+src/presentation/actions/incidents/create-incident.action.ts(75,35): error TS2551: Property 'incident' does not exist on type 'CreateIncidentResponse'. Did you mean 'incidentId'?
+src/presentation/actions/incidents/get-incidents.action.ts(107,11): error TS2322: Type '{ id: any; title: any; description: string; location: { lat: number; lng: number; address: string; }; type: string; priority: string; status: string; reportedBy: any; assignedSupes: any[]; chaserResponses: { ...; }; images: string[]; createdAt: any; updatedAt: any; }[]' is not assignable to type 'SerializedIncident[]'.
+  Type '{ id: any; title: any; description: string; location: { lat: number; lng: number; address: string; }; type: string; priority: string; status: string; reportedBy: any; assignedSupes: any[]; chaserResponses: { ...; }; images: string[]; createdAt: any; updatedAt: any; }' is not assignable to type 'SerializedIncident'.
+    Types of property 'type' are incompatible.
+      Type 'string' is not assignable to type 'IncidentType'.
+src/presentation/actions/incidents/get-incidents.action.ts(108,23): error TS2551: Property 'value' does not exist on type 'string'. Did you mean 'valueOf'?
+src/presentation/actions/incidents/get-incidents.action.ts(109,23): error TS2339: Property 'title' does not exist on type 'IncidentDto'.
+src/presentation/actions/incidents/get-incidents.action.ts(119,39): error TS2339: Property 'value' does not exist on type '{ id: string; displayName: string; }'.
+src/presentation/actions/incidents/get-incidents.action.ts(120,70): error TS2339: Property 'value' does not exist on type '{ id: string; displayName: string; }'.
+src/presentation/actions/incidents/get-incidents.action.ts(126,42): error TS2339: Property 'kilometers' does not exist on type 'number'.
+src/presentation/actions/incidents/get-incidents.action.ts(127,58): error TS2551: Property 'toISOString' does not exist on type 'string'. Did you mean 'toString'?
+src/presentation/actions/incidents/get-incidents.action.ts(132,37): error TS2551: Property 'toISOString' does not exist on type 'string'. Did you mean 'toString'?
+src/presentation/actions/incidents/get-incidents.action.ts(133,37): error TS2551: Property 'toISOString' does not exist on type 'string'. Did you mean 'toString'?
+ΓÇëELIFECYCLEΓÇë Command failed with exit code 2.

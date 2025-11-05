@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import type { FileMeta } from "@/types/extended-domain"
 
 interface ESignManagerProps {
+  incidentId?: string
   files: FileMeta[]
   onSendForESign: (docIds: string[], recipientEmail: string) => void
   onLiveSign: (signatureDataUrl: string) => void

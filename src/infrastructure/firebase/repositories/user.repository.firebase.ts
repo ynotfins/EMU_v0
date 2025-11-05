@@ -9,7 +9,16 @@ import {
   GeoPoint,
   Timestamp as FirestoreTimestamp,
   Query,
-  DocumentData
+  DocumentData,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAfter,
+  getDocs,
+  doc,
+  setDoc,
+  collection
 } from 'firebase-admin/firestore';
 import { User } from '@domain/entities/user/user.entity';
 import { UserId, Email, Role, Location } from '@domain/shared/value-objects';

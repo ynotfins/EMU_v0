@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import type { FileMeta } from "@/types/extended-domain"
 
 interface DocsManagerProps {
+  incidentId?: string
   files: FileMeta[]
   onPickFile: (file: File) => void
   onDeleteFile?: (fileId: string) => void

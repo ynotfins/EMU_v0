@@ -18,6 +18,45 @@ const db = admin.firestore();
 const mapsClient = new Client({});
 
 /**
+ * Allocate the next sequential incident id from a counter doc.
+ * If the counter does not exist yet, start from INCIDENT_ID_START (default 7000000).
+ */
+async function allocateNextIncidentId(): Promise<string> {
+  const counterRef = db.collection('_counters').doc('incidents');
+  let newId: number = 0;
+  await db.runTransaction(async (tx) => {
+    const counterSnap = await tx.get(counterRef);
+    const startFromEnv = Number(process.env.INCIDENT_ID_START || '7000000');
+    if (counterSnap.exists && typeof (counterSnap.data() as any).next === 'number') {
+      const currentNext = Number((counterSnap.data() as any).next);
+      newId = currentNext + 1;
+    } else {
+      // First allocation uses the start value directly
+      newId = startFromEnv;
+    }
+    tx.set(counterRef, { next: newId, updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+  });
+  return String(newId);
+}
+
+/**
+ * Map an external alert id to an internal sequential incident id (document id).
+ * If a mapping exists in `_idmap/{externalId}`, return it. Otherwise allocate
+ * a new internal id and persist the mapping.
+ */
+async function getOrCreateIncidentIdForExternal(externalId: string): Promise<string> {
+  const mapRef = db.collection('_idmap').doc(String(externalId));
+  const mapSnap = await mapRef.get();
+  if (mapSnap.exists) {
+    const data = mapSnap.data() as any;
+    if (data?.incidentId) return String(data.incidentId);
+  }
+  const internalId = await allocateNextIncidentId();
+  await mapRef.set({ incidentId: internalId, createdAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+  return internalId;
+}
+
+/**
  * Auto-Geocode New Incidents
  * 
  * Triggers when a new incident is created in Firestore.
@@ -234,7 +273,7 @@ export const scheduleGeocodeMissing = onSchedule('every 15 minutes', async (even
  *
  * Security: Optional shared secret via header `x-ingest-key` or query `key`.
  */
-export const xIngest = onRequest({ cors: true, region: 'us-central1' }, async (req, res) => {
+export const xIngest = onRequest({ cors: true, region: 'us-central1', invoker: 'public' }, async (req, res) => {
   try {
     if (req.method !== 'POST') {
       res.status(405).send('Method Not Allowed');
@@ -255,33 +294,94 @@ export const xIngest = onRequest({ cors: true, region: 'us-central1' }, async (r
       try { payload = JSON.parse(raw); } catch { /* ignore */ }
     }
 
+    const externalId = (payload?.id || payload?.externalId || '').toString().trim();
+    const title = (payload?.title || '').toString();
     const address = (payload?.address || '').toString();
     const city = (payload?.city || '').toString();
     const state = (payload?.state || '').toString();
     const message = (payload?.message || '').toString();
-    const type = (payload?.type || 'fire').toString();
+    const type = (payload?.type || title || 'alert').toString();
     const createdAt = admin.firestore.FieldValue.serverTimestamp();
 
-    if (!address) {
-      res.status(400).json({ ok: false, error: 'Missing address' });
+    if (!message) {
+      res.status(400).json({ ok: false, error: 'Missing message' });
       return;
     }
 
-    const doc = {
+    // If an external id is provided, map it to our internal sequential id
+    if (externalId) {
+      const internalId = await getOrCreateIncidentIdForExternal(externalId)
+      const ref = db.collection('incidents').doc(internalId)
+      const snap = await ref.get()
+      if (snap.exists) {
+        const data = snap.data() || {}
+        const prevText = (data.updatesText as string) || ''
+        const nextText = prevText ? `${prevText}\n${message}` : message
+        await ref.update({
+          externalId,
+          // preserve existing address unless explicitly sent
+          ...(address && { address }),
+          ...(city && { city }),
+          ...(state && { state }),
+          lastTitle: title,
+          lastType: type,
+          lastMessage: message,
+          lastTS: createdAt,
+          updatesText: nextText,
+          updateCount: admin.firestore.FieldValue.increment(1),
+          updatedAt: createdAt,
+          source: 'x-ingest',
+          stage: 'update',
+        })
+        res.status(200).json({ ok: true, id: internalId })
+        return
+      } else {
+        await ref.set({
+          id: internalId,
+          externalId,
+          address,
+          city,
+          state,
+          lastTitle: title,
+          lastType: type,
+          lastMessage: message,
+          lastTS: createdAt,
+          updatesText: message,
+          updateCount: 1,
+          lat: null as number | null,
+          lng: null as number | null,
+          createdAt,
+          updatedAt: createdAt,
+          source: 'x-ingest',
+          stage: 'update',
+        })
+        res.status(200).json({ ok: true, id: internalId })
+        return
+      }
+    }
+
+    // No id provided: create a new incident doc with allocated sequential id
+    const newId = await allocateNextIncidentId()
+    const ref = db.collection('incidents').doc(newId)
+    await ref.set({
+      id: newId,
       address,
       city,
       state,
-      message,
-      type,
+      lastTitle: title,
+      lastType: type,
+      lastMessage: message,
+      lastTS: createdAt,
+      updatesText: message,
+      updateCount: 1,
       lat: null as number | null,
       lng: null as number | null,
       createdAt,
       updatedAt: createdAt,
       source: 'x-ingest',
-    };
-
-    const ref = await db.collection('incidents').add(doc);
-    res.status(200).json({ ok: true, id: ref.id });
+      stage: 'update',
+    })
+    res.status(200).json({ ok: true, id: newId })
   } catch (err) {
     console.error('[X-Ingest] Error:', err);
     res.status(500).json({ ok: false, error: 'Internal error' });

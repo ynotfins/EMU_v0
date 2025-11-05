@@ -9,7 +9,7 @@ import { useProfile } from '@/hooks/use-profile';
 
 interface IncidentChatProps {
   incidentId: string;
-  incidentAddress: string;
+  incidentAddress?: string;
 }
 
 export function IncidentChat({ incidentId, incidentAddress }: IncidentChatProps) {
