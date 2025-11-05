@@ -160,7 +160,7 @@ export default function ChaserIncidentsPage() {
               )}
             </button>
             
-            <Button onClick={() => router.push("/chaser/map")} size="sm" className="bg-[#007AFF] hover:bg-[#0051D5] text-xs px-3 py-1 h-7">
+            <Button onClick={() => router.push("/chaser/map" as any)} size="sm" className="bg-[#007AFF] hover:bg-[#0051D5] text-xs px-3 py-1 h-7">
               <Map className="h-3 w-3 mr-1" />
               Live Map
             </Button>
@@ -209,9 +209,9 @@ export default function ChaserIncidentsPage() {
             onKeywordChange={setKeyword}
             highAlertEnabled={filters.highAlertOnly}
             onHighAlertChange={setHighAlertOnly}
-            highAlertSound={profile.settings.highAlertSound}
+            highAlertSound={profile.settings?.highAlertSound ?? 'default'}
             onHighAlertSoundChange={(soundId) => updateSettings({ highAlertSound: soundId })}
-            muted={profile.settings.muted}
+            muted={profile.settings?.muted ?? false}
             onMutedChange={(muted) => updateSettings({ muted })}
             minUpdates={filters.minUpdates}
             onMinUpdatesChange={setMinUpdates}

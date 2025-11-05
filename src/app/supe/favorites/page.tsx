@@ -36,9 +36,9 @@ export default function SupeFavoritesPage() {
   const notedIncidents = safeIncidents.filter((inc) => inc.notes && inc.notes.length > 0)
   
   // Get incidents for responses
-  const responseIncidents = responses.map(response => {
-    return safeIncidents.find(inc => inc.id === response.incidentId)
-  }).filter(Boolean)
+  const responseIncidents = responses
+    .map(response => safeIncidents.find(inc => inc.id === response.incidentId))
+    .filter((inc): inc is IncidentLite => inc !== undefined)
 
   // Handle favorite/bookmark with Firestore toggle logic
   const handleToggleFavorite = async (id: string) => {

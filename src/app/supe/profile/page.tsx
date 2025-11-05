@@ -71,22 +71,22 @@ export default function SupeProfilePage() {
           })()}
 
           <StatsCards
-            responded={profile.stats.responded}
-            noted={profile.stats.noted}
-            daysActive={profile.stats.daysActive}
+            responded={profile.stats?.responded ?? 0}
+            noted={profile.stats?.noted ?? 0}
+            daysActive={profile.stats?.daysActive ?? 0}
           />
 
           {/* Live Team Map - Above ID Verification */}
           <LiveTeamMap />
 
           <IDVerificationCard
-            verified={profile.payout.verified}
+            verified={profile.payout?.verified ?? false}
             onUploadID={() => console.log("[v0] Upload ID")}
           />
 
           <PreferencesCard
-            pushEnabled={profile.settings.pushEnabled}
-            trackingEnabled={profile.settings.trackingEnabled}
+            pushEnabled={profile.settings?.pushEnabled ?? true}
+            trackingEnabled={profile.settings?.trackingEnabled ?? true}
             onPushChange={(enabled) => updateSettings({ pushEnabled: enabled })}
             onTrackingChange={(enabled) =>
               updateSettings({ trackingEnabled: enabled })
@@ -94,9 +94,9 @@ export default function SupeProfilePage() {
           />
 
           <EmergencyPaymentCard
-            verified={profile.payout.verified}
-            cashappHandle={profile.payout.cashappHandle}
-            venmoHandle={profile.payout.venmoHandle}
+            verified={profile.payout?.verified ?? false}
+            cashappHandle={profile.payout?.cashappHandle}
+            venmoHandle={profile.payout?.venmoHandle}
             onSave={(cashapp, venmo) =>
               updatePayout({ cashappHandle: cashapp, venmoHandle: venmo })
             }

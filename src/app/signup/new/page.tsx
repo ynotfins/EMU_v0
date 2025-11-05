@@ -411,7 +411,7 @@ export default function NewSignupPage() {
                 />
                 <Button
                   type="button"
-                  onClick={() => document.querySelector('input[type="file"]')?.click()}
+                  onClick={() => (document.querySelector('input[type="file"]') as HTMLInputElement)?.click()}
                   disabled={loading}
                   className="w-full h-14 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl"
                 >

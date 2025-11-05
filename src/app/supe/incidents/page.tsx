@@ -209,9 +209,9 @@ export default function SupeIncidentsPage() {
             onKeywordChange={setKeyword}
             highAlertEnabled={filters.highAlertOnly}
             onHighAlertChange={setHighAlertOnly}
-            highAlertSound={profile.settings.highAlertSound}
+            highAlertSound={profile.settings?.highAlertSound ?? 'default'}
             onHighAlertSoundChange={(soundId) => updateSettings({ highAlertSound: soundId })}
-            muted={profile.settings.muted}
+            muted={profile.settings?.muted ?? false}
             onMutedChange={(muted) => updateSettings({ muted })}
             minUpdates={filters.minUpdates}
             onMinUpdatesChange={setMinUpdates}

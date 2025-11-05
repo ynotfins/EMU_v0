@@ -255,19 +255,27 @@ export default function Client({ id }: { id: string }) {
             <TabsContent value="homeowner" className="p-4">
               <HomeownerForm 
                 data={homeownerData}
-                onChange={setHomeownerData}
+                onChange={(partial) => setHomeownerData(prev => ({ ...prev, ...partial }))}
                 incidentId={id}
               />
             </TabsContent>
 
             <TabsContent value="docs" className="p-4">
-              <DocsManager incidentId={id} files={files || []} />
+              <DocsManager 
+                incidentId={id} 
+                files={files || []}
+                onPickFile={(file) => console.log('[Docs] Pick file:', file.name)}
+                onDeleteFile={(fileId) => console.log('[Docs] Delete file:', fileId)}
+                canDelete={true}
+              />
             </TabsContent>
 
             <TabsContent value="sign" className="p-4">
               <ESignManager 
                 incidentId={id} 
                 files={files?.filter(f => f.type === 'document') || []}
+                onSendForESign={(docIds, email) => console.log('[ESign] Send:', docIds, email)}
+                onLiveSign={(signature) => console.log('[ESign] Live sign:', signature.substring(0, 50))}
               />
             </TabsContent>
 
