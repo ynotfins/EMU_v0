@@ -1,31 +1,17 @@
 /**
  * Authentication Middleware
  * 
- * Protects routes and validates sessions using Next.js middleware.
- * Runs on the Edge runtime for optimal performance.
+ * NOTE: Currently DISABLED because Firebase Auth uses localStorage, not cookies.
+ * The middleware was checking for cookies that Firebase Auth doesn't set,
+ * causing redirect loops. Client-side Firebase Auth handles authentication via
+ * ProtectedRoute component instead.
+ * 
+ * TODO: If you want server-side auth checking, implement cookie-based auth
+ * or use Firebase Admin SDK to verify tokens server-side.
  */
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-
-// Cookie names
-const SESSION_COOKIE_NAME = '__emu_session';
-const AUTH_COOKIE_NAME = '__emu_authed';
-
-// Public routes that don't require authentication
-const PUBLIC_ROUTES = [
-  '/',
-  '/login',
-  '/signup',
-  '/signup/new',
-  '/forgot-password',
-  '/reset-password',
-  '/unauthorized',
-  '/about',
-  '/contact',
-  '/privacy',
-  '/terms',
-];
 
 // Static assets and API routes that should be ignored
 const IGNORED_PATHS = [
@@ -45,13 +31,6 @@ const IGNORED_PATHS = [
   '.js',
 ];
 
-// Role-based route access
-const ROLE_ROUTES = {
-  chaser: ['/chaser'],
-  supe: ['/supe'],
-  admin: ['/admin'],
-};
-
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
@@ -60,35 +39,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  // Allow access to public routes
-  if (PUBLIC_ROUTES.includes(pathname)) {
-    return NextResponse.next();
-  }
-  
-  // Check for authentication cookie
-  const authCookie = request.cookies.get(AUTH_COOKIE_NAME);
-  const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
-  
-  // If not authenticated, redirect to login
-  if (!authCookie || !sessionCookie) {
-    const redirectUrl = new URL('/login', request.url);
-    redirectUrl.searchParams.set('from', pathname);
-    return NextResponse.redirect(redirectUrl);
-  }
-  
-  // Role-based route protection
-  // Note: For now, we're just checking if the route starts with the role path
-  // In production, you'd validate the actual role from the session token
-  
-  // Check if accessing a role-specific route
-  for (const [role, routes] of Object.entries(ROLE_ROUTES)) {
-    if (routes.some(route => pathname.startsWith(route))) {
-      // For now, we'll allow access if authenticated
-      // In production, decode the session token to verify the role
-      return NextResponse.next();
-    }
-  }
-  
+  // MIDDLEWARE DISABLED - Firebase Auth handles authentication client-side
+  // via ProtectedRoute component. No server-side cookie checking needed.
   return NextResponse.next();
 }
 
