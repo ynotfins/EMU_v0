@@ -9,7 +9,7 @@
 import { User } from '../entities/user/user.entity';
 import { UserId, Email, Role } from '../shared/value-objects';
 import { Either } from '../shared/errors';
-import { Pagination } from './incident.repository.interface';
+import { Pagination, PaginatedResult } from './shared.types';
 
 export interface UserFilter {
   role?: Role;
@@ -21,15 +21,6 @@ export interface UserFilter {
 export interface UserSort {
   field: 'createdAt' | 'lastLogin' | 'displayName' | 'email';
   direction: 'asc' | 'desc';
-}
-
-
-export interface PaginatedResult<T> {
-  items: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
 }
 
 export interface IUserRepository {

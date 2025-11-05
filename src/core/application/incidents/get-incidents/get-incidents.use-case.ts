@@ -19,13 +19,9 @@ import {
   IncidentType, 
   IncidentPriority 
 } from '@domain/entities/incident/incident.entity';
-import { 
-  IUserRepository, 
-  IIncidentRepository,
-  IncidentFilter,
-  IncidentSort,
-  Pagination
-} from '@domain/repositories';
+import { IUserRepository } from '@domain/repositories/user.repository.interface';
+import { IIncidentRepository, IncidentFilter, IncidentSort } from '@domain/repositories/incident.repository.interface';
+import { Pagination } from '@domain/repositories/shared.types';
 import { TOKENS } from '@infrastructure/di/tokens';
 import { 
   GetIncidentsRequest, 

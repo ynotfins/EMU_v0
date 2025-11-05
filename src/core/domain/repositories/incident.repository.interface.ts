@@ -9,7 +9,7 @@
 import { Incident, IncidentStatus, IncidentType, IncidentPriority } from '../entities/incident/incident.entity';
 import { IncidentId, UserId, Timestamp } from '../shared/value-objects';
 import { Either } from '../shared/errors';
-import { PaginatedResult, Pagination } from './user.repository.interface';
+import { PaginatedResult, Pagination } from './shared.types';
 
 export interface IncidentFilter {
   status?: IncidentStatus | IncidentStatus[];
