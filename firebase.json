@@ -14,14 +14,14 @@
     "public": "out"
   },
   "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
+    "rules": "firebase-rules/firestore.rules",
+    "indexes": "firebase-rules/firestore.indexes.json"
   },
   "database": {
-    "rules": "database.rules.json"
+    "rules": "firebase-rules/database.rules.json"
   },
   "storage": {
-    "rules": "storage.rules"
+    "rules": "firebase-rules/storage.rules"
   },
   "functions": {
     "source": "functions",
