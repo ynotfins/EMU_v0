@@ -1,21 +1,20 @@
 ﻿"use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { onAuthStateChanged } from "firebase/auth"
 import { auth, db } from "@/lib/firebase/firebase"
 import { doc, getDoc } from "firebase/firestore"
 
 export default function HomePage() {
-  const router = useRouter()
   const [checking, setChecking] = useState(true)
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    // ONE-TIME check only - no listener to avoid race conditions
+    const checkAuthAndRedirect = async () => {
+      const user = auth.currentUser;
+      
       if (user) {
         console.log("[Home] User authenticated:", user.email)
         
-        // Check user role in Firestore
         try {
           const userDoc = await getDoc(doc(db, "users", user.uid))
           
@@ -23,30 +22,31 @@ export default function HomePage() {
             const role = userDoc.data().role
             console.log("[Home] User role:", role)
             
-            // Redirect based on role
-            if (role === "super_admin" || role === "admin" || role === "supe") {
-              router.push("/supe/incidents")
-            } else {
-              router.push("/chaser/incidents")
-            }
+            // Hard navigation to break loops
+            const targetPath = (role === "super_admin" || role === "admin" || role === "supe") 
+              ? "/supe/incidents" 
+              : "/chaser/incidents";
+            
+            window.location.href = targetPath;
           } else {
-            // No profile, go to incidents (will be created on login)
-            router.push("/chaser/incidents")
+            window.location.href = "/chaser/incidents";
           }
         } catch (error) {
           console.error("[Home] Error checking user role:", error)
-          router.push("/chaser/incidents")
+          window.location.href = "/chaser/incidents";
         }
       } else {
         console.log("[Home] No user authenticated, redirecting to login")
-        router.push("/login")
+        window.location.href = "/login";
       }
       
       setChecking(false)
-    })
+    }
 
-    return () => unsubscribe()
-  }, [router])
+    // Small delay to let auth initialize
+    const timer = setTimeout(checkAuthAndRedirect, 50);
+    return () => clearTimeout(timer);
+  }, [])
 
   if (checking) {
     return (
