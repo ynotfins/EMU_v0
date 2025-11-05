@@ -584,3 +584,41 @@ Documentation Cleanup Summary:
 - **165 files deleted** (38,418 lines removed)
 - **8 empty folders removed** (modules/, docs/Old/, src/docs/, tests/, src/test/builders, src/test/e2e, src/test/integration, src/test/mocks, src/test/setup)
 - Clean, minimal production codebase with zero test scaffolding
+
+### Update 2025-11-05T00:00:00Z
+[status]: active
+[id]: u_20251105_000000_geocode1
+[source]: action
+[reason]: Fixed geocoding errors on supes map
+
+**Issue Reported:**
+- Supes map not working
+- Console errors: `[geocodeAddress] ? Google Maps error: ZERO_RESULTS`
+- `[getIncidentDistance] ? Failed to geocode: , ,`
+- Multiple ZERO_RESULTS from both Google Maps and Nominatim
+
+**Root Cause:**
+- Incidents with empty address fields (missing address, city, or state)
+- `use-incidents-with-distance.ts` was building address strings like ", ," from empty data
+- These invalid addresses were being passed to geocoding API
+
+**Fixes Applied:**
+1. **Address Validation in geocodeAddress** (use-location-distance.ts):
+   - Added validation to skip empty/invalid addresses (< 3 characters)
+   - Clean address string before geocoding
+   - Prevents wasted API calls for invalid addresses
+
+2. **Proper Address Building** (use-incidents-with-distance.ts):
+   - Filter out empty address parts before joining
+   - Skip incidents with no valid address data
+   - Only geocode incidents with at least one valid address component
+
+**Result:**
+- No more ZERO_RESULTS errors for empty addresses
+- Console logs will show "Skipping incident: no valid address" for invalid data
+- Valid incidents continue to geocode normally
+- Map shows only incidents with valid coordinates
+
+**Deployment:**
+- Committed and pushed to rebuild-proper-architecture branch
+- Vercel will auto-deploy changes to rebuild.4axe.com
