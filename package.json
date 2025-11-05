@@ -21,7 +21,8 @@
     "check": "tsx scripts/pre-build-check.ts",
     "precommit": "tsx scripts/pre-build-check.ts",
     "deploy:preview": "vercel",
-    "deploy:prod": "vercel --prod"
+    "deploy:prod": "vercel --prod",
+    "test:login": "tsx scripts/e2e-login.ts"
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^2.0.2",
@@ -104,6 +105,8 @@
     "tailwindcss": "^4.1.9",
     "tsx": "^4.20.6",
     "tw-animate-css": "1.3.3",
+    "playwright": "^1.48.2",
+    "yaml": "^2.6.0",
     "typescript": "^5",
     "vercel": "^48.8.2"
   }

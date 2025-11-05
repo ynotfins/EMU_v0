@@ -52,6 +52,12 @@ firebase deploy --only functions:scheduleGeocodeMissing
 - **Creates**: CRM contact record automatically
 
 ### `scheduleGeocodeMissing`
+-
+### `xIngest`
+- **Trigger**: HTTPS (POST)
+- **Purpose**: Ingest BNN alert payloads and create a new incident
+- **Auth**: Optional shared secret via `x-ingest-key` header or `?key=` query
+
 - **Trigger**: Scheduled (every 15 minutes)
 - **Purpose**: Fallback geocoding for incidents that were missed
 - **Rate Limit**: 20 incidents per run, 1 request/second

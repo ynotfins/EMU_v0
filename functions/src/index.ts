@@ -9,6 +9,7 @@
 
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
+import { onRequest } from 'firebase-functions/v2/https';
 import * as admin from 'firebase-admin';
 import { Client } from '@googlemaps/google-maps-services-js';
 
@@ -222,5 +223,67 @@ export const scheduleGeocodeMissing = onSchedule('every 15 minutes', async (even
     } catch (error) {
       console.error('[Scheduled Geocode] Error:', error);
     }
+  }
+});
+
+/**
+ * HTTP Ingest Endpoint (X-Ingest)
+ *
+ * Accepts POSTed alert payloads and creates a new incident document.
+ * Intended for MacroDroid or other connectors to POST BNN alerts.
+ *
+ * Security: Optional shared secret via header `x-ingest-key` or query `key`.
+ */
+export const xIngest = onRequest({ cors: true, region: 'us-central1' }, async (req, res) => {
+  try {
+    if (req.method !== 'POST') {
+      res.status(405).send('Method Not Allowed');
+      return;
+    }
+
+    const sharedSecret = process.env.INGEST_SHARED_SECRET;
+    const provided = (req.get('x-ingest-key') || (req.query.key as string) || '').trim();
+    if (sharedSecret && provided !== sharedSecret) {
+      res.status(401).json({ ok: false, error: 'Unauthorized' });
+      return;
+    }
+
+    // Parse body (JSON expected). Fallback: attempt to parse text.
+    let payload: any = req.body;
+    if (!payload || Object.keys(payload).length === 0) {
+      const raw = (req as any).rawBody ? (req as any).rawBody.toString('utf8') : '';
+      try { payload = JSON.parse(raw); } catch { /* ignore */ }
+    }
+
+    const address = (payload?.address || '').toString();
+    const city = (payload?.city || '').toString();
+    const state = (payload?.state || '').toString();
+    const message = (payload?.message || '').toString();
+    const type = (payload?.type || 'fire').toString();
+    const createdAt = admin.firestore.FieldValue.serverTimestamp();
+
+    if (!address) {
+      res.status(400).json({ ok: false, error: 'Missing address' });
+      return;
+    }
+
+    const doc = {
+      address,
+      city,
+      state,
+      message,
+      type,
+      lat: null as number | null,
+      lng: null as number | null,
+      createdAt,
+      updatedAt: createdAt,
+      source: 'x-ingest',
+    };
+
+    const ref = await db.collection('incidents').add(doc);
+    res.status(200).json({ ok: true, id: ref.id });
+  } catch (err) {
+    console.error('[X-Ingest] Error:', err);
+    res.status(500).json({ ok: false, error: 'Internal error' });
   }
 });
