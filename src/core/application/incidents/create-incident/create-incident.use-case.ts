@@ -19,7 +19,7 @@ import {
   HomeownerInfo 
 } from '@domain/entities/incident/incident.entity';
 import { User } from '@domain/entities/user/user.entity';
-import { IUserRepository, IIncidentRepository } from '@domain/repositories';
+import type { IUserRepository, IIncidentRepository } from '@domain/repositories';
 import { InsufficientPermissionsError } from '@domain/entities/user/user.errors';
 import { TOKENS } from '@infrastructure/di/tokens';
 import { CreateIncidentRequest, CreateIncidentResponse } from './create-incident.dto';
@@ -29,7 +29,9 @@ import {
   toApplicationError 
 } from '@application/shared/errors/application.error';
 import { 
-  DomainEvent,
+  DomainEvent
+} from '@application/shared/interfaces/services.interface';
+import type { 
   IEventBus,
   INotificationService 
 } from '@application/shared/interfaces/services.interface';

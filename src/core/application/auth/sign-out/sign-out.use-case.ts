@@ -13,7 +13,7 @@ import {
   SessionError,
   toApplicationError 
 } from '@application/shared/errors/application.error';
-import { ISessionService } from '@application/shared/interfaces/services.interface';
+import type { ISessionService } from '@application/shared/interfaces/services.interface';
 
 @injectable()
 export class SignOutUseCase extends UseCase<SignOutRequest, SignOutResponse> {

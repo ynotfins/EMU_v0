@@ -10,16 +10,17 @@ import { UseCase } from '@application/shared/interfaces/use-case.interface';
 import { Either, left, right } from '@domain/shared/errors';
 import { Email, Role } from '@domain/shared/value-objects';
 import { User } from '@domain/entities/user/user.entity';
-import { IUserRepository } from '@domain/repositories';
+import type { IUserRepository } from '@domain/repositories';
 import { UserAlreadyExistsError } from '@domain/entities/user/user.errors';
 import { TOKENS } from '@infrastructure/di/tokens';
 import { SignUpRequest, SignUpResponse } from './sign-up.dto';
 import { 
   ApplicationError, 
-  ExternalServiceError, 
+  ExternalServiceError,
+  UseCaseError,
   toApplicationError 
 } from '@application/shared/errors/application.error';
-import { 
+import type { 
   IAuthService, 
   IEmailService 
 } from '@application/shared/interfaces/services.interface';

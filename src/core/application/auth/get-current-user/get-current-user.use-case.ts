@@ -6,7 +6,7 @@
  */
 
 import { injectable, inject } from 'inversify';
-import type { UseCase } from '@application/shared/interfaces/use-case.interface';
+import { UseCase } from '@application/shared/interfaces/use-case.interface';
 import { Either, left, right } from '@domain/shared/errors';
 import { UserId } from '@domain/shared/value-objects';
 import type { IUserRepository } from '@domain/repositories';

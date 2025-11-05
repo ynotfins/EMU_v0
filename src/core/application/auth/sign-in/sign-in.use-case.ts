@@ -11,7 +11,7 @@ import { injectable, inject } from 'inversify';
 import { UseCase } from '@application/shared/interfaces/use-case.interface';
 import { Either, left, right } from '@domain/shared/errors';
 import { Email, Role } from '@domain/shared/value-objects';
-import { IUserRepository } from '@domain/repositories';
+import type { IUserRepository } from '@domain/repositories';
 import { 
   InvalidUserCredentialsError, 
   UserNotActiveError,
@@ -23,8 +23,8 @@ import {
   SignInWithGoogleRequest, 
   SignInResponse 
 } from './sign-in.dto';
-import { ApplicationError, ExternalServiceError, toApplicationError } from '@application/shared/errors/application.error';
-import { IAuthService } from '@application/shared/interfaces/services.interface';
+import { ApplicationError, ExternalServiceError, UseCaseError, toApplicationError } from '@application/shared/errors/application.error';
+import type { IAuthService } from '@application/shared/interfaces/services.interface';
 
 @injectable()
 export class SignInWithEmailUseCase extends UseCase<SignInWithEmailRequest, SignInResponse> {
