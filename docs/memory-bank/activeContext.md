@@ -557,3 +557,30 @@ Documentation Cleanup Summary:
 - **Zero markdown files** except Memory Bank (6 files)
 - **Zero PowerShell scripts**
 - Ultra-minimal, production-ready codebase
+
+### Update 2025-01-05T03:15:00Z
+[status]: active
+[id]: u_20250105_031500_tests1
+[source]: human
+[reason]: Remove unused test infrastructure
+
+**Test Infrastructure Cleanup:**
+- Removed `/tests/` folder containing:
+  - credentials.yaml (test account credentials - no tests using it)
+- Removed `/src/test/` folder containing empty subdirectories:
+  - builders/ (empty)
+  - e2e/ (empty)
+  - integration/ (empty)
+  - mocks/ (empty)
+  - setup/ (empty)
+
+**Reason:**
+- No actual test files existed
+- Only empty scaffolding/structure
+- Test credentials had no associated test scripts (e2e-login.ts was removed earlier)
+- Can be recreated when proper testing is implemented
+
+**Updated Totals:**
+- **165 files deleted** (38,418 lines removed)
+- **8 empty folders removed** (modules/, docs/Old/, src/docs/, tests/, src/test/builders, src/test/e2e, src/test/integration, src/test/mocks, src/test/setup)
+- Clean, minimal production codebase with zero test scaffolding
