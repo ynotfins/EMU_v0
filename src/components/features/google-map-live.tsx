@@ -22,11 +22,33 @@ export function GoogleMapLive({ incidents, className = '', zoom = 10 }: GoogleMa
   useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
     if (!apiKey) {
+      console.error('[GoogleMapLive] No API key configured')
       setError(true)
       setLoading(false)
       return
     }
 
+    // Ensure mapRef is available before proceeding
+    if (!mapRef.current) {
+      console.warn('[GoogleMapLive] Map ref not ready, retrying...')
+      const timer = setTimeout(() => {
+        if (mapRef.current) {
+          initializeMap(apiKey)
+        } else {
+          console.error('[GoogleMapLive] Map ref never became available')
+          setError(true)
+          setLoading(false)
+        }
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+
+    initializeMap(apiKey)
+  }, [])
+
+  const initializeMap = (apiKey: string) => {
+    console.log('[GoogleMapLive] Initializing map...')
+    
     const loader = new Loader({
       apiKey,
       version: 'weekly',
@@ -36,7 +58,12 @@ export function GoogleMapLive({ incidents, className = '', zoom = 10 }: GoogleMa
     loader
       .load()
       .then((google) => {
-        if (!mapRef.current) return
+        if (!mapRef.current) {
+          console.error('[GoogleMapLive] Map ref disappeared during load')
+          setError(true)
+          setLoading(false)
+          return
+        }
 
         // Calculate center based on incidents or default to NJ area
         const validIncidents = incidents.filter(inc => inc.lat && inc.lng)
@@ -48,6 +75,7 @@ export function GoogleMapLive({ incidents, className = '', zoom = 10 }: GoogleMa
           center = { lat: avgLat, lng: avgLng }
         }
 
+        console.log('[GoogleMapLive] Creating map with center:', center)
         const newMap = new google.maps.Map(mapRef.current, {
           center,
           zoom,
@@ -58,15 +86,16 @@ export function GoogleMapLive({ incidents, className = '', zoom = 10 }: GoogleMa
           fullscreenControl: true,
         })
 
+        console.log('[GoogleMapLive] Map created successfully')
         setMap(newMap)
         setLoading(false)
       })
       .catch((err) => {
-        console.error('Error loading Google Maps:', err)
+        console.error('[GoogleMapLive] Error loading Google Maps:', err)
         setError(true)
         setLoading(false)
       })
-  }, [])
+  }
 
   // Update markers when map or incidents change
   useEffect(() => {
@@ -125,14 +154,19 @@ export function GoogleMapLive({ incidents, className = '', zoom = 10 }: GoogleMa
       <div className={`flex flex-col items-center justify-center h-full bg-gray-100 rounded-lg ${className}`}>
         <MapPin className="w-12 h-12 mb-3 text-gray-500" />
         <p className="text-sm font-medium text-gray-600">Map Unavailable</p>
-        <p className="text-xs text-gray-500 mt-1">Google Maps API key not configured</p>
+        <p className="text-xs text-gray-500 mt-1">
+          {!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY 
+            ? "Google Maps API key not configured" 
+            : "Failed to load Google Maps. Check console for details."}
+        </p>
       </div>
     )
   }
 
   if (loading) {
     return (
-      <div className={`flex items-center justify-center h-full bg-gray-100 rounded-lg ${className}`}>
+      <div className={`flex flex-col items-center justify-center h-full bg-gray-100 rounded-lg ${className}`}>
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-2" />
         <p className="text-sm text-gray-600">Loading map...</p>
       </div>
     )
