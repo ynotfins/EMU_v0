@@ -11,9 +11,12 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
-    let redirectTimeout: NodeJS.Timeout;
+    let isMounted = true;
+    let hasRedirected = false;
     
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!isMounted) return;
+      
       if (user) {
         console.log("[ProtectedRoute] [OK] User authenticated:", user.email);
         setAuthenticated(true);
@@ -23,16 +26,22 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
         setAuthenticated(false);
         setLoading(false);
         
-        // Small delay before redirect to avoid race conditions
-        redirectTimeout = setTimeout(() => {
-          router.replace("/login");
-        }, 100);
+        // Only redirect once, and only if we haven't already
+        if (!hasRedirected) {
+          hasRedirected = true;
+          // Use hard navigation to ensure we break any loops
+          setTimeout(() => {
+            if (isMounted) {
+              window.location.href = "/login";
+            }
+          }, 200);
+        }
       }
     });
 
     return () => {
+      isMounted = false;
       unsubscribe();
-      if (redirectTimeout) clearTimeout(redirectTimeout);
     };
   }, [router]);
 

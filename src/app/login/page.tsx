@@ -28,14 +28,14 @@ export default function LoginPage() {
   const [showEmailLogin, setShowEmailLogin] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
 
-  // Redirect if already logged in
+  // Redirect if already logged in - ONE-TIME CHECK ONLY
   useEffect(() => {
-    let hasRedirected = false;
-    
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user && !hasRedirected && !redirecting) {
-        hasRedirected = true;
-        console.log("[Login] User already authenticated, checking role...");
+    // Use a one-time check instead of listener to avoid race conditions
+    const checkAuthAndRedirect = async () => {
+      const user = auth.currentUser;
+      
+      if (user) {
+        console.log("[Login] User already authenticated:", user.email);
         setRedirecting(true);
         
         try {
@@ -51,27 +51,27 @@ export default function LoginPage() {
             userRole = userDoc.data().role || "supe";
           }
 
-          console.log("[Login] Redirecting to role:", userRole);
+          console.log("[Login] Redirecting to:", userRole);
 
-          // Small delay to ensure auth state is fully settled
-          await new Promise(resolve => setTimeout(resolve, 100));
-
-          // Use replace instead of push to avoid back button issues
-          if (userRole === "super_admin" || userRole === "admin" || userRole === "supe") {
-            router.replace("/supe/incidents");
-          } else {
-            router.replace("/chaser/incidents");
-          }
+          // Immediate redirect - no delay
+          const targetPath = (userRole === "super_admin" || userRole === "admin" || userRole === "supe") 
+            ? "/supe/incidents" 
+            : "/chaser/incidents";
+          
+          console.log("[Login] Navigating to:", targetPath);
+          window.location.href = targetPath; // Force hard navigation to break any loops
         } catch (err) {
           console.error("[Login] Error during redirect:", err);
-          hasRedirected = false;
           setRedirecting(false);
         }
       }
-    });
+    };
 
-    return () => unsubscribe();
-  }, [router, redirecting]);
+    // Wait a tiny bit for auth to initialize, then check once
+    const timer = setTimeout(checkAuthAndRedirect, 50);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
@@ -167,11 +167,12 @@ export default function LoginPage() {
 
       // Redirect based on role - super_admin defaults to supe view
       console.log("[Login] Google sign-in complete, redirecting to:", userRole);
-      if (userRole === "super_admin" || userRole === "admin" || userRole === "supe") {
-        router.replace("/supe/incidents");
-      } else {
-        router.replace("/chaser/incidents");
-      }
+      const targetPath = (userRole === "super_admin" || userRole === "admin" || userRole === "supe") 
+        ? "/supe/incidents" 
+        : "/chaser/incidents";
+      
+      // Use hard navigation to break any potential loops
+      window.location.href = targetPath;
     } catch (err: any) {
       console.error("[Login] [X] Google sign-in error:", err);
 
@@ -249,11 +250,12 @@ export default function LoginPage() {
 
       // Redirect based on role - super_admin defaults to supe view
       console.log("[Login] Email sign-in complete, redirecting to:", userRole);
-      if (userRole === "super_admin" || userRole === "admin" || userRole === "supe") {
-        router.replace("/supe/incidents");
-      } else {
-        router.replace("/chaser/incidents");
-      }
+      const targetPath = (userRole === "super_admin" || userRole === "admin" || userRole === "supe") 
+        ? "/supe/incidents" 
+        : "/chaser/incidents";
+      
+      // Use hard navigation to break any potential loops
+      window.location.href = targetPath;
     } catch (err: any) {
       console.error("[Login] [X] Email sign-in error:", err);
 
