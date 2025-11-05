@@ -5,6 +5,7 @@
  * 1. Auto-geocode new incidents
  * 2. Create/update CRM contacts for homeowners
  * 3. Send notifications for new incidents
+ * 4. Ingress webhook for AI-powered incident parsing with weather
  */
 
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
@@ -12,6 +13,9 @@ import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { onRequest } from 'firebase-functions/v2/https';
 import * as admin from 'firebase-admin';
 import { Client } from '@googlemaps/google-maps-services-js';
+
+// Import ingress function
+export { ingress } from './ingress';
 
 admin.initializeApp();
 const db = admin.firestore();
