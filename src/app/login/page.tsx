@@ -30,8 +30,11 @@ export default function LoginPage() {
 
   // Redirect if already logged in
   useEffect(() => {
+    let hasRedirected = false;
+    
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
+      if (user && !hasRedirected && !redirecting) {
+        hasRedirected = true;
         console.log("[Login] User already authenticated, checking role...");
         setRedirecting(true);
         
@@ -50,6 +53,9 @@ export default function LoginPage() {
 
           console.log("[Login] Redirecting to role:", userRole);
 
+          // Small delay to ensure auth state is fully settled
+          await new Promise(resolve => setTimeout(resolve, 100));
+
           // Use replace instead of push to avoid back button issues
           if (userRole === "super_admin" || userRole === "admin" || userRole === "supe") {
             router.replace("/supe/incidents");
@@ -58,13 +64,14 @@ export default function LoginPage() {
           }
         } catch (err) {
           console.error("[Login] Error during redirect:", err);
+          hasRedirected = false;
           setRedirecting(false);
         }
       }
     });
 
     return () => unsubscribe();
-  }, [router]);
+  }, [router, redirecting]);
 
   const handleGoogleSignIn = async () => {
     setLoading(true);

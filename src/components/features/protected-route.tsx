@@ -11,6 +11,8 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
+    let redirectTimeout: NodeJS.Timeout;
+    
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         console.log("[ProtectedRoute] [OK] User authenticated:", user.email);
@@ -20,11 +22,18 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
         console.log("[ProtectedRoute] [X] No user, redirecting to login");
         setAuthenticated(false);
         setLoading(false);
-        router.push("/login");
+        
+        // Small delay before redirect to avoid race conditions
+        redirectTimeout = setTimeout(() => {
+          router.replace("/login");
+        }, 100);
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      if (redirectTimeout) clearTimeout(redirectTimeout);
+    };
   }, [router]);
 
   if (loading) {
