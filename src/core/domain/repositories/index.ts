@@ -6,6 +6,21 @@
  * coupling to any specific implementation.
  */
 
-export * from './user.repository.interface';
-export * from './incident.repository.interface';
-export * from './chat.repository.interface';
+// Re-export all types and interfaces explicitly for Turbopack compatibility
+export type {
+  IUserRepository,
+  UserFilter,
+  UserSort,
+  PaginatedResult
+} from './user.repository.interface';
+
+export type {
+  IIncidentRepository,
+  IncidentFilter,
+  IncidentSort,
+  Pagination
+} from './incident.repository.interface';
+
+export type {
+  IChatRepository
+} from './chat.repository.interface';
