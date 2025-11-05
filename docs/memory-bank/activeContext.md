@@ -428,3 +428,47 @@ Documentation Cleanup Summary:
 - All context in one place for AI sessions
 - Perfect for memory-reset workflow
 - Easy to maintain and keep current
+
+### Update 2025-01-05T02:30:00Z
+[status]: active
+[id]: u_20250105_023000_structure1
+[source]: human
+[reason]: Project structure reorganization - remove empty folders, organize Firebase rules
+
+**Project Structure Cleanup:**
+1. **Removed empty folders:**
+   - `modules/` - Empty folder, no longer needed
+   - `docs/Old/` - Contained 29 old documentation files (8,783 lines)
+   - `src/docs/` - Duplicate manifest.json
+
+2. **Organized Firebase rules:**
+   - Created `firebase-rules/` folder
+   - Moved `firestore.rules` → `firebase-rules/firestore.rules`
+   - Moved `firestore.indexes.json` → `firebase-rules/firestore.indexes.json`
+   - Moved `database.rules.json` → `firebase-rules/database.rules.json`
+   - Moved `storage.rules` → `firebase-rules/storage.rules`
+   - Updated `firebase.json` to reference new paths
+
+**Total Cleanup Summary:**
+- 121 files deleted (34,012 lines removed)
+- 3 empty folders removed
+- Firebase rules consolidated in dedicated folder
+- Clean, organized project structure
+
+**Current Project Structure:**
+```
+/docs/memory-bank/          # Documentation (6 files)
+/firebase-rules/            # All Firebase security rules (4 files)
+/functions/                 # Cloud Functions
+/public/                    # Static assets
+/scripts/                   # Admin & deployment scripts
+/src/                       # Application source code
+  ├── app/                  # Next.js App Router pages
+  ├── components/           # React components
+  ├── core/                 # Clean Architecture (domain, application)
+  ├── hooks/                # React hooks
+  ├── infrastructure/       # External services layer
+  ├── lib/                  # Utilities
+  ├── presentation/         # Actions, stores, hooks
+  └── types/                # TypeScript types
+```
