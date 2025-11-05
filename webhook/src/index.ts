@@ -5,6 +5,7 @@ import { generateObject } from 'ai';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { z } from 'zod';
 import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
+import { randomUUID } from 'crypto';
 import { incidentSchema } from './schemas/incident';
 import { firestoreIncidentSchema, type Activity } from './schemas/firestore-incident';
 import { mapIncidentToFirestore } from './utils/mappers';
@@ -307,7 +308,7 @@ Now parse and format the message according to these requirements.`,
 
           const existingActivity = (existingData.activity as Activity[]) || [];
           const newActivity: Activity = {
-            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            id: randomUUID(),
             type: 'update',
             description: `Incident updated from notification: ${notification.title || 'Notification update'}`,
             timestamp: Timestamp.now(),
@@ -320,7 +321,7 @@ Now parse and format the message according to these requirements.`,
         } else {
           validatedIncident.createdAt = firestoreIncident.updatedAt;
           const initialActivity: Activity = {
-            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            id: randomUUID(),
             type: 'created',
             description: `Incident created from notification: ${notification.title || 'New incident'}`,
             timestamp: Timestamp.now(),
