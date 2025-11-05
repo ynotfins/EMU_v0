@@ -44,7 +44,7 @@ import {
   PaginatedResult
 } from '@domain/repositories';
 import { Either, left, right } from '@domain/shared/errors';
-import { adminDb } from '../config/firebase-admin.config';
+import { adminDb } from '@/lib/firebase-admin';
 import { IncidentMapper, IncidentDocument } from '../mappers/incident.mapper';
 import * as geofire from 'geofire-common';
 

@@ -5,7 +5,7 @@
  */
 
 import { injectable } from 'inversify';
-import { adminMessaging, adminDb } from '../firebase/config/firebase-admin.config';
+import { adminMessaging, adminDb } from '@/lib/firebase-admin';
 import { INotificationService } from '@application/shared/interfaces/services.interface';
 import { Incident } from '@domain/entities/incident/incident.entity';
 import { Location } from '@domain/shared/value-objects';

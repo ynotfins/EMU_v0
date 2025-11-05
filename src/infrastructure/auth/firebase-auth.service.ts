@@ -12,8 +12,8 @@ import {
   signInWithCredential,
   UserCredential
 } from 'firebase/auth';
-import { adminAuth } from '../firebase/config/firebase-admin.config';
-import { clientAuth } from '../firebase/config/firebase-client.config';
+import { adminAuth } from '@/lib/firebase-admin';
+import { auth } from '@/lib/firebase-client';
 import { IAuthService } from '@application/shared/interfaces/services.interface';
 import { Either, left, right } from '@domain/shared/errors';
 

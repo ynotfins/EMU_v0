@@ -17,7 +17,7 @@ import {
   type CreateIncidentData
 } from '@presentation/actions/incidents';
 import { onSnapshot, collection, query, where, orderBy, limit } from 'firebase/firestore';
-import { clientDb } from '@infrastructure/firebase/config/firebase-client.config';
+import { db } from '@/lib/firebase-client';
 
 interface IncidentsState {
   incidents: SerializedIncident[];
@@ -91,7 +91,7 @@ export function useIncidents(
     if (!realtime) return;
 
     // Build Firestore query
-    let q = collection(clientDb, 'incidents');
+    let q = collection(db, 'incidents');
     const constraints: any[] = [];
 
     if (filter?.status) {

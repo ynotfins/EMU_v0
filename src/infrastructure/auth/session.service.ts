@@ -7,7 +7,7 @@
 
 import { injectable } from 'inversify';
 import { cookies } from 'next/headers';
-import { adminAuth } from '../firebase/config/firebase-admin.config';
+import { adminAuth } from '@/lib/firebase-admin';
 import { ISessionService } from '@application/shared/interfaces/services.interface';
 import { Either, left, right } from '@domain/shared/errors';
 

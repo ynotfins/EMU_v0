@@ -30,7 +30,7 @@ import {
   PaginatedResult 
 } from '@domain/repositories';
 import { Either, left, right } from '@domain/shared/errors';
-import { adminDb } from '../config/firebase-admin.config';
+import { adminDb } from '@/lib/firebase-admin';
 import { UserMapper, UserDocument } from '../mappers/user.mapper';
 
 @injectable()

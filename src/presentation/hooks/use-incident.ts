@@ -8,7 +8,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { clientDb } from '@infrastructure/firebase/config/firebase-client.config';
+import { db } from '@/lib/firebase-client';
 import type { SerializedIncident } from '@presentation/actions/incidents';
 
 interface UseIncidentReturn {
@@ -51,7 +51,7 @@ export function useIncident(incidentId: string): UseIncidentReturn {
     setState(prev => ({ ...prev, loading: true, error: null }));
 
     // Create document reference
-    const incidentRef = doc(clientDb, 'incidents', incidentId);
+    const incidentRef = doc(db, 'incidents', incidentId);
 
     // Subscribe to changes
     const unsubscribe = onSnapshot(
