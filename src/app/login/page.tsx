@@ -26,30 +26,39 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showEmailLogin, setShowEmailLogin] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
 
   // Redirect if already logged in
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         console.log("[Login] User already authenticated, checking role...");
+        setRedirecting(true);
         
-        // Check user role and redirect accordingly
-        const { doc: docRef, getDoc } = await import("firebase/firestore");
-        const { db } = await import("@/lib/firebase/firebase");
-        
-        const userDocRef = docRef(db, "users", user.uid);
-        const userDoc = await getDoc(userDocRef);
-        
-        let userRole = "supe"; // Default to supe
-        if (userDoc.exists()) {
-          userRole = userDoc.data().role || "supe";
-        }
+        try {
+          // Check user role and redirect accordingly
+          const { doc: docRef, getDoc } = await import("firebase/firestore");
+          const { db } = await import("@/lib/firebase/firebase");
+          
+          const userDocRef = docRef(db, "users", user.uid);
+          const userDoc = await getDoc(userDocRef);
+          
+          let userRole = "supe"; // Default to supe
+          if (userDoc.exists()) {
+            userRole = userDoc.data().role || "supe";
+          }
 
-        // Redirect based on role - super_admin defaults to supe view
-        if (userRole === "super_admin" || userRole === "admin" || userRole === "supe") {
-          router.push("/supe/incidents");
-        } else {
-          router.push("/chaser/incidents");
+          console.log("[Login] Redirecting to role:", userRole);
+
+          // Use replace instead of push to avoid back button issues
+          if (userRole === "super_admin" || userRole === "admin" || userRole === "supe") {
+            router.replace("/supe/incidents");
+          } else {
+            router.replace("/chaser/incidents");
+          }
+        } catch (err) {
+          console.error("[Login] Error during redirect:", err);
+          setRedirecting(false);
         }
       }
     });
@@ -150,10 +159,11 @@ export default function LoginPage() {
       }
 
       // Redirect based on role - super_admin defaults to supe view
+      console.log("[Login] Google sign-in complete, redirecting to:", userRole);
       if (userRole === "super_admin" || userRole === "admin" || userRole === "supe") {
-        router.push("/supe/incidents");
+        router.replace("/supe/incidents");
       } else {
-        router.push("/chaser/incidents");
+        router.replace("/chaser/incidents");
       }
     } catch (err: any) {
       console.error("[Login] [X] Google sign-in error:", err);
@@ -231,10 +241,11 @@ export default function LoginPage() {
       }
 
       // Redirect based on role - super_admin defaults to supe view
+      console.log("[Login] Email sign-in complete, redirecting to:", userRole);
       if (userRole === "super_admin" || userRole === "admin" || userRole === "supe") {
-        router.push("/supe/incidents");
+        router.replace("/supe/incidents");
       } else {
-        router.push("/chaser/incidents");
+        router.replace("/chaser/incidents");
       }
     } catch (err: any) {
       console.error("[Login] [X] Email sign-in error:", err);
@@ -256,6 +267,18 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  // Show loading state while redirecting
+  if (redirecting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-gray-600 font-medium">Redirecting...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
