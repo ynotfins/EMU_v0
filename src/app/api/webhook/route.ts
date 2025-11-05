@@ -4,6 +4,7 @@ import { db } from '@/lib/firebase/firebase';
 import { collection, query, where, getDocs, addDoc, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { generateObject } from 'ai';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
 
 // Notification schema
 const notificationSchema = z.object({
@@ -13,7 +14,90 @@ const notificationSchema = z.object({
   title: z.string().optional(),
   message: z.string(),
   source: z.string().optional(),
+  authToken: z.string().optional(), // Optional: can be in header or body
 });
+
+// Cache for the webhook secret to avoid repeated Secret Manager calls
+let cachedWebhookSecret: string | null = null;
+let secretCacheExpiry: number = 0;
+const SECRET_CACHE_TTL = 60 * 60 * 1000; // 1 hour cache
+
+/**
+ * Retrieve webhook secret from Google Cloud Secret Manager
+ */
+async function getWebhookSecret(): Promise<string> {
+  // Check cache first
+  if (cachedWebhookSecret && Date.now() < secretCacheExpiry) {
+    return cachedWebhookSecret;
+  }
+
+  try {
+    const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+    
+    if (!projectId) {
+      throw new Error('Project ID not configured. Set FIREBASE_ADMIN_PROJECT_ID or NEXT_PUBLIC_FIREBASE_PROJECT_ID');
+    }
+
+    const secretName = '4axe-com_webhook';
+    const client = new SecretManagerServiceClient();
+    const name = `projects/${projectId}/secrets/${secretName}/versions/latest`;
+
+    console.log(`[Webhook] Retrieving secret: ${name}`);
+
+    const [version] = await client.accessSecretVersion({ name });
+    const secretValue = version.payload?.data?.toString() || '';
+
+    if (!secretValue) {
+      throw new Error(`Secret ${secretName} is empty`);
+    }
+
+    // Cache the secret
+    cachedWebhookSecret = secretValue.trim();
+    secretCacheExpiry = Date.now() + SECRET_CACHE_TTL;
+
+    console.log(`[Webhook] Secret retrieved and cached successfully`);
+    return cachedWebhookSecret;
+  } catch (error) {
+    console.error('[Webhook] Failed to retrieve secret from Secret Manager:', error);
+    throw error;
+  }
+}
+
+/**
+ * Authenticate incoming webhook request
+ * Checks headers first, then optionally accepts body authToken
+ */
+async function authenticateRequest(request: NextRequest, bodyAuthToken?: string): Promise<boolean> {
+  try {
+    // Get the expected secret from Secret Manager
+    const expectedSecret = await getWebhookSecret();
+
+    // Check Authorization header first (Bearer token)
+    const authHeader = request.headers.get('authorization');
+    if (authHeader) {
+      const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+      if (token === expectedSecret) {
+        return true;
+      }
+    }
+
+    // Check X-Webhook-Token header
+    const webhookToken = request.headers.get('x-webhook-token');
+    if (webhookToken && webhookToken.trim() === expectedSecret) {
+      return true;
+    }
+
+    // Check request body authToken if provided
+    if (bodyAuthToken && bodyAuthToken.trim() === expectedSecret) {
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.error('[Webhook] Authentication error:', error);
+    return false;
+  }
+}
 
 // Incident schema (for AI parsing)
 const incidentSchema = z.object({
@@ -146,8 +230,20 @@ function mapToFirestoreIncident(parsedIncident: Incident, notificationReceivedAt
 
 export async function POST(request: NextRequest) {
   try {
-    // Parse request body
+    // Parse request body first
     const body = await request.json();
+    
+    // Authenticate request (check headers and body authToken)
+    const isAuthenticated = await authenticateRequest(request, body.authToken);
+    if (!isAuthenticated) {
+      console.warn('[Webhook] Unauthorized request attempt');
+      return NextResponse.json(
+        { error: 'Unauthorized. Invalid or missing authentication token.' },
+        { status: 401 }
+      );
+    }
+
+    // Validate notification schema
     const notification = notificationSchema.parse(body);
 
     if (!notification.message || notification.message.trim().length === 0) {
@@ -156,6 +252,8 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    console.log('[Webhook] Authenticated request received from:', notification.source || 'unknown');
 
     // Check for API key
     const apiKey = process.env.OPENROUTER_API_KEY;
@@ -336,7 +434,7 @@ export async function OPTIONS(request: NextRequest) {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Webhook-Token',
     },
   });
 }
