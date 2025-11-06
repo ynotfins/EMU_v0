@@ -23,6 +23,8 @@ import type { IUserRepository } from '@domain/repositories/user.repository.inter
 import type { IIncidentRepository } from '@domain/repositories/incident.repository.interface';
 import { IncidentFilter, IncidentSort } from '@domain/repositories/incident.repository.interface';
 import type { Pagination } from '@domain/repositories/shared.types';
+import { PaginatedResult } from '@domain/repositories/shared.types';
+import { Incident } from '@domain/entities/incident/incident.entity';
 import { TOKENS } from '@infrastructure/di/tokens';
 import { 
   GetIncidentsRequest, 
@@ -75,7 +77,7 @@ export class GetIncidentsUseCase extends UseCase<GetIncidentsRequest, GetInciden
       };
 
       // 5. Query based on location or regular filters
-      let result;
+      let result: PaginatedResult<Incident>;
       
       if (request.nearLat && request.nearLng && request.radiusKm) {
         // Location-based query
