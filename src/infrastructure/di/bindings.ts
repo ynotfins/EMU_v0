@@ -31,7 +31,6 @@ import {
   INotificationService,
   IEmailService,
   IStorageService,
-  ILocationService,
   ILoggerService,
   ICacheService
 } from '@application/shared/interfaces/services.interface';
