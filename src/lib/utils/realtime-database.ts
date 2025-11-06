@@ -25,7 +25,7 @@
 
 import { getDatabase, ref, push, set, onValue, off, serverTimestamp, type Database } from 'firebase/database';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { auth, db, rtdb } from '../firebase/firebase';
+import { auth, db, rtdb } from '@/lib/firebase-client';
 
 // Lazy getter for rtdb instance - throws error only when accessed if not configured
 function getRtdbInstance(): Database {

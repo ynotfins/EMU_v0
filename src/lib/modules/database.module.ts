@@ -32,7 +32,7 @@ import {
   DocumentReference,
   type Transaction
 } from 'firebase/firestore';
-import { db } from '../firebase/firebase';
+import { db } from '@/lib/firebase-client';
 import { logger } from '../utils/logger';
 
 export interface PaginationOptions {

@@ -11,7 +11,7 @@ import { Star, Bookmark, FileText, Navigation, type LucideIcon } from "lucide-re
 import { useResponses } from "@/hooks/use-responses"
 import { useProfile } from "@/hooks/use-profile"
 import type { IncidentLite } from "@/types/extended-domain"
-import { auth } from "@/lib/firebase/firebase"
+import { auth } from "@/lib/firebase-client"
 
 // Empty state component (moved outside to fix ESLint rule)
 function EmptyState({ icon: Icon, message }: { icon: LucideIcon; message: string }) {

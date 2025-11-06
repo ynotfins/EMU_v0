@@ -15,7 +15,7 @@ import {
   arrayUnion,
   arrayRemove,
 } from "firebase/firestore";
-import { db, auth } from "@/lib/firebase/firebase";
+import { db, auth } from "@/lib/firebase-client";
 import type { IncidentLite, IncidentUpdate } from "@/types/extended-domain";
 import { useFavoritesContext } from "@/lib/context/favorites-context";
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore"
-import { db, auth } from "@/lib/firebase/firebase"
+import { db, auth } from "@/lib/firebase-client"
 import { onAuthStateChanged } from "firebase/auth"
 import type { Profile } from "@/types/extended-domain"
 import { logger } from "@/lib/utils/logger"

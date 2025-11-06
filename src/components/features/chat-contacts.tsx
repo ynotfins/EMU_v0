@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { db } from "@/lib/firebase/firebase";
+import { db } from "@/lib/firebase-client";
 import { MessageCircle, Users, Phone } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Input } from "../ui/input";

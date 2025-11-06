@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase/firebase";
+import { auth } from "@/lib/firebase-client";
 import { clearAuthState } from "@/lib/firebase/auth-persistence";
 import { RoleLayout } from "@/components/features/role-layout";
 import { ProfileHeader } from "@/components/features/profile-header";

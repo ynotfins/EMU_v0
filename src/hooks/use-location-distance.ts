@@ -15,7 +15,7 @@
 
 import { useState, useEffect } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase/firebase';
+import { db } from '@/lib/firebase-client';
 import { geocodeCache, userLocationCache, locationPermission } from '@/lib/utils/offline-cache';
 import { logger } from '@/lib/utils/logger';
 

@@ -5,7 +5,7 @@ import { BottomNav } from "@/components/layouts/bottom-nav";
 import { ProtectedRoute } from "@/components/features/protected-route";
 import { RoleSwitcher } from "@/components/features/role-switcher";
 import { useProfile } from "@/hooks/use-profile";
-import { auth } from "@/lib/firebase/firebase";
+import { auth } from "@/lib/firebase-client";
 
 interface RoleLayoutProps {
   role: "chaser" | "supe";

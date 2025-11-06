@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/firebase/firebase";
+import { auth } from "@/lib/firebase-client";
 import { logger } from "@/lib/utils/logger";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {

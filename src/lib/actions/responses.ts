@@ -1,6 +1,6 @@
 ﻿"use server";
 
-import { db } from "@/lib/firebase/firebase";
+import { db } from "@/lib/firebase-client";
 import {
   collection,
   addDoc,

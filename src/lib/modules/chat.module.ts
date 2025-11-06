@@ -18,8 +18,8 @@ import {
   DataSnapshot
 } from 'firebase/database';
 import { collection, getDocs, where, query as firestoreQuery } from 'firebase/firestore';
-import { db, rtdb } from '../firebase/firebase';
-import { auth } from '../firebase/firebase';
+import { db, rtdb } from '../firebase-client';
+import { auth } from '../firebase-client';
 
 export interface ChatMessage {
   id?: string;

@@ -17,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heart, MessageCircle } from "lucide-react";
 import type { HomeownerForm as HomeownerFormType } from "@/types/extended-domain";
 import { useProfile } from "@/hooks/use-profile";
-import { auth } from "@/lib/firebase/firebase";
+import { auth } from "@/lib/firebase-client";
 
 export default function Client({ id }: { id: string }) {
   const { data: incident, updates, error } = useIncident(id);

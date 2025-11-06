@@ -17,7 +17,7 @@ import { useFavoritesContext } from "@/lib/context/favorites-context";
 import { Heart, Bookmark, FileText, Navigation, type LucideIcon } from "lucide-react";
 import { useResponses } from "@/hooks/use-responses";
 import { useProfile } from "@/hooks/use-profile";
-import { auth } from "@/lib/firebase/firebase";
+import { auth } from "@/lib/firebase-client";
 
 // Enhanced empty state with nice UI matching screenshots
 function EmptyState({

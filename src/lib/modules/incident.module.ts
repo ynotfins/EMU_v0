@@ -22,7 +22,7 @@ import {
   serverTimestamp,
   addDoc
 } from 'firebase/firestore';
-import { db } from '../firebase/firebase';
+import { db } from '../firebase-client';
 
 export interface Incident {
   id: string;
