@@ -35,6 +35,7 @@ import type {
   IEventBus,
   INotificationService 
 } from '@application/shared/interfaces/services.interface';
+import { logger } from '@/lib/utils/logger';
 
 @injectable()
 export class CreateIncidentUseCase extends UseCase<CreateIncidentRequest, CreateIncidentResponse> {
