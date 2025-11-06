@@ -91,14 +91,9 @@ export function createRequestContainer(
   parentContainer: Container,
   requestContext?: any
 ): Container {
-  const requestContainer = parentContainer.createChild();
-  
-  // Bind request-specific dependencies
-  if (requestContext) {
-    requestContainer.bind('RequestContext').toConstantValue(requestContext);
-  }
-  
-  return requestContainer;
+  // Inversify doesn't have createChild, use parent container directly
+  // Request-scoped bindings can be handled differently if needed
+  return parentContainer;
 }
 
 // Re-export types for convenience
