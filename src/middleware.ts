@@ -35,10 +35,11 @@ const PUBLIC_ROUTES = [
 ];
 
 // Role-based route mappings
+// Note: (app) route group is shared between roles - Next.js route groups don't appear in URL
 const ROLE_ROUTES: Record<string, string[]> = {
-  supe: ['/supe'],
-  chaser: ['/chaser'],
-  admin: ['/admin', '/supe', '/chaser'],
+  supe: ['/supe', '/chat'],  // Allow /chat/* routes (maps to (app)/chat)
+  chaser: ['/chaser', '/chat'],  // Allow /chat/* routes (maps to (app)/chat)
+  admin: ['/admin', '/supe', '/chaser', '/chat'],
 };
 
 /**

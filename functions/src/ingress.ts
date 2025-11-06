@@ -156,7 +156,6 @@ export const ingress = onRequest(
       // @ts-ignore - Type instantiation is excessively deep (TS2589) - known issue with OpenRouter provider types
       const result = await generateObject({
         model,
-        specificationVersion: 'v2',
         schema: incidentSchema,
         prompt: `You are an expert at parsing emergency notification messages and formatting them beautifully for display.
 

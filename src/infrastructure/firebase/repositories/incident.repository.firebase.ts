@@ -206,8 +206,7 @@ export class FirebaseIncidentRepository implements IIncidentRepository {
 
       const total = allDocs.length;
 
-      // Apply pagination
-      const pageSize = pagination?.pageSize || 20;
+      // Apply pagination (pageSize already defined above)
       const page = pagination?.page || 1;
       const offset = (page - 1) * pageSize;
 
