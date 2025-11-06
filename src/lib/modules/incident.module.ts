@@ -190,7 +190,7 @@ class IncidentModule {
   /**
    * Get recent incidents (last 4 hours)
    */
-  async getRecentIncidents(limit: number = 10): Promise<Incident[]> {
+  async getRecentIncidents(limitCount: number = 10): Promise<Incident[]> {
     try {
       const fourHoursAgo = new Date();
       fourHoursAgo.setHours(fourHoursAgo.getHours() - 4);
@@ -200,7 +200,7 @@ class IncidentModule {
         where('createdAt', '>=', Timestamp.fromDate(fourHoursAgo)),
         where('isActive', '==', true),
         orderBy('createdAt', 'desc'),
-        limit(limit)
+        limit(limitCount)
       );
       
       const snapshot = await getDocs(q);
