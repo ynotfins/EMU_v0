@@ -142,9 +142,9 @@ export function useProfile(uid?: string | null) {
         });
       }
     }
-    if (settings.trackingEnabled !== undefined) {
-      try {
-        localStorage.setItem("emu.tracking", JSON.stringify(settings.trackingEnabled))
+      if (settings?.trackingEnabled !== undefined) {
+        try {
+          localStorage.setItem("emu.tracking", JSON.stringify(settings.trackingEnabled))
       } catch (err) {
         logger.error('Failed to save tracking setting to localStorage', err, {
           code: 'useProfile',
