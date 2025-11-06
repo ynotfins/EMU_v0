@@ -31,7 +31,7 @@ export function RoleSwitcher({ currentRole }: RoleSwitcherProps) {
     console.log(`[RoleSwitcher] Switching from ${currentView} to ${newView}`);
     console.log(`[RoleSwitcher] New path: ${newPath}`);
     
-    router.push(newPath);
+    router.push(newPath as any);
   };
 
   // Only show for super_admin
