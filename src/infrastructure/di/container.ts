@@ -6,7 +6,7 @@
  */
 
 import 'reflect-metadata';
-import { Container, interfaces } from 'inversify';
+import { Container } from 'inversify';
 import { TOKENS } from './tokens';
 
 // Configuration interfaces
