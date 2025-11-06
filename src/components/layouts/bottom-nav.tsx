@@ -47,7 +47,7 @@ export function BottomNav({ role }: BottomNavProps) {
 
   const navItems: Array<{
     label: string;
-    icon: typeof Home;
+    icon: React.ComponentType<{ className?: string }>;
     href: string;
     active: boolean;
   }> = [
