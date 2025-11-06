@@ -20,8 +20,6 @@
     "ai": "^5.0.0",
     "@openrouter/ai-sdk-provider": "^1.0.0",
     "@google-cloud/functions-framework": "^3.4.0",
-    "@google-cloud/secret-manager": "^6.1.1",
-    "@googlemaps/google-maps-services-js": "^3.3.47",
     "zod": "^3.23.8"
   },
   "devDependencies": {

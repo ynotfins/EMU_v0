@@ -38,8 +38,6 @@ export const incidentSchema = z.object({
     .describe('Incident ID if mentioned (e.g., "#1835340" or "1835340")'),
   source: z.string().optional().describe('Source reference (e.g., "BNN | BNNDESK/njc4283")'),
   timestamp: z.string().optional().describe('Timestamp if available in the message'),
-  latitude: z.number().optional().describe('Latitude coordinate if available'),
-  longitude: z.number().optional().describe('Longitude coordinate if available'),
 });
 
 export type Incident = z.infer<typeof incidentSchema>;

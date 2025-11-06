@@ -1,7 +1,6 @@
 import type { Incident } from '../schemas/incident';
 import type { FirestoreIncident } from '../schemas/firestore-incident';
 import { Timestamp } from 'firebase-admin/firestore';
-import type { WeatherInfo } from './weather';
 
 export function parseTimestamp(timestampStr: string | undefined): { date: string; time: string } {
   if (!timestampStr) {
@@ -31,8 +30,7 @@ export function parseTimestamp(timestampStr: string | undefined): { date: string
 
 export function mapIncidentToFirestore(
   parsedIncident: Incident,
-  notificationReceivedAt?: string,
-  weatherInfo?: WeatherInfo | null
+  notificationReceivedAt?: string
 ): FirestoreIncident {
   const timestamp = parsedIncident.timestamp || notificationReceivedAt;
   const { date, time } = parseTimestamp(timestamp);
@@ -50,9 +48,6 @@ export function mapIncidentToFirestore(
     emergencyServicesStatus: parsedIncident.emergencyServicesStatus,
     incidentId: parsedIncident.incidentId?.replace('#', '') || undefined,
     source: parsedIncident.source,
-    latitude: parsedIncident.latitude,
-    longitude: parsedIncident.longitude,
     updatedAt: Timestamp.now(),
-    weatherConditions: weatherInfo || undefined,
   };
 }

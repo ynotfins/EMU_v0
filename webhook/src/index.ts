@@ -4,98 +4,15 @@ import { onRequest } from 'firebase-functions/v2/https';
 import { generateObject } from 'ai';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { z } from 'zod';
-import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
-import { randomUUID } from 'crypto';
 import { incidentSchema } from './schemas/incident';
 import { firestoreIncidentSchema, type Activity } from './schemas/firestore-incident';
 import { mapIncidentToFirestore } from './utils/mappers';
-import { fetchWeatherForLocation } from './utils/weather';
-import { Client } from '@googlemaps/google-maps-services-js';
 
 if (getApps().length === 0) {
   initializeApp();
 }
 
 const db = getFirestore();
-const mapsClient = new Client({});
-const secretManagerClient = new SecretManagerServiceClient();
-
-// Cache for webhook secret
-let cachedWebhookSecret: string | null = null;
-let secretCacheExpiry: number = 0;
-const SECRET_CACHE_TTL = 60 * 60 * 1000; // 1 hour cache
-
-/**
- * Retrieve webhook secret from Google Cloud Secret Manager
- */
-async function getWebhookSecret(): Promise<string> {
-  // Check cache first
-  if (cachedWebhookSecret && Date.now() < secretCacheExpiry) {
-    return cachedWebhookSecret;
-  }
-
-  try {
-    const projectId = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT;
-    
-    if (!projectId) {
-      throw new Error('Project ID not configured. Set GCLOUD_PROJECT or GCP_PROJECT');
-    }
-
-    const secretName = '4axe-com_webhook';
-    const name = `projects/${projectId}/secrets/${secretName}/versions/latest`;
-
-    console.log(`[Ingress] Retrieving secret: ${name}`);
-
-    const [version] = await secretManagerClient.accessSecretVersion({ name });
-    const secretValue = version.payload?.data?.toString() || '';
-
-    if (!secretValue) {
-      throw new Error(`Secret ${secretName} is empty`);
-    }
-
-    // Cache the secret
-    cachedWebhookSecret = secretValue.trim();
-    secretCacheExpiry = Date.now() + SECRET_CACHE_TTL;
-
-    console.log(`[Ingress] Secret retrieved and cached successfully`);
-    return cachedWebhookSecret;
-  } catch (error) {
-    console.error('[Ingress] Failed to retrieve secret from Secret Manager:', error);
-    throw error;
-  }
-}
-
-/**
- * Authenticate incoming webhook request
- */
-async function authenticateRequest(authHeader?: string, webhookToken?: string, bodyAuthToken?: string): Promise<boolean> {
-  try {
-    const expectedSecret = await getWebhookSecret();
-
-    // Check Authorization header (Bearer token)
-    if (authHeader) {
-      const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-      if (token === expectedSecret) {
-        return true;
-      }
-    }
-
-    // Check X-Webhook-Token header
-    if (webhookToken && webhookToken.trim() === expectedSecret) {
-      return true;
-    }
-
-    // Check request body authToken if provided
-    if (bodyAuthToken && bodyAuthToken.trim() === expectedSecret) {
-      return true;
-    }
-
-    return false;
-  } catch (error) {
-    console.error('[Ingress] Authentication error:', error);
-    return false;
-  }
-}
 
 const notificationSchema = z.object({
   appName: z.string().optional(),
@@ -104,7 +21,6 @@ const notificationSchema = z.object({
   title: z.string().optional(),
   message: z.string(),
   source: z.string().optional(),
-  authToken: z.string().optional(), // Optional: can be in header or body
 });
 
 export const ingress = onRequest(
@@ -112,7 +28,7 @@ export const ingress = onRequest(
     cors: true,
     memory: '512MiB',
     timeoutSeconds: 60,
-    secrets: ['OPENROUTER_API_KEY', 'GOOGLE_MAPS_API_KEY', 'OPENWEATHER_API_KEY'],
+    secrets: ['OPENROUTER_API_KEY'],
     region: 'us-central1',
   },
   async (request, response) => {
@@ -122,26 +38,12 @@ export const ingress = onRequest(
         return;
       }
 
-      // Parse and validate notification
       const notification = notificationSchema.parse(request.body);
-
-      // Authenticate request
-      const authHeader = request.headers.authorization;
-      const webhookToken = request.headers['x-webhook-token'] as string | undefined;
-      const isAuthenticated = await authenticateRequest(authHeader, webhookToken, notification.authToken);
-      
-      if (!isAuthenticated) {
-        console.warn('[Ingress] Unauthorized request attempt');
-        response.status(401).json({ error: 'Unauthorized. Invalid or missing authentication token.' });
-        return;
-      }
 
       if (!notification.message || notification.message.trim().length === 0) {
         response.status(400).json({ error: 'Message field is required and cannot be empty' });
         return;
       }
-
-      console.log('[Ingress] Authenticated request received from:', notification.source || 'unknown');
 
       const apiKey = process.env.OPENROUTER_API_KEY;
       if (!apiKey) {
@@ -237,55 +139,7 @@ Now parse and format the message according to these requirements.`,
       });
 
       const parsedIncident = result.object;
-      
-      // Geocode address if lat/lng not provided
-      let lat = parsedIncident.latitude;
-      let lng = parsedIncident.longitude;
-      
-      if (!lat || !lng) {
-        try {
-          const fullAddress = `${parsedIncident.address}, ${parsedIncident.city}, ${parsedIncident.state}`;
-          const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-          
-          if (apiKey) {
-            const geocodeResponse = await mapsClient.geocode({
-              params: {
-                address: fullAddress,
-                key: apiKey,
-              },
-            });
-            
-            if (geocodeResponse.data.results.length > 0) {
-              const location = geocodeResponse.data.results[0].geometry.location;
-              lat = location.lat;
-              lng = location.lng;
-              console.log(`[Ingress] Geocoded address: ${fullAddress} -> ${lat}, ${lng}`);
-            }
-          }
-        } catch (error) {
-          console.warn('[Ingress] Geocoding failed, continuing without coordinates:', error);
-        }
-      }
-      
-      // Fetch weather conditions if we have coordinates
-      let weatherInfo = null;
-      if (lat && lng) {
-        try {
-          weatherInfo = await fetchWeatherForLocation(
-            lat,
-            lng,
-            `${parsedIncident.address}, ${parsedIncident.city}, ${parsedIncident.state}`
-          );
-        } catch (error) {
-          console.warn('[Ingress] Weather fetch failed, continuing without weather:', error);
-        }
-      }
-      
-      const firestoreIncident = mapIncidentToFirestore(
-        parsedIncident,
-        notification.receivedAt,
-        weatherInfo
-      );
+      const firestoreIncident = mapIncidentToFirestore(parsedIncident, notification.receivedAt);
 
       const validatedIncident = firestoreIncidentSchema.parse(firestoreIncident);
 
@@ -308,7 +162,7 @@ Now parse and format the message according to these requirements.`,
 
           const existingActivity = (existingData.activity as Activity[]) || [];
           const newActivity: Activity = {
-            id: randomUUID(),
+            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             type: 'update',
             description: `Incident updated from notification: ${notification.title || 'Notification update'}`,
             timestamp: Timestamp.now(),
@@ -321,7 +175,7 @@ Now parse and format the message according to these requirements.`,
         } else {
           validatedIncident.createdAt = firestoreIncident.updatedAt;
           const initialActivity: Activity = {
-            id: randomUUID(),
+            id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             type: 'created',
             description: `Incident created from notification: ${notification.title || 'New incident'}`,
             timestamp: Timestamp.now(),
