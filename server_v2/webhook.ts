@@ -7,25 +7,48 @@ import { generateObject } from 'ai';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 
 // === Domain schemas ===
-// If these exist in the repo already, import from there and delete these placeholders.
-// Otherwise, keep these minimal schemas and adjust mapping below.
+// Schema matches Firebase Incident structure for proper display formatting
 const incidentSchema = z.object({
   incidentId: z.string().optional(),
   source: z.string().optional(),
-  title: z.string(),
-  description: z.string(),
-  severity: z.enum(['low', 'medium', 'high']).optional(),
-  location: z.string().optional(),
+  // Location fields (required for display)
+  state: z.string().optional(), // State abbreviation (e.g., "NJ", "NY", "CA")
+  county: z.string().optional(), // County name (e.g., "Monmouth County")
+  city: z.string().optional(), // City name (e.g., "Fair Haven")
+  address: z.string().optional(), // Street address (e.g., "19 Highland Ave")
+  zipCode: z.string().optional(), // ZIP code
+  country: z.string().optional().default('USA'), // Default to USA
+  // Incident details
+  type: z.enum(['fire', 'flood', 'storm', 'accident', 'hazard', 'medical', 'other']).optional(),
+  description: z.string(), // Full alert text, expanded abbreviations
+  severity: z.enum(['low', 'medium', 'high', 'critical']).optional(),
 });
 
 type Incident = z.infer<typeof incidentSchema>;
 
 const firestoreIncidentSchema = z.object({
   incidentId: z.string().optional(),
-  title: z.string(),
+  // Location object matching Firebase Location interface
+  location: z.object({
+    lat: z.number().optional(),
+    lng: z.number().optional(),
+    address: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    zipCode: z.string().optional(),
+    country: z.string().optional().default('USA'),
+  }).optional(),
+  // Direct fields for backward compatibility and easier querying
+  state: z.string().optional(),
+  county: z.string().optional(),
+  city: z.string().optional(),
+  address: z.string().optional(),
+  zipCode: z.string().optional(),
+  country: z.string().optional().default('USA'),
+  // Incident details
+  type: z.string().optional(),
   description: z.string(),
   severity: z.string().optional(),
-  location: z.string().optional(),
   createdAt: z.any().optional(),
   updatedAt: z.any().optional(),
   activity: z.array(z.object({
@@ -80,25 +103,111 @@ app.post('/webhook', async (req, res) => {
       return res.status(400).json({ error: 'Missing message string' });
     }
 
-    // AI extraction
+    // AI extraction with detailed prompt for display formatting
     const provider = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY! });
+    if (!process.env.OPENROUTER_API_KEY) {
+      console.warn('[Webhook] OPENROUTER_API_KEY not set, AI extraction will fail');
+    }
     const { object: parsed } = await generateObject({
       model: provider('anthropic/claude-3.5-sonnet'),
       // Cast to reduce TS generic depth issues
       schema: incidentSchema as any,
       prompt: `Extract normalized incident fields from the notification below and return valid JSON.
+
 Notification:
-${composedMessage}`,
-      temperature: 0,
+${composedMessage}
+
+EXTRACTION REQUIREMENTS:
+Extract all available information from the message. The message may contain:
+• Incident type (e.g., Fall Victim, Proximity Alert, Apparatus Accident, Fire, Medical Emergency, Flood, Storm, Hazard)
+• Location details: state (abbreviation like "NJ", "NY", "CA"), county (full name like "Monmouth County"), city (proper case), and street address
+• ZIP code if mentioned
+• Detailed description of what happened
+• Emergency services status (often abbreviated)
+• Incident ID (may include # symbol - extract just the number)
+• Source/reference information
+• Timestamp or time information
+
+FORMATTING REQUIREMENTS (CRITICAL - ALL FIELDS MUST BE BEAUTIFULLY FORMATTED):
+
+1. **Type Field**:
+   - Map to one of: fire, flood, storm, accident, hazard, medical, other
+   - Use proper title case and clear, descriptive wording
+   - Example: "Fall Victim" → "medical"
+   - Example: "Proximity Alert" → "hazard"
+   - Example: "Apparatus Accident" → "accident"
+   - Example: "Fire" → "fire"
+
+2. **Location Fields**:
+   - State: Keep as abbreviation (e.g., "NJ", "NY", "CA")
+   - County: Proper title case with "County" suffix (e.g., "Monmouth County", "Hudson County")
+   - City: Proper title case (e.g., "Fair Haven", "Union City")
+   - Address: Clean formatting (e.g., "19 Highland Ave", "132 41st St")
+   - ZIP: Extract if present, otherwise omit
+
+3. **Description Field**:
+   - Expand all abbreviations to full, readable text
+   - Use proper grammar, punctuation, and capitalization
+   - Make it flow naturally as a complete sentence
+   - Common abbreviations to expand:
+     • "PD O/S" → "Police Department on scene"
+     • "FD O/S" → "Fire Department on scene"
+     • "EMS O/S" → "Emergency Medical Services on scene"
+     • "O/S" → "on scene"
+     • "PD off" → "Police Department cleared"
+     • "25-30 feet" → "25 to 30 feet"
+   - Example: "PD O/S with a subject fell 25-30 feet out of a tree, conscious and alert" 
+     → "Police Department on scene with a subject who fell 25 to 30 feet out of a tree, conscious and alert"
+
+4. **Severity**:
+   - Infer from keywords: "critical", "urgent", "emergency" = "critical" or "high"
+   - "routine", "minor" = "low"
+   - Default to "medium" if unclear
+
+5. **Incident ID**:
+   - Extract numeric ID, remove # symbol if present
+   - Format as plain string: "1835340" (not "#1835340")
+
+OUTPUT REQUIREMENTS:
+- All fields must be beautifully formatted and ready for display
+- Use proper grammar, punctuation, and capitalization throughout
+- Expand abbreviations naturally into full, readable text
+- If a field is not present in the message, omit it (use optional fields)
+- Maintain accuracy - don't add information that isn't in the message
+- Format all text to be professional and easy to read
+
+Now parse and format the message according to these requirements.`,
+      temperature: 0.1,
     });
 
-    // Map to Firestore shape
+    // Map to Firestore shape with Location object and individual fields
+    // NOTE: Geocoding (lat/lng) happens automatically via Firebase Cloud Function trigger
+    // The `autoGeocodeIncident` function in functions/src/index.ts runs onCreate and geocodes
+    // addresses using Google Maps API. This happens asynchronously after document creation.
+    const locationObj = (parsed.address || parsed.city || parsed.state) ? {
+      address: parsed.address,
+      city: parsed.city,
+      state: parsed.state,
+      zipCode: parsed.zipCode,
+      country: parsed.country || 'USA',
+      // lat/lng will be added by autoGeocodeIncident Firebase function trigger
+    } : undefined;
+
     const mapped: FirestoreIncident = {
       incidentId: parsed.incidentId,
-      title: parsed.title,
+      // Location object for Firebase Location interface
+      location: locationObj,
+      // Individual fields for easier querying and display
+      state: parsed.state,
+      county: parsed.county,
+      city: parsed.city,
+      address: parsed.address,
+      zipCode: parsed.zipCode,
+      country: parsed.country || 'USA',
+      // Incident details
+      type: parsed.type,
       description: parsed.description,
       severity: parsed.severity,
-      location: parsed.location,
     };
     const data = firestoreIncidentSchema.parse(mapped);
 
@@ -132,7 +241,7 @@ ${composedMessage}`,
             {
               id: `${Date.now()}`,
               type: 'update',
-              description: 'Updated via v2 webhook',
+              description: parsed.description || 'Updated via v2 webhook',
               timestamp: activityTimestamp,
               source: parsed.source ?? bodySource ?? 'webhook-v2',
             },
@@ -148,7 +257,7 @@ ${composedMessage}`,
           activity: [{
             id: `${Date.now()}`,
             type: 'create',
-            description: 'Created via v2 webhook',
+            description: parsed.description || 'Created via v2 webhook',
             timestamp: activityTimestamp,
             source: parsed.source ?? bodySource ?? 'webhook-v2',
           }],
