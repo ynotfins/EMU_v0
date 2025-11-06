@@ -101,7 +101,7 @@ const notificationSchema = z.object({
   message: z.string(),
   source: z.string().optional(),
   authToken: z.string().optional(), // Optional: can be in header or body
-});
+}).passthrough(); // Allow extra fields to pass through
 
 export const ingress = onRequest(
   {
@@ -118,8 +118,36 @@ export const ingress = onRequest(
         return;
       }
 
+      // Handle malformed JSON - Macrodroid may send raw text or invalid JSON
+      let body = request.body;
+      
+      // If body is a string, try to parse it
+      if (typeof body === 'string') {
+        try {
+          body = JSON.parse(body);
+        } catch (parseError) {
+          // If JSON parse fails, treat it as a raw message
+          console.warn('[Ingress] Invalid JSON received, treating as raw message:', body.substring(0, 100));
+          body = {
+            message: body,
+            source: request.headers['x-source'] || 'unknown',
+            receivedAt: new Date().toISOString(),
+          };
+        }
+      }
+      
+      // If body is empty or not an object, create a default structure
+      if (!body || typeof body !== 'object' || Array.isArray(body)) {
+        console.warn('[Ingress] Invalid body format, creating default structure');
+        body = {
+          message: typeof body === 'string' ? body : JSON.stringify(body) || 'No message provided',
+          source: request.headers['x-source'] || 'unknown',
+          receivedAt: new Date().toISOString(),
+        };
+      }
+
       // Parse and validate notification
-      const notification = notificationSchema.parse(request.body);
+      const notification = notificationSchema.parse(body);
 
       // Authenticate request
       const authHeader = request.headers.authorization;
