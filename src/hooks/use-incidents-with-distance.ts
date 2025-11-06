@@ -17,7 +17,7 @@ import { useState, useEffect } from "react";
 import { useIncidents } from "./use-incidents";
 import { useLocationDistance } from "./use-location-distance";
 import type { IncidentLite } from "@/types/extended-domain";
-import type { IncidentFilters } from "./use-filters";
+import type { IncidentFilters } from "./use-incidents";
 import { logger } from "@/lib/utils/logger";
 
 /**

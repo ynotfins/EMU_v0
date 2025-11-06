@@ -171,11 +171,13 @@ export function useIncident(incidentId: string) {
             
             if (seenMessages.has(normalizedMsg)) {
               const existing = seenMessages.get(normalizedMsg);
-              logger.debug(`Skipping duplicate message`, {
-                code: 'useIncident',
-                duplicate: update.ts.substring(0, 19),
-                original: existing.ts.substring(0, 19),
-              });
+              if (existing) {
+                logger.debug(`Skipping duplicate message`, {
+                  code: 'useIncident',
+                  duplicate: update.ts.substring(0, 19),
+                  original: existing.ts.substring(0, 19),
+                });
+              }
               return false;
             }
             
