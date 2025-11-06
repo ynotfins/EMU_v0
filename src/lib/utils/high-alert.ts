@@ -166,10 +166,10 @@ export class HighAlertSystem {
 
     // Show notification
     if ('Notification' in window && Notification.permission === 'granted') {
+      // Note: vibrate is only available in ServiceWorkerRegistration.showNotification, not web Notification API
       new Notification('[ALERT] HIGH ALERT ENABLED', {
         body: 'You will receive loud alerts for high-priority incidents',
         icon: '/app-icon.png',
-        vibrate: [200, 100, 200],
       });
     }
   }
