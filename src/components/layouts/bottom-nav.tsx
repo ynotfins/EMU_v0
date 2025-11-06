@@ -45,7 +45,12 @@ export function BottomNav({ role }: BottomNavProps) {
   // Use active role for navigation
   const baseRole = activeRole === "super_admin" ? "supe" : activeRole;
 
-  const navItems = [
+  const navItems: Array<{
+    label: string;
+    icon: typeof Home;
+    href: string;
+    active: boolean;
+  }> = [
     {
       label: "Incidents",
       icon: Home,
@@ -62,7 +67,7 @@ export function BottomNav({ role }: BottomNavProps) {
     {
       label: "Chat",
       icon: MessageSquare,
-      href: `/${baseRole}/chat`,
+      href: `/chat`, // Shared route group
       active: pathname.includes("/chat"),
     },
     {
@@ -81,7 +86,7 @@ export function BottomNav({ role }: BottomNavProps) {
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={item.href as any}
               className={cn(
                 "flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors pointer-events-auto cursor-pointer",
                 item.active ? "text-[#007AFF]" : "text-[#6B7280]"
