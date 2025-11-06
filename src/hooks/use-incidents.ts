@@ -69,15 +69,38 @@ interface FirestoreIncidentData {
 // Normalize inconsistent Firestore data into IncidentLite type
 function normalize(docId: string, data: FirestoreIncidentData): IncidentLite {
   // Handle timestamp variations - try multiple fields and handle Firestore Timestamp objects
-  let updatedAt =
+  let updatedAtRaw =
     data.updatedAt ||
     data.lastSeenAt ||
     data.lastTs ||
     data.timestamp ||
     data.ts ||
     new Date().toISOString();
-  if (typeof updatedAt === "object" && updatedAt.seconds) {
-    updatedAt = new Date(updatedAt.seconds * 1000).toISOString();
+  let updatedAt: string | Date;
+  if (typeof updatedAtRaw === "object" && updatedAtRaw !== null) {
+    if ('seconds' in updatedAtRaw) {
+      updatedAt = new Date((updatedAtRaw as { seconds: number }).seconds * 1000);
+    } else if (updatedAtRaw instanceof Date) {
+      updatedAt = updatedAtRaw;
+    } else {
+      updatedAt = new Date().toISOString();
+    }
+  } else {
+    updatedAt = typeof updatedAtRaw === 'string' ? updatedAtRaw : new Date().toISOString();
+  }
+
+  let createdAtRaw = data.createdAt || updatedAtRaw;
+  let createdAt: string | Date;
+  if (typeof createdAtRaw === "object" && createdAtRaw !== null) {
+    if ('seconds' in createdAtRaw) {
+      createdAt = new Date((createdAtRaw as { seconds: number }).seconds * 1000);
+    } else if (createdAtRaw instanceof Date) {
+      createdAt = createdAtRaw;
+    } else {
+      createdAt = updatedAt;
+    }
+  } else {
+    createdAt = typeof createdAtRaw === 'string' ? createdAtRaw : updatedAt;
   }
 
   const state = data.state || "";
@@ -106,7 +129,7 @@ function normalize(docId: string, data: FirestoreIncidentData): IncidentLite {
       parseInt(docId) ||
       0,
     title: (typeof data.title === 'string' ? data.title : null) || message.substring(0, 50) || 'Incident',
-    description: message || data.description || '',
+    description: message || (typeof data.description === 'string' ? data.description : '') || '',
     status: (data.status || 'active') as 'pending' | 'active' | 'resolved' | 'closed',
     priority: (data.priority || 'medium') as 'low' | 'medium' | 'high' | 'critical',
     location: {
