@@ -18,7 +18,7 @@ interface HomeownerFormProps {
 }
 
 export function HomeownerForm({ data, value, onChange, onSave, incidentId }: HomeownerFormProps) {
-  const formData = data || value || {};
+  const formData: Partial<HomeownerFormType> = data || value || {};
   const [isEditing, setIsEditing] = useState(false);
 
   // Handle carrier selection - auto-populate claims phone
@@ -111,7 +111,7 @@ export function HomeownerForm({ data, value, onChange, onSave, incidentId }: Hom
           </label>
           <Input
             id="propertyAddress"
-            value={value.propertyAddress || ""}
+            value={formData.propertyAddress || ""}
             onChange={(e) => onChange({ propertyAddress: e.target.value })}
             placeholder="Enter property address"
             disabled={!isEditing}
@@ -141,7 +141,7 @@ export function HomeownerForm({ data, value, onChange, onSave, incidentId }: Hom
               Carrier Name
             </label>
             <Select
-              value={value.carrierName || ""}
+              value={formData.carrierName || ""}
               onValueChange={handleCarrierChange}
               disabled={!isEditing}
             >
@@ -168,7 +168,7 @@ export function HomeownerForm({ data, value, onChange, onSave, incidentId }: Hom
             <Input
               id="claimsPhone"
               type="tel"
-              value={value.claimsPhone || ""}
+              value={formData.claimsPhone || ""}
               onChange={(e) => onChange({ claimsPhone: e.target.value })}
               placeholder="(800) 123-4567"
               disabled={!isEditing}
@@ -188,7 +188,7 @@ export function HomeownerForm({ data, value, onChange, onSave, incidentId }: Hom
           <Input
             id="incidentDate"
             type="date"
-            value={value.incidentDate || ""}
+            value={formData.incidentDate instanceof Date ? formData.incidentDate.toISOString().split('T')[0] : (formData.incidentDate || "")}
             onChange={(e) => onChange({ incidentDate: e.target.value })}
             disabled={!isEditing}
           />
@@ -200,7 +200,7 @@ export function HomeownerForm({ data, value, onChange, onSave, incidentId }: Hom
           </label>
           <Textarea
             id="damageDescription"
-            value={value.damageDescription || ""}
+            value={formData.damageDescription || ""}
             onChange={(e) => onChange({ damageDescription: e.target.value })}
             placeholder="Describe the damage..."
             rows={4}
@@ -215,7 +215,7 @@ export function HomeownerForm({ data, value, onChange, onSave, incidentId }: Hom
           </label>
           <Input
             id="adjusterName"
-            value={value.adjusterName || ""}
+            value={formData.adjusterName || ""}
             onChange={(e) => onChange({ adjusterName: e.target.value })}
             placeholder="Enter adjuster name"
             disabled={!isEditing}
@@ -229,7 +229,7 @@ export function HomeownerForm({ data, value, onChange, onSave, incidentId }: Hom
           <Input
             id="adjusterPhone"
             type="tel"
-            value={value.adjusterPhone || ""}
+            value={formData.adjusterPhone || ""}
             onChange={(e) => onChange({ adjusterPhone: e.target.value })}
             placeholder="(555) 123-4567"
             disabled={!isEditing}
@@ -242,7 +242,7 @@ export function HomeownerForm({ data, value, onChange, onSave, incidentId }: Hom
           </label>
           <Textarea
             id="additionalNotes"
-            value={value.additionalNotes || ""}
+            value={formData.additionalNotes || ""}
             onChange={(e) => onChange({ additionalNotes: e.target.value })}
             placeholder="Any additional information..."
             rows={3}
