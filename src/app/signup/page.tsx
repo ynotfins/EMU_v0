@@ -11,6 +11,7 @@ import Link from "next/link"
 import { createUserWithEmailAndPassword } from "firebase/auth"
 import { doc, setDoc } from "firebase/firestore"
 import { auth, db } from "@/lib/firebase-client"
+import { logger } from "@/lib/utils/logger"
 
 export default function SignupPage() {
   const [email, setEmail] = useState("")
@@ -61,7 +62,7 @@ export default function SignupPage() {
     setLoading(true)
 
     try {
-      console.log("[Signup] Creating account:", email, "as", role)
+      logger.debug("Creating account", { code: 'SignupPage', email, role });
 
       // Create Firebase Auth user
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
@@ -83,12 +84,12 @@ export default function SignupPage() {
         createdAt: new Date().toISOString(),
       })
 
-      console.log("[Signup] [OK] Chaser account created successfully")
+      logger.debug("Chaser account created successfully", { code: 'SignupPage', userId: user.uid });
 
       // All signups go to chaser route
-      router.push("/chaser/incidents")
+      router.push("/incidents")
     } catch (err: any) {
-      console.error("[Signup] [X] Error:", err)
+      logger.error("Signup error", err, { code: 'SignupPage', email });
 
       if (err.code === "auth/email-already-in-use") {
         setError("Email already in use. Please sign in instead.")

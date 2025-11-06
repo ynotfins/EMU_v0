@@ -24,6 +24,7 @@ import { auth } from '../firebase-client';
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase-client';
 import { saveAuthState } from '../firebase/auth-persistence';
+import { logger } from '../utils/logger';
 
 export interface AuthUser {
   uid: string;
@@ -72,9 +73,9 @@ class AuthenticationModule {
   private async initializeAuth() {
     try {
       await setPersistence(this.auth, browserLocalPersistence);
-      console.log('[Auth Module] Persistence initialized');
+      logger.debug('Persistence initialized', { code: 'AuthModule' });
     } catch (error) {
-      console.error('[Auth Module] Failed to set persistence:', error);
+      logger.error('Failed to set persistence', error as Error, { code: 'AuthModule' });
     }
   }
 
@@ -104,7 +105,7 @@ class AuthenticationModule {
    */
   async signInWithEmail(data: SignInData): Promise<AuthUser> {
     try {
-      console.log('[Auth Module] Signing in with email:', data.email);
+      logger.debug('Signing in with email', { code: 'AuthModule', email: data.email });
       const credential = await signInWithEmailAndPassword(this.auth, data.email, data.password);
       
       // Save auth state and log event
@@ -112,7 +113,7 @@ class AuthenticationModule {
       
       return this.enrichUserWithRole(credential.user);
     } catch (error: any) {
-      console.error('[Auth Module] Email sign in failed:', error);
+      logger.error('Email sign in failed', error, { code: 'AuthModule', email: data.email });
       throw this.handleAuthError(error);
     }
   }
@@ -122,7 +123,7 @@ class AuthenticationModule {
    */
   async signInWithGoogle(): Promise<AuthUser> {
     try {
-      console.log('[Auth Module] Signing in with Google');
+      logger.debug('Signing in with Google', { code: 'AuthModule' });
       const credential = await signInWithPopup(this.auth, this.googleProvider);
       
       // Save auth state and log event
@@ -130,7 +131,7 @@ class AuthenticationModule {
       
       return this.enrichUserWithRole(credential.user);
     } catch (error: any) {
-      console.error('[Auth Module] Google sign in failed:', error);
+      logger.error('Google sign in failed', error, { code: 'AuthModule' });
       throw this.handleAuthError(error);
     }
   }
@@ -140,7 +141,7 @@ class AuthenticationModule {
    */
   async signUpWithEmail(data: SignUpData): Promise<AuthUser> {
     try {
-      console.log('[Auth Module] Creating account for:', data.email);
+      logger.debug('Creating account', { code: 'AuthModule', email: data.email, role: data.role });
       
       // Create user
       const credential = await createUserWithEmailAndPassword(this.auth, data.email, data.password);
@@ -161,7 +162,7 @@ class AuthenticationModule {
       
       return this.enrichUserWithRole(credential.user);
     } catch (error: any) {
-      console.error('[Auth Module] Sign up failed:', error);
+      logger.error('Sign up failed', error, { code: 'AuthModule', email: data.email });
       throw this.handleAuthError(error);
     }
   }
@@ -171,7 +172,7 @@ class AuthenticationModule {
    */
   async signOut(): Promise<void> {
     try {
-      console.log('[Auth Module] Signing out');
+      logger.debug('Signing out', { code: 'AuthModule' });
       
       // Clear cookies
       document.cookie = '__emu_authed=; Path=/; Max-Age=0; SameSite=Lax';
@@ -179,9 +180,9 @@ class AuthenticationModule {
       // Sign out from Firebase
       await firebaseSignOut(this.auth);
       
-      console.log('[Auth Module] Sign out successful');
+      logger.debug('Sign out successful', { code: 'AuthModule' });
     } catch (error: any) {
-      console.error('[Auth Module] Sign out failed:', error);
+      logger.error('Sign out failed', error, { code: 'AuthModule' });
       throw this.handleAuthError(error);
     }
   }
@@ -191,10 +192,10 @@ class AuthenticationModule {
    */
   async sendPasswordResetEmail(email: string): Promise<void> {
     try {
-      console.log('[Auth Module] Sending password reset to:', email);
+      logger.debug('Sending password reset email', { code: 'AuthModule', email });
       await sendPasswordResetEmail(this.auth, email);
     } catch (error: any) {
-      console.error('[Auth Module] Password reset failed:', error);
+      logger.error('Password reset failed', error, { code: 'AuthModule', email });
       throw this.handleAuthError(error);
     }
   }
@@ -204,10 +205,10 @@ class AuthenticationModule {
    */
   async confirmPasswordReset(code: string, newPassword: string): Promise<void> {
     try {
-      console.log('[Auth Module] Confirming password reset');
+      logger.debug('Confirming password reset', { code: 'AuthModule' });
       await confirmPasswordReset(this.auth, code, newPassword);
     } catch (error: any) {
-      console.error('[Auth Module] Password reset confirmation failed:', error);
+      logger.error('Password reset confirmation failed', error, { code: 'AuthModule' });
       throw this.handleAuthError(error);
     }
   }
@@ -223,7 +224,7 @@ class AuthenticationModule {
       }
       return null;
     } catch (error) {
-      console.error('[Auth Module] Failed to get user role:', error);
+      logger.error('Failed to get user role', error as Error, { code: 'AuthModule', uid });
       return null;
     }
   }
@@ -233,10 +234,10 @@ class AuthenticationModule {
    */
   async updateUserRole(uid: string, role: string): Promise<void> {
     try {
-      console.log(`[Auth Module] Updating user ${uid} role to ${role}`);
+      logger.debug('Updating user role', { code: 'AuthModule', uid, role });
       await updateDoc(doc(db, 'users', uid), { role });
     } catch (error) {
-      console.error('[Auth Module] Failed to update user role:', error);
+      logger.error('Failed to update user role', error as Error, { code: 'AuthModule', uid, role });
       throw error;
     }
   }
@@ -286,7 +287,7 @@ class AuthenticationModule {
     document.cookie = `__emu_authed=1; Path=/${domain}; SameSite=Lax; Secure`;
     
     // Log auth event (could be to analytics or audit log)
-    console.log('[Auth Module] User authenticated:', user.email);
+    logger.debug('User authenticated', { code: 'AuthModule', email: user.email || undefined });
   }
 
   /**
@@ -306,9 +307,9 @@ class AuthenticationModule {
       };
       
       await setDoc(doc(db, 'users', user.uid), userProfile, { merge: true });
-      console.log('[Auth Module] User profile created');
+      logger.debug('User profile created', { code: 'AuthModule', uid: user.uid, role: role || 'chaser' });
     } catch (error) {
-      console.error('[Auth Module] Failed to create user profile:', error);
+      logger.error('Failed to create user profile', error as Error, { code: 'AuthModule', uid: user.uid });
     }
   }
 

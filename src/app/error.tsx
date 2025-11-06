@@ -9,6 +9,7 @@
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { logger } from '@/lib/utils/logger';
 
 export default function Error({
   error,
@@ -19,7 +20,10 @@ export default function Error({
 }) {
   useEffect(() => {
     // Log the error to an error reporting service
-    console.error('Global error:', error);
+    logger.error('Global error boundary triggered', error, {
+      code: 'ErrorBoundary',
+      digest: error.digest,
+    });
   }, [error]);
 
   return (

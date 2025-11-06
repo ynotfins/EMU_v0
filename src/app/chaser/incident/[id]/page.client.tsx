@@ -5,7 +5,7 @@ import { useFiles } from "@/hooks/use-files";
 import { toggleFavorite, toggleBookmark } from "@/hooks/use-incidents";
 import { useState } from "react";
 import { RoleLayout } from "@/components/features/role-layout";
-import { MapCard } from "@/components/map-card";
+import { MapCard } from "@/components/shared/map-card";
 import { HomeownerForm } from "@/components/features/homeowner-form";
 import { DocsManager } from "@/components/features/docs-manager";
 import { ESignManager } from "@/components/features/esign-manager";
@@ -19,6 +19,7 @@ import type { HomeownerForm as HomeownerFormType } from "@/types/extended-domain
 import { recordAlertResponse } from "@/lib/actions/responses";
 import { useProfile } from "@/hooks/use-profile";
 import { auth } from "@/lib/firebase-client";
+import { logger } from "@/lib/utils/logger";
 
 export default function Client({ id }: { id: string }) {
   const { data: incident, updates, error } = useIncident(id);
@@ -42,7 +43,7 @@ export default function Client({ id }: { id: string }) {
       window.open(`https://www.google.com/maps/dir/?api=1&destination=${address}`, '_blank');
 
       // Record response and notify supes
-      console.log('[Respond] Recording response and notifying supes...');
+      logger.debug('Recording response and notifying supes', { code: 'ChaserIncident', incidentId: incident.id });
       await recordAlertResponse(
         incident.id,
         profile.uid,
@@ -50,9 +51,9 @@ export default function Client({ id }: { id: string }) {
         profile.role,
         incident.address
       );
-      console.log('[Respond] [OK] Response recorded successfully!');
+      logger.debug('Response recorded successfully', { code: 'ChaserIncident', incidentId: incident.id });
     } catch (error) {
-      console.error('[Respond] [X] Error recording response:', error);
+      logger.error('Error recording response', error as Error, { code: 'ChaserIncident', incidentId: incident.id });
     } finally {
       setResponding(false);
     }
@@ -184,12 +185,7 @@ export default function Client({ id }: { id: string }) {
                   <h2 className="text-xl font-bold">{incident.type}</h2>
                   <button
                     onClick={() => {
-                      console.log(
-                        "[Details] Toggling favorite for ID:",
-                        id,
-                        "incident.id:",
-                        incident.id
-                      );
+                      logger.debug('Toggling favorite', { code: 'ChaserIncident', id, incidentId: incident.id });
                       toggleFavorite(id);
                     }}
                     className="transition-colors"
@@ -290,7 +286,7 @@ export default function Client({ id }: { id: string }) {
                   onBlur={async () => {
                     // Auto-save when user leaves the textarea
                     if (noteText.trim()) {
-                      console.log("[Notes] Auto-saving note:", noteText);
+                      logger.debug("Auto-saving note", { code: 'ChaserIncident', incidentId: incident.id, noteLength: noteText.length });
                       await addNote(incident.id, noteText);
                       // Only clear after successful save
                       setNoteText("");
@@ -339,7 +335,7 @@ export default function Client({ id }: { id: string }) {
                 value={homeownerData}
                 onChange={(partial) => setHomeownerData({ ...homeownerData, ...partial })}
                 onSave={async () => {
-                  console.log("[Homeowner] Saving:", homeownerData);
+                  logger.debug("Saving homeowner data", { code: 'ChaserIncident', incidentId: incident.id });
                   // TODO: Implement save to Firestore
                 }}
               />
@@ -349,11 +345,11 @@ export default function Client({ id }: { id: string }) {
               <DocsManager
                 files={files || []}
                 onPickFile={(file) => {
-                  console.log("[Docs] File picked:", file.name);
+                  logger.debug("File picked", { code: 'ChaserIncident', incidentId: incident.id, fileName: file.name });
                   // TODO: Implement file upload
                 }}
                 onDeleteFile={(fileId) => {
-                  console.log("[Docs] Delete file:", fileId);
+                  logger.debug("Delete file", { code: 'ChaserIncident', incidentId: incident.id, fileId });
                   // TODO: Implement file deletion
                 }}
                 canDelete={true}
@@ -364,11 +360,11 @@ export default function Client({ id }: { id: string }) {
               <ESignManager
                 files={files || []}
                 onSendForESign={(docIds, email) => {
-                  console.log("[ESign] Send for signature:", { docIds, email });
+                  logger.debug("Send for signature", { code: 'ChaserIncident', incidentId: incident.id, docCount: docIds.length });
                   // TODO: Implement e-signature sending
                 }}
                 onLiveSign={(signatureDataUrl) => {
-                  console.log("[ESign] Live signature captured");
+                  logger.debug("Live signature captured", { code: 'ChaserIncident', incidentId: incident.id });
                   // TODO: Implement live signature save
                 }}
               />

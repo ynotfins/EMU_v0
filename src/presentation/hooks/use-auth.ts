@@ -14,6 +14,7 @@ import {
   signOut as signOutAction,
   type SerializedUser 
 } from '@/lib/actions/auth';
+import { logger } from '@/lib/utils/logger';
 
 interface AuthState {
   user: SerializedUser | null;
@@ -52,7 +53,7 @@ export function useAuth(): UseAuthReturn {
         setState({ user: result.user, loading: false, error: null });
       }
     } catch (error) {
-      console.error('Error fetching user:', error);
+      logger.error('Error fetching user', error as Error, { code: 'useAuth' });
       setState({ 
         user: null, 
         loading: false, 
@@ -70,7 +71,7 @@ export function useAuth(): UseAuthReturn {
       await signOutAction();
       // Server action handles redirect
     } catch (error) {
-      console.error('Sign out error:', error);
+      logger.error('Sign out error', error as Error, { code: 'useAuth' });
       setState(prev => ({ ...prev, loading: false, error: 'Failed to sign out' }));
     }
   }, []);

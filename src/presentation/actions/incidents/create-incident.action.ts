@@ -12,6 +12,7 @@ import { TOKENS } from '@infrastructure/di/tokens';
 import { CreateIncidentUseCase } from '@application/incidents';
 import { getCurrentUser } from '../auth';
 import { IncidentType } from '@domain/entities/incident/incident.entity';
+import { logger } from '@/lib/utils/logger';
 
 export interface CreateIncidentResult {
   success: boolean;
@@ -84,7 +85,7 @@ export async function createIncident(
       incidentId: incident.id.value,
     };
   } catch (error) {
-    console.error('Create incident error:', error);
+    logger.error('Create incident error', error as Error, { code: 'CreateIncidentAction' });
     return {
       success: false,
       error: 'An unexpected error occurred',

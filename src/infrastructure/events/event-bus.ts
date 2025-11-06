@@ -7,6 +7,7 @@
 
 import { injectable } from 'inversify';
 import { DomainEvent, IEventBus } from '@application/shared/interfaces/services.interface';
+import { logger } from '@/lib/utils/logger';
 
 type EventHandler = (event: DomainEvent) => Promise<void>;
 
@@ -21,8 +22,9 @@ export class EventBus implements IEventBus {
   async publish(event: DomainEvent): Promise<void> {
     // Log event for debugging
     if (process.env.NODE_ENV === 'development') {
-      console.log('📢 Domain Event:', {
-        type: event.eventType,
+      logger.debug('Domain Event', {
+        code: 'EventBus',
+        eventType: event.eventType,
         aggregateId: event.aggregateId,
         timestamp: event.occurredAt,
       });
@@ -93,7 +95,10 @@ export class EventBus implements IEventBus {
     try {
       await handler(event);
     } catch (error) {
-      console.error(`Error handling event ${event.eventType}:`, error);
+      logger.error('Error handling event', error as Error, {
+        code: 'EventBus',
+        eventType: event.eventType,
+      });
       
       // In production, you might want to:
       // - Send to error tracking service (Sentry)
@@ -112,7 +117,8 @@ export class DomainEventHandlers {
    */
   static auditLogger: EventHandler = async (event: DomainEvent) => {
     // In production, store in audit log database
-    console.log('Audit:', {
+    logger.debug('Audit log', {
+      code: 'EventBus',
       eventType: event.eventType,
       aggregateId: event.aggregateId,
       timestamp: event.occurredAt,
@@ -128,7 +134,10 @@ export class DomainEventHandlers {
     
     // In production, send to analytics service
     // Example: Google Analytics, Mixpanel, Segment
-    console.log('Analytics: New incident created', event.eventData);
+    logger.debug('Analytics: New incident created', {
+      code: 'EventBus',
+      eventData: event.eventData,
+    });
   };
 
   /**
@@ -141,6 +150,9 @@ export class DomainEventHandlers {
     
     // In production, send to alerting service
     // Example: PagerDuty, Slack, Discord
-    console.log('Critical Event Alert:', event);
+    logger.debug('Critical Event Alert', {
+      code: 'EventBus',
+      event,
+    });
   };
 }

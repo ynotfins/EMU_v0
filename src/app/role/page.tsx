@@ -10,13 +10,11 @@ export default function RolePage() {
 
   useEffect(() => {
     if (profile) {
-      // Redirect based on role
-      if (profile.role === "chaser") {
-        router.push("/chaser/incidents")
-      } else if (profile.role === "supe") {
-        router.push("/supe/incidents")
-      } else if (profile.role === "admin") {
+      // Redirect based on role - all roles go to shared /incidents route
+      if (profile.role === "admin" || profile.role === "super_admin") {
         router.push("/admin")
+      } else {
+        router.push("/incidents") // Shared route for chaser and supe
       }
     }
   }, [profile, router])

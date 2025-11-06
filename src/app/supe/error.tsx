@@ -10,6 +10,7 @@ import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { AlertTriangle } from 'lucide-react';
+import { logger } from '@/lib/utils/logger';
 
 export default function SupeError({
   error,
@@ -19,7 +20,10 @@ export default function SupeError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error('Supe section error:', error);
+    logger.error('Supe section error boundary triggered', error, {
+      code: 'SupeErrorBoundary',
+      digest: error.digest,
+    });
   }, [error]);
 
   return (

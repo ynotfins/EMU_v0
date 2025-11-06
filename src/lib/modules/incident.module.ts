@@ -23,6 +23,7 @@ import {
   addDoc
 } from 'firebase/firestore';
 import { db } from '../firebase-client';
+import { logger } from '../utils/logger';
 
 export interface Incident {
   id: string;
@@ -111,7 +112,7 @@ class IncidentModule {
    */
   async createIncident(data: Partial<Incident>): Promise<string> {
     try {
-      console.log('[Incident Module] Creating new incident');
+      logger.debug('Creating new incident', { code: 'IncidentModule' });
       
       const incidentData = {
         ...data,
@@ -126,11 +127,11 @@ class IncidentModule {
       };
       
       const docRef = await addDoc(collection(db, this.COLLECTION), incidentData);
-      console.log('[Incident Module] Incident created:', docRef.id);
+      logger.debug('Incident created', { code: 'IncidentModule', incidentId: docRef.id });
       
       return docRef.id;
     } catch (error) {
-      console.error('[Incident Module] Failed to create incident:', error);
+      logger.error('Failed to create incident', error as Error, { code: 'IncidentModule' });
       throw error;
     }
   }
@@ -149,7 +150,7 @@ class IncidentModule {
       
       return null;
     } catch (error) {
-      console.error('[Incident Module] Failed to get incident:', error);
+      logger.error('Failed to get incident', error as Error, { code: 'IncidentModule', incidentId: id });
       throw error;
     }
   }
@@ -182,7 +183,7 @@ class IncidentModule {
       const snapshot = await getDocs(q);
       return snapshot.docs.map(doc => this.formatIncident(doc.id, doc.data()));
     } catch (error) {
-      console.error('[Incident Module] Failed to get incidents:', error);
+      logger.error('Failed to get incidents', error as Error, { code: 'IncidentModule' });
       throw error;
     }
   }
@@ -206,7 +207,7 @@ class IncidentModule {
       const snapshot = await getDocs(q);
       return snapshot.docs.map(doc => this.formatIncident(doc.id, doc.data()));
     } catch (error) {
-      console.error('[Incident Module] Failed to get recent incidents:', error);
+      logger.error('Failed to get recent incidents', error as Error, { code: 'IncidentModule', limitCount });
       throw error;
     }
   }
@@ -224,7 +225,7 @@ class IncidentModule {
         callback(null);
       }
     }, (error) => {
-      console.error('[Incident Module] Subscription error:', error);
+      logger.error('Subscription error', error as Error, { code: 'IncidentModule', incidentId: id });
       callback(null);
     });
   }
@@ -249,7 +250,7 @@ class IncidentModule {
       const incidents = snapshot.docs.map(doc => this.formatIncident(doc.id, doc.data()));
       callback(incidents);
     }, (error) => {
-      console.error('[Incident Module] Subscription error:', error);
+      logger.error('Subscription error', error as Error, { code: 'IncidentModule', incidentId: id });
       callback([]);
     });
   }
@@ -259,7 +260,7 @@ class IncidentModule {
    */
   async updateIncident(id: string, updates: Partial<Incident>): Promise<void> {
     try {
-      console.log('[Incident Module] Updating incident:', id);
+      logger.debug('Updating incident', { code: 'IncidentModule', incidentId: id });
       
       const updateData = {
         ...updates,
@@ -267,9 +268,9 @@ class IncidentModule {
       };
       
       await updateDoc(doc(db, this.COLLECTION, id), updateData);
-      console.log('[Incident Module] Incident updated');
+      logger.debug('Incident updated', { code: 'IncidentModule', incidentId: id });
     } catch (error) {
-      console.error('[Incident Module] Failed to update incident:', error);
+      logger.error('Failed to update incident', error as Error, { code: 'IncidentModule', incidentId: id });
       throw error;
     }
   }
@@ -291,9 +292,9 @@ class IncidentModule {
       const updates = [...(incident.updates || []), newUpdate];
       
       await this.updateIncident(incidentId, { updates });
-      console.log('[Incident Module] Update added to incident');
+      logger.debug('Update added to incident', { code: 'IncidentModule', incidentId: id });
     } catch (error) {
-      console.error('[Incident Module] Failed to add update:', error);
+      logger.error('Failed to add update', error as Error, { code: 'IncidentModule', incidentId: id });
       throw error;
     }
   }
@@ -314,9 +315,9 @@ class IncidentModule {
       const responses = [...(incident.responses || []), newResponse];
       
       await this.updateIncident(incidentId, { responses });
-      console.log('[Incident Module] Chaser response added');
+      logger.debug('Chaser response added', { code: 'IncidentModule', incidentId: id, chaserId });
     } catch (error) {
-      console.error('[Incident Module] Failed to add response:', error);
+      logger.error('Failed to add response', error as Error, { code: 'IncidentModule', incidentId: id, chaserId });
       throw error;
     }
   }
@@ -330,9 +331,9 @@ class IncidentModule {
       if (!incident) throw new Error('Incident not found');
       
       await this.updateIncident(id, { isFavorited: !incident.isFavorited });
-      console.log('[Incident Module] Favorite toggled');
+      logger.debug('Favorite toggled', { code: 'IncidentModule', incidentId: id, userId });
     } catch (error) {
-      console.error('[Incident Module] Failed to toggle favorite:', error);
+      logger.error('Failed to toggle favorite', error as Error, { code: 'IncidentModule', incidentId: id, userId });
       throw error;
     }
   }
@@ -346,9 +347,9 @@ class IncidentModule {
       if (!incident) throw new Error('Incident not found');
       
       await this.updateIncident(id, { isSilenced: !incident.isSilenced });
-      console.log('[Incident Module] Silence toggled');
+      logger.debug('Silence toggled', { code: 'IncidentModule', incidentId: id, userId });
     } catch (error) {
-      console.error('[Incident Module] Failed to toggle silence:', error);
+      logger.error('Failed to toggle silence', error as Error, { code: 'IncidentModule', incidentId: id, userId });
       throw error;
     }
   }
@@ -359,9 +360,9 @@ class IncidentModule {
   async assignIncident(id: string, chaserIds: string[]): Promise<void> {
     try {
       await this.updateIncident(id, { assignedTo: chaserIds });
-      console.log('[Incident Module] Incident assigned to:', chaserIds);
+      logger.debug('Incident assigned', { code: 'IncidentModule', incidentId: id, chaserCount: chaserIds.length });
     } catch (error) {
-      console.error('[Incident Module] Failed to assign incident:', error);
+      logger.error('Failed to assign incident', error as Error, { code: 'IncidentModule', incidentId: id });
       throw error;
     }
   }
@@ -372,9 +373,9 @@ class IncidentModule {
   async updateHomeownerInfo(id: string, homeownerInfo: HomeownerInfo): Promise<void> {
     try {
       await this.updateIncident(id, { homeownerInfo });
-      console.log('[Incident Module] Homeowner info updated');
+      logger.debug('Homeowner info updated', { code: 'IncidentModule', incidentId: id });
     } catch (error) {
-      console.error('[Incident Module] Failed to update homeowner info:', error);
+      logger.error('Failed to update homeowner info', error as Error, { code: 'IncidentModule', incidentId: id });
       throw error;
     }
   }
@@ -385,9 +386,9 @@ class IncidentModule {
   async deleteIncident(id: string): Promise<void> {
     try {
       await deleteDoc(doc(db, this.COLLECTION, id));
-      console.log('[Incident Module] Incident deleted:', id);
+      logger.debug('Incident deleted', { code: 'IncidentModule', incidentId: id });
     } catch (error) {
-      console.error('[Incident Module] Failed to delete incident:', error);
+      logger.error('Failed to delete incident', error as Error, { code: 'IncidentModule', incidentId: id });
       throw error;
     }
   }

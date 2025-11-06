@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { logger } from "@/lib/utils/logger";
 import {
   Card,
   CardContent,
@@ -51,7 +52,7 @@ export function SupeControlsCard({ userRole }: SupeControlsCardProps) {
     setActiveRole(newRole);
     localStorage.setItem("activeRole", newRole);
 
-    console.log(`[SupeControls] Active role set to ${newRole} (Firestore role remains super_admin)`);
+    logger.debug('Active role set', { code: 'SupeControls', newRole, note: 'Firestore role remains super_admin' });
 
     // Force bottom nav to re-render
     window.dispatchEvent(new Event("storage"));
@@ -74,7 +75,7 @@ export function SupeControlsCard({ userRole }: SupeControlsCardProps) {
       newPath = `/${newView}/incidents`;
     }
 
-    console.log(`[SupeControls] Switching from ${viewMode} to ${newView} view`);
+    logger.debug('Switching view mode', { code: 'SupeControls', from: viewMode, to: newView });
     router.push(newPath as any);
   };
 

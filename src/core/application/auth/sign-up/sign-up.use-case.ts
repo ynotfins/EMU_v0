@@ -24,6 +24,7 @@ import type {
   IAuthService, 
   IEmailService 
 } from '@application/shared/interfaces/services.interface';
+import { logger } from '@/lib/utils/logger';
 
 @injectable()
 export class SignUpUseCase extends UseCase<SignUpRequest, SignUpResponse> {
@@ -104,17 +105,28 @@ export class SignUpUseCase extends UseCase<SignUpRequest, SignUpResponse> {
         verificationEmailSent = true;
       } else {
         // Log error but don't fail the signup
-        console.error('Failed to send verification email:', verificationResult.value);
+        logger.error('Failed to send verification email', verificationResult.value as Error, {
+          code: 'SignUpUseCase',
+          email: email.value,
+        });
       }
 
       // 7. Send welcome email (non-blocking)
       this.emailService.sendWelcomeEmail(email.value, user.displayName)
         .then(result => {
           if (result.isLeft()) {
-            console.error('Failed to send welcome email:', result.value);
+            logger.error('Failed to send welcome email', result.value as Error, {
+              code: 'SignUpUseCase',
+              email: email.value,
+            });
           }
         })
-        .catch(console.error);
+        .catch((error) => {
+          logger.error('Error in welcome email promise', error as Error, {
+            code: 'SignUpUseCase',
+            email: email.value,
+          });
+        });
 
       // 8. Return success response
       return right({

@@ -1,6 +1,7 @@
 ﻿"use client"
 
 import { createContext, useContext, useState, type ReactNode } from "react"
+import { logger } from "@/lib/utils/logger"
 
 interface FavoritesContextType {
   favorites: Set<string>
@@ -26,7 +27,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       } else {
         next.add(id)
       }
-      console.log("[v0] Toggle favorite:", id, next.has(id) ? "added" : "removed")
+      logger.debug('Toggle favorite', { code: 'FavoritesContext', incidentId: id, action: next.has(id) ? 'added' : 'removed' })
       return next
     })
   }
@@ -39,7 +40,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       } else {
         next.add(id)
       }
-      console.log("[v0] Toggle bookmark:", id, next.has(id) ? "added" : "removed")
+      logger.debug('Toggle bookmark', { code: 'FavoritesContext', incidentId: id, action: next.has(id) ? 'added' : 'removed' })
       return next
     })
   }
@@ -52,7 +53,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       } else {
         next.add(id)
       }
-      console.log("[v0] Toggle silence:", id, next.has(id) ? "silenced" : "unsilenced")
+      logger.debug('Toggle silence', { code: 'FavoritesContext', incidentId: id, action: next.has(id) ? 'silenced' : 'unsilenced' })
       return next
     })
   }

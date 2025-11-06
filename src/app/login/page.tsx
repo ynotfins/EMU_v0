@@ -60,16 +60,12 @@ export default function LoginPage() {
             role: userRole,
           });
 
-          // Immediate redirect - no delay
-          const targetPath = (userRole === "super_admin" || userRole === "admin" || userRole === "supe") 
-            ? "/supe/incidents" 
-            : "/chaser/incidents";
-          
-          logger.debug('Navigating to role home', {
+          // Immediate redirect - no delay - use shared /incidents route
+          logger.debug('Navigating to incidents', {
             code: 'LoginPage',
-            targetPath,
+            userRole,
           });
-          window.location.href = targetPath; // Force hard navigation to break any loops
+          window.location.href = "/incidents"; // Force hard navigation to break any loops
         } catch (err) {
           logger.error('Error during redirect', err, {
             code: 'LoginPage',
@@ -224,7 +220,10 @@ export default function LoginPage() {
 
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
-      console.log("[Login] [OK] Email sign-in successful:", result.user.email);
+      logger.debug("Email sign-in successful", {
+        code: 'LoginPage',
+        email: result.user.email || undefined,
+      });
       
       // Check user role and redirect accordingly
       const { doc: docRef, getDoc } = await import("firebase/firestore");

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -56,13 +56,18 @@ function EmptyState({
   );
 }
 
-export default function ChaserFavoritesPage() {
+export default function SharedFavoritesPage() {
   const router = useRouter();
   const { data: allIncidents } = useIncidents();
   const { toggleSilence } = useFavoritesContext();
   const { data: profile } = useProfile(auth.currentUser?.uid);
   const { responses, loading: responsesLoading } = useResponses(profile?.uid);
   const [activeTab, setActiveTab] = useState("favorites");
+
+  // Determine role dynamically based on user profile
+  const userRole = profile?.role === "super_admin" || profile?.role === "admin" || profile?.role === "supe" 
+    ? "supe" 
+    : "chaser"
 
   const safeIncidents = Array.isArray(allIncidents) ? allIncidents : [];
   const favoritedIncidents = safeIncidents.filter((inc) => inc.isFavorited);
@@ -96,11 +101,12 @@ export default function ChaserFavoritesPage() {
   };
 
   const handleOpenIncident = (id: string) => {
-    router.push(`/chaser/incident/${id}`);
+    // Use shared incident route
+    router.push(`/incident/${id}`);
   };
 
   return (
-    <RoleLayout role="chaser">
+    <RoleLayout role={userRole}>
       <div className="flex flex-col h-screen">
         {/* Header - Fixed at top */}
         <div className="bg-white border-b border-[#E5E7EB] p-4 fixed top-0 left-0 right-0 z-20">
@@ -145,7 +151,7 @@ export default function ChaserFavoritesPage() {
                 title="No Favorites Yet"
                 message="Tap the heart icon on any NFA Alert to add it to your favorites"
                 actionLabel="Browse NFA Alerts"
-                onAction={() => router.push("/chaser/incidents")}
+                onAction={() => router.push("/incidents")}
                 iconColor="text-[#FF3B30]"
               />
             ) : (
@@ -174,7 +180,7 @@ export default function ChaserFavoritesPage() {
                 title="No Bookmarks Yet"
                 message="Tap the bookmark icon on any NFA Alert to save it for later"
                 actionLabel="Browse NFA Alerts"
-                onAction={() => router.push("/chaser/incidents")}
+                onAction={() => router.push("/incidents")}
               />
             ) : (
               <div className="p-4 space-y-3">
@@ -202,7 +208,7 @@ export default function ChaserFavoritesPage() {
                 title="No Notes Yet"
                 message="Add notes to incidents to keep track of important information"
                 actionLabel="Browse NFA Alerts"
-                onAction={() => router.push("/chaser/incidents")}
+                onAction={() => router.push("/incidents")}
               />
             ) : (
               <div className="p-4 space-y-3">
@@ -238,7 +244,7 @@ export default function ChaserFavoritesPage() {
                 title="No Responses Yet"
                 message="When you respond to an alert, it will appear here"
                 actionLabel="View All Alerts"
-                onAction={() => router.push("/chaser/incidents")}
+                onAction={() => router.push("/incidents")}
                 iconColor="text-[#34C759]"
               />
             ) : (
@@ -248,7 +254,7 @@ export default function ChaserFavoritesPage() {
                     key={incident.id}
                     incident={incident}
                     onOpen={(incidentId) => {
-                      router.push(`/chaser/incident/${incidentId}`);
+                      router.push(`/incident/${incidentId}`);
                     }}
                     onToggleFavorite={handleToggleFavorite}
                     onToggleBookmark={handleToggleBookmark}
@@ -263,3 +269,4 @@ export default function ChaserFavoritesPage() {
     </RoleLayout>
   );
 }
+

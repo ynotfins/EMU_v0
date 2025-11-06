@@ -6,6 +6,7 @@ import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { subscribeToIncidentChat, sendIncidentMessage, createIncidentChat, getAllSupes, type ChatMessage } from '@/lib/utils/realtime-database';
 import { useProfile } from '@/hooks/use-profile';
+import { logger } from '@/lib/utils/logger';
 
 interface IncidentChatProps {
   incidentId: string;
@@ -26,11 +27,11 @@ export function IncidentChat({ incidentId, incidentAddress }: IncidentChatProps)
 
     const initChat = async () => {
       try {
-        console.log(`[IncidentChat] ?? Initializing incident chat for ${incidentId}`);
+        logger.debug('Initializing incident chat', { code: 'IncidentChat', incidentId });
         
         // Get all supes from Firestore
         const supes = await getAllSupes();
-        console.log(`[IncidentChat] Found ${supes.length} supes to add to chat`);
+        logger.debug('Found supes for chat', { code: 'IncidentChat', supeCount: supes.length, incidentId });
 
         // Create chat with this chaser + ALL supes
         await createIncidentChat(
@@ -42,9 +43,9 @@ export function IncidentChat({ incidentId, incidentAddress }: IncidentChatProps)
         );
 
         setChatInitialized(true);
-        console.log(`[IncidentChat] ? Chat initialized with ${supes.length} supes`);
+        logger.debug('Chat initialized', { code: 'IncidentChat', supeCount: supes.length, incidentId });
       } catch (error) {
-        console.error('[IncidentChat] Failed to initialize chat:', error);
+        logger.error('Failed to initialize chat', error as Error, { code: 'IncidentChat', incidentId });
       }
     };
 
@@ -55,14 +56,14 @@ export function IncidentChat({ incidentId, incidentAddress }: IncidentChatProps)
   useEffect(() => {
     if (!incidentId) return;
 
-    console.log(`[IncidentChat] ?? Subscribing to chat for incident ${incidentId}`);
+    logger.debug('Subscribing to chat', { code: 'IncidentChat', incidentId });
     const unsubscribe = subscribeToIncidentChat(incidentId, (msgs) => {
       setMessages(msgs);
-      console.log(`[IncidentChat] Received ${msgs.length} messages`);
+      logger.debug('Received messages', { code: 'IncidentChat', messageCount: msgs.length, incidentId });
     });
 
     return () => {
-      console.log(`[IncidentChat] ?? Unsubscribing from chat`);
+      logger.debug('Unsubscribing from chat', { code: 'IncidentChat', incidentId });
       unsubscribe();
     };
   }, [incidentId]);
@@ -85,7 +86,7 @@ export function IncidentChat({ incidentId, incidentAddress }: IncidentChatProps)
       );
       setNewMessage('');
     } catch (error) {
-      console.error('[IncidentChat] Failed to send message:', error);
+      logger.error('Failed to send message', error as Error, { code: 'IncidentChat', incidentId });
       alert('Failed to send message. Please try again.');
     } finally {
       setSending(false);

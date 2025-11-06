@@ -49,7 +49,7 @@
       "name": "Chat",
       "short_name": "Chat",
       "description": "Team communication",
-      "url": "/chaser/chat",
+      "url": "/chat",
       "icons": [{ "src": "/app-icon.png", "sizes": "96x96" }]
     }
   ]

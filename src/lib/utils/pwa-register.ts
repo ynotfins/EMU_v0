@@ -1,5 +1,7 @@
 ﻿"use client";
 
+import { logger } from './logger';
+
 /**
  * PWA Service Worker Registration
  * Registers the service worker for offline caching and push notifications
@@ -16,7 +18,7 @@ export function registerServiceWorker() {
           { scope: "/" }
         );
         
-        console.log("[PWA] [OK] Service Worker registered:", registration.scope);
+        logger.debug('Service Worker registered', { code: 'PWA', scope: registration.scope });
 
         // Update service worker when new version available
         registration.addEventListener("updatefound", () => {
@@ -27,18 +29,18 @@ export function registerServiceWorker() {
                 newWorker.state === "installed" &&
                 navigator.serviceWorker.controller
               ) {
-                console.log("[PWA] [SYNC] New version available! Reload to update.");
+                logger.debug('New version available', { code: 'PWA', message: 'Reload to update' });
                 // Optionally show a toast notification
               }
             });
           }
         });
       } catch (error) {
-        console.error("[PWA] [X] Service Worker registration failed:", error);
+        logger.error('Service Worker registration failed', error as Error, { code: 'PWA' });
       }
     });
   } else {
-    console.warn("[PWA] [WARN] Service Workers not supported in this browser");
+    logger.warn('Service Workers not supported', { code: 'PWA' });
   }
 }
 
@@ -67,26 +69,26 @@ export function setupInstallPrompt(onInstallable: (canInstall: boolean) => void)
     e.preventDefault();
     deferredPrompt = e;
     onInstallable(true);
-    console.log("[PWA] [MOBILE] Install prompt ready");
+    logger.debug('Install prompt ready', { code: 'PWA' });
   });
 
   window.addEventListener("appinstalled", () => {
     deferredPrompt = null;
     onInstallable(false);
-    console.log("[PWA] [OK] App installed successfully!");
+    logger.debug('App installed successfully', { code: 'PWA' });
   });
 }
 
 export async function promptInstall(): Promise<boolean> {
   if (!deferredPrompt) {
-    console.warn("[PWA] [WARN] Install prompt not available");
+    logger.warn('Install prompt not available', { code: 'PWA' });
     return false;
   }
 
   deferredPrompt.prompt();
   const { outcome } = await deferredPrompt.userChoice;
   
-  console.log(`[PWA] User response to install prompt: ${outcome}`);
+  logger.debug('User response to install prompt', { code: 'PWA', outcome });
   deferredPrompt = null;
   
   return outcome === "accepted";

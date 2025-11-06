@@ -19,6 +19,7 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase-client';
+import { logger } from '../utils/logger';
 import {
   IAuthRepository,
   AuthUser,
@@ -253,7 +254,7 @@ export class FirebaseAuthRepository implements IAuthRepository {
       }
       return null;
     } catch (error) {
-      console.error('Failed to get user role:', error);
+      logger.error('Failed to get user role', error as Error, { code: 'AuthRepository', uid });
       return null;
     }
   }
@@ -276,7 +277,7 @@ export class FirebaseAuthRepository implements IAuthRepository {
 
       await setDoc(doc(db, 'users', user.uid), userProfile, { merge: true });
     } catch (error) {
-      console.error('Failed to create user profile:', error);
+      logger.error('Failed to create user profile', error as Error, { code: 'AuthRepository', uid });
     }
   }
 

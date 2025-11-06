@@ -5,7 +5,7 @@ import { useFiles } from "@/hooks/use-files";
 import { toggleFavorite, toggleBookmark } from "@/hooks/use-incidents";
 import { useState } from "react";
 import { RoleLayout } from "@/components/features/role-layout";
-import { MapCard } from "@/components/map-card";
+import { MapCard } from "@/components/shared/map-card";
 import { HomeownerForm } from "@/components/features/homeowner-form";
 import { DocsManager } from "@/components/features/docs-manager";
 import { ESignManager } from "@/components/features/esign-manager";
@@ -18,6 +18,7 @@ import { Heart, MessageCircle } from "lucide-react";
 import type { HomeownerForm as HomeownerFormType } from "@/types/extended-domain";
 import { useProfile } from "@/hooks/use-profile";
 import { auth } from "@/lib/firebase-client";
+import { logger } from "@/lib/utils/logger";
 
 export default function Client({ id }: { id: string }) {
   const { data: incident, updates, error } = useIncident(id);
@@ -224,7 +225,7 @@ export default function Client({ id }: { id: string }) {
                   onBlur={async () => {
                     // Auto-save when user leaves the textarea
                     if (noteText.trim()) {
-                      console.log("[Notes] Auto-saving note:", noteText);
+                      logger.debug('Auto-saving note', { code: 'SupeIncidentPage', incidentId: id, noteLength: noteText.length });
                       await addNote(incident.id, noteText);
                       // Clear after successful save
                       setNoteText("");
@@ -264,8 +265,8 @@ export default function Client({ id }: { id: string }) {
               <DocsManager 
                 incidentId={id} 
                 files={files || []}
-                onPickFile={(file) => console.log('[Docs] Pick file:', file.name)}
-                onDeleteFile={(fileId) => console.log('[Docs] Delete file:', fileId)}
+                onPickFile={(file) => logger.debug('Pick file', { code: 'SupeIncidentPage', incidentId: id, fileName: file.name })}
+                onDeleteFile={(fileId) => logger.debug('Delete file', { code: 'SupeIncidentPage', incidentId: id, fileId })}
                 canDelete={true}
               />
             </TabsContent>
@@ -274,8 +275,8 @@ export default function Client({ id }: { id: string }) {
               <ESignManager 
                 incidentId={id} 
                 files={files?.filter(f => f.type === 'document') || []}
-                onSendForESign={(docIds, email) => console.log('[ESign] Send:', docIds, email)}
-                onLiveSign={(signature) => console.log('[ESign] Live sign:', signature.substring(0, 50))}
+                onSendForESign={(docIds, email) => logger.debug('Send for e-sign', { code: 'SupeIncidentPage', incidentId: id, docCount: docIds.length, email })}
+                onLiveSign={(signature) => logger.debug('Live sign', { code: 'SupeIncidentPage', incidentId: id, signatureLength: signature.length })}
               />
             </TabsContent>
 

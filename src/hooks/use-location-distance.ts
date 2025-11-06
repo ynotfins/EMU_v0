@@ -189,16 +189,16 @@ export function useLocationDistance() {
 
     // Check if permission was previously granted (defer setState)
     if (locationPermission.wasGranted()) {
-      console.log('[useLocationDistance] ? Location permission already granted (never asking again)');
+      logger.debug('Location permission already granted', { code: 'useLocationDistance' });
       Promise.resolve().then(() => setPermissionGranted(true));
     } else {
-      console.log('[useLocationDistance] ?? Requesting location permission...');
+      logger.debug('Requesting location permission', { code: 'useLocationDistance' });
     }
     
     // Try to use cached location first (defer setState)
     const cachedLoc = userLocationCache.get();
     if (cachedLoc && !userLocationCache.isStale()) {
-      console.log('[useLocationDistance] ?? Using cached location (fresh)');
+      logger.debug('Using cached location', { code: 'useLocationDistance' });
       Promise.resolve().then(() => {
         setUserLocation({ lat: cachedLoc.lat, lng: cachedLoc.lng });
         setPermissionGranted(true);

@@ -1,6 +1,8 @@
-﻿export async function setHighAlertSound(soundId: string) {
+﻿import { logger } from "@/lib/utils/logger";
+
+export async function setHighAlertSound(soundId: string) {
   // Stub: will update Firebase user settings
-  console.log("[v0] Set high alert sound:", soundId)
+  logger.debug('Set high alert sound', { code: 'Notifications', soundId });
 }
 
 export async function subscribeTopics(options: {
@@ -8,5 +10,5 @@ export async function subscribeTopics(options: {
   incidentId?: string
 }) {
   // Stub: will subscribe to FCM topics
-  console.log("[v0] Subscribe topics:", options)
+  logger.debug('Subscribe topics', { code: 'Notifications', ...options });
 }

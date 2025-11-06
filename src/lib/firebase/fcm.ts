@@ -1,5 +1,6 @@
 ﻿import { getMessaging, getToken, onMessage, isSupported, type Messaging } from "firebase/messaging"
 import app from "./firebase"
+import { logger } from "../utils/logger"
 
 /**
  * Safely get Firebase Messaging instance
@@ -9,12 +10,12 @@ export async function getMessagingSafe(): Promise<Messaging | null> {
   try {
     const supported = await isSupported()
     if (!supported) {
-      console.debug("[FCM] Firebase Messaging not supported in this environment")
+      logger.debug('Firebase Messaging not supported', { code: 'FCM' })
       return null
     }
     return getMessaging(app)
   } catch (error) {
-    console.error("[FCM] Error checking messaging support:", error)
+    logger.error('Error checking messaging support', error as Error, { code: 'FCM' })
     return null
   }
 }
@@ -35,7 +36,7 @@ export async function requestPermissionAndGetToken(
 
     const permission = await Notification.requestPermission()
     if (permission !== "granted") {
-      console.debug("[FCM] Notification permission denied")
+      logger.debug('Notification permission denied', { code: 'FCM' })
       return null
     }
 
@@ -44,10 +45,10 @@ export async function requestPermissionAndGetToken(
       serviceWorkerRegistration: reg,
     })
 
-    console.debug("[FCM] Got FCM token:", token)
+    logger.debug('Got FCM token', { code: 'FCM', token })
     return token
   } catch (error) {
-    console.error("[FCM] Error getting token:", error)
+    logger.error('Error getting token', error as Error, { code: 'FCM' })
     return null
   }
 }
@@ -61,7 +62,7 @@ export function onForegroundMessage(callback: (payload: any) => void): void {
     if (!messaging) return
 
     onMessage(messaging, (payload) => {
-      console.debug("[FCM] Foreground message received:", payload)
+      logger.debug('Foreground message received', { code: 'FCM', payload })
       callback(payload)
     })
   })
@@ -73,7 +74,7 @@ export function onForegroundMessage(callback: (payload: any) => void): void {
  * @param topic Topic name (e.g., "incidents", "incident-123456")
  */
 export async function subscribeToTopic(topic: string): Promise<void> {
-  console.debug("[FCM] Subscribe to topic:", topic)
+  logger.debug('Subscribe to topic', { code: 'FCM', topic })
   // TODO: Call Cloud Function to subscribe token to topic
   // await fetch('/api/fcm/subscribe', { method: 'POST', body: JSON.stringify({ topic }) })
 }
@@ -84,7 +85,7 @@ export async function subscribeToTopic(topic: string): Promise<void> {
  * @param topic Topic name
  */
 export async function unsubscribeFromTopic(topic: string): Promise<void> {
-  console.debug("[FCM] Unsubscribe from topic:", topic)
+  logger.debug('Unsubscribe from topic', { code: 'FCM', topic })
   // TODO: Call Cloud Function to unsubscribe token from topic
   // await fetch('/api/fcm/unsubscribe', { method: 'POST', body: JSON.stringify({ topic }) })
 }

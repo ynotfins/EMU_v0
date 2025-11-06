@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { setOptions, importLibrary } from '@googlemaps/js-api-loader'
 import type { IncidentLite } from '@/types/extended-domain'
 import { MapPin } from 'lucide-react'
+import { logger } from '@/lib/utils/logger'
 
 interface GoogleMapLiveProps {
   incidents: IncidentLite[]
@@ -23,26 +24,26 @@ export function GoogleMapLive({ incidents, className = '', zoom = 10 }: GoogleMa
   useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
     if (!apiKey) {
-      console.error('[GoogleMapLive] No API key configured')
+      logger.error('No API key configured', undefined, { code: 'GoogleMapLive' })
       setError(true)
       setErrorMessage('Google Maps API key not configured')
       setLoading(false)
       return
     }
 
-    console.log('[GoogleMapLive] Starting map initialization...')
+    logger.debug('Starting map initialization', { code: 'GoogleMapLive' })
     
     // Wait for next tick to ensure DOM is ready
     const initTimer = setTimeout(() => {
       if (!mapRef.current) {
-        console.error('[GoogleMapLive] Map ref still not available after timeout')
+        logger.error('Map ref still not available after timeout', undefined, { code: 'GoogleMapLive' })
         setError(true)
         setErrorMessage('Map container not found')
         setLoading(false)
         return
       }
 
-      console.log('[GoogleMapLive] Map ref ready, initializing...')
+      logger.debug('Map ref ready, initializing', { code: 'GoogleMapLive' })
       initializeMap(apiKey)
     }, 50)
 
@@ -50,7 +51,7 @@ export function GoogleMapLive({ incidents, className = '', zoom = 10 }: GoogleMa
   }, [])
 
   const initializeMap = async (apiKey: string) => {
-    console.log('[GoogleMapLive] Initializing map with API key:', apiKey.substring(0, 10) + '...')
+    logger.debug('Initializing map with API key', { code: 'GoogleMapLive', apiKeyPrefix: apiKey.substring(0, 10) + '...' })
     
     try {
       // Set options for the Google Maps API
@@ -63,10 +64,10 @@ export function GoogleMapLive({ incidents, className = '', zoom = 10 }: GoogleMa
       // Import the maps library
       const { Map } = await importLibrary('maps')
 
-      console.log('[GoogleMapLive] Google Maps API loaded successfully')
+      logger.debug('Google Maps API loaded successfully', { code: 'GoogleMapLive' })
       
       if (!mapRef.current) {
-        console.error('[GoogleMapLive] Map ref disappeared during load')
+        logger.error('Map ref disappeared during load', undefined, { code: 'GoogleMapLive' })
         setError(true)
         setErrorMessage('Map container not found')
         setLoading(false)
@@ -83,7 +84,7 @@ export function GoogleMapLive({ incidents, className = '', zoom = 10 }: GoogleMa
         center = { lat: avgLat, lng: avgLng }
       }
 
-      console.log('[GoogleMapLive] Creating map with center:', center, 'zoom:', zoom)
+      logger.debug('Creating map', { code: 'GoogleMapLive', center, zoom })
       
       const newMap = new Map(mapRef.current, {
         center,
@@ -95,11 +96,11 @@ export function GoogleMapLive({ incidents, className = '', zoom = 10 }: GoogleMa
         fullscreenControl: true,
       })
 
-      console.log('[GoogleMapLive] Map created successfully')
+      logger.debug('Map created successfully', { code: 'GoogleMapLive' })
       setMap(newMap as google.maps.Map)
       setLoading(false)
     } catch (err: any) {
-      console.error('[GoogleMapLive] Error initializing map:', err)
+      logger.error('Error initializing map', err as Error, { code: 'GoogleMapLive' })
       setError(true)
       setErrorMessage(err.message || 'Failed to load Google Maps API')
       setLoading(false)

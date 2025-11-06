@@ -54,26 +54,26 @@ export function BottomNav({ role }: BottomNavProps) {
     {
       label: "Incidents",
       icon: Home,
-      href: `/${baseRole}/incidents`,
+      href: "/incidents", // Shared route in (app) group
       active:
         pathname.includes("/incidents") && !pathname.includes("/incident/"),
     },
     {
       label: "Favorites",
       icon: Heart,
-      href: `/${baseRole}/favorites`,
+      href: "/favorites", // Shared route in (app) group
       active: pathname.includes("/favorites"),
     },
     {
       label: "Chat",
       icon: MessageSquare,
-      href: `/chat`, // Shared route group
+      href: "/chat", // Shared route in (app) group
       active: pathname.includes("/chat"),
     },
     {
       label: profileLabel,
       icon: User,
-      href: `/${baseRole}/profile`,
+      href: "/profile", // Shared route in (app) group
       active: pathname.includes("/profile"),
     },
   ];

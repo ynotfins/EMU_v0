@@ -8,6 +8,7 @@
 import { injectable } from 'inversify';
 import { IEmailService } from '@application/shared/interfaces/services.interface';
 import { Either, left, right } from '@domain/shared/errors';
+import { logger } from '@/lib/utils/logger';
 
 interface EmailTemplate {
   subject: string;
@@ -36,7 +37,10 @@ export class EmailService implements IEmailService {
 
       return right(undefined);
     } catch (error) {
-      console.error('Failed to send welcome email:', error);
+      logger.error('Failed to send welcome email', error as Error, {
+        code: 'EmailService',
+        email,
+      });
       return left(new Error('Failed to send welcome email'));
     }
   }
@@ -57,7 +61,10 @@ export class EmailService implements IEmailService {
 
       return right(undefined);
     } catch (error) {
-      console.error('Failed to send password reset email:', error);
+      logger.error('Failed to send password reset email', error as Error, {
+        code: 'EmailService',
+        email,
+      });
       return left(new Error('Failed to send password reset email'));
     }
   }
@@ -78,7 +85,11 @@ export class EmailService implements IEmailService {
 
       return right(undefined);
     } catch (error) {
-      console.error('Failed to send incident notification:', error);
+      logger.error('Failed to send incident notification', error as Error, {
+        code: 'EmailService',
+        email,
+        incidentId: incident.id,
+      });
       return left(new Error('Failed to send incident notification'));
     }
   }
@@ -101,7 +112,8 @@ export class EmailService implements IEmailService {
 
     // For development, log the email
     if (process.env.NODE_ENV === 'development') {
-      console.log('📧 Email would be sent:', {
+      logger.debug('Email would be sent (dev mode)', {
+        code: 'EmailService',
         from: `${this.fromName} <${this.fromEmail}>`,
         to: options.to,
         subject: options.subject,

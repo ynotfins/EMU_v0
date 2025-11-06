@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useProfile } from '@/hooks/use-profile';
 import { ShieldAlert, Loader2 } from 'lucide-react';
+import { logger } from '@/lib/utils/logger';
 
 interface User {
   id: string;
@@ -29,13 +30,13 @@ export default function AdminPage() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        console.log('[Admin] ? No user signed in, redirecting to login');
+        logger.debug('No user signed in, redirecting to login', { code: 'AdminPage' });
         router.push('/login');
         return;
       }
 
       setCurrentUserId(user.uid);
-      console.log('[Admin] ? User authenticated:', user.email);
+      logger.debug('User authenticated', { code: 'AdminPage', email: user.email || undefined });
     });
 
     return () => unsubscribe();
@@ -46,13 +47,17 @@ export default function AdminPage() {
     if (!currentUserProfile) return;
 
     if (currentUserProfile.role !== 'admin' && currentUserProfile.role !== 'super_admin') {
-      console.log(`[Admin] ? Access denied: User role is "${currentUserProfile.role}", requires admin or super_admin"`);
+      logger.warn('Access denied: insufficient privileges', {
+        code: 'AdminPage',
+        userRole: currentUserProfile.role,
+        required: 'admin or super_admin',
+      });
       alert('Access Denied: Admin privileges required');
       router.push('/');
       return;
     }
 
-    console.log(`[Admin] ? Access granted: ${currentUserProfile.role}`);
+    logger.debug('Access granted', { code: 'AdminPage', role: currentUserProfile.role });
     setAuthChecking(false);
   }, [currentUserProfile, router]);
 
@@ -70,9 +75,9 @@ export default function AdminPage() {
         role: doc.data().role || 'chaser',
       }));
       setUsers(usersData);
-      console.log(`[Admin] Loaded ${usersData.length} users`);
+      logger.debug(`Loaded users`, { code: 'AdminPage', count: usersData.length });
     } catch (error) {
-      console.error('[Admin] Failed to load users:', error);
+      logger.error('Failed to load users', error as Error, { code: 'AdminPage' });
     } finally {
       setLoading(false);
     }
@@ -94,14 +99,14 @@ export default function AdminPage() {
 
     try {
       await updateDoc(doc(db, 'users', userId), { role: newRole });
-      console.log(`[Admin] Changed user ${userId} role to ${newRole}`);
+      logger.debug('Changed user role', { code: 'AdminPage', userId, newRole });
       
       // Update local state
       setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
       
       alert(`User role updated to ${newRole.toUpperCase().replace('_', ' ')}!`);
     } catch (error) {
-      console.error('[Admin] Failed to update role:', error);
+      logger.error('Failed to update role', error as Error, { code: 'AdminPage', userId, newRole });
       alert('Failed to update role. Check console for details.');
     }
   };
@@ -145,7 +150,7 @@ export default function AdminPage() {
           </div>
           <Button
             variant="outline"
-            onClick={() => router.push('/chaser/incidents')}
+            onClick={() => router.push('/incidents')}
             className="flex items-center gap-2"
           >
             ? Back to Incidents

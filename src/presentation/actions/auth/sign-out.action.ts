@@ -11,6 +11,7 @@ import { redirect } from 'next/navigation';
 import { getServerContainer } from '../container';
 import { TOKENS } from '@infrastructure/di/tokens';
 import { SignOutUseCase } from '@application/auth';
+import { logger } from '@/lib/utils/logger';
 
 // Cookie names
 const SESSION_COOKIE_NAME = '__emu_session';
@@ -37,7 +38,7 @@ export async function signOut(): Promise<void> {
     cookieStore.delete(AUTH_COOKIE_NAME);
 
   } catch (error) {
-    console.error('Sign out error:', error);
+    logger.error('Sign out error', error as Error, { code: 'SignOutAction' });
     // Still clear cookies even if server invalidation fails
     const cookieStore = await cookies();
     cookieStore.delete(SESSION_COOKIE_NAME);

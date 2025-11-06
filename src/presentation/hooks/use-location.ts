@@ -7,6 +7,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { logger } from '@/lib/utils/logger';
 
 interface Location {
   lat: number;
@@ -188,7 +189,9 @@ export function useLocation(
             requestPermission();
           }
         })
-        .catch(console.error);
+        .catch((error) => {
+          logger.error('Error checking geolocation permission', error as Error, { code: 'useLocation' });
+        });
     }
   }, [requestPermission]);
 

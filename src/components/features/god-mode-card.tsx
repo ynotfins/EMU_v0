@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { logger } from "@/lib/utils/logger";
 import {
   Card,
   CardContent,
@@ -41,7 +42,7 @@ export function GodModeCard({ userRole }: GodModeCardProps) {
   const handleGodModeToggle = (enabled: boolean) => {
     setGodMode(enabled);
     localStorage.setItem("godMode", enabled.toString());
-    console.log(`[GodMode] ${enabled ? "ACTIVATED" : "DEACTIVATED"}`);
+    logger.debug(enabled ? 'God Mode activated' : 'God Mode deactivated', { code: 'GodModeCard' });
 
     // Force bottom nav to re-render
     window.dispatchEvent(new Event("storage"));
@@ -61,7 +62,7 @@ export function GodModeCard({ userRole }: GodModeCardProps) {
       newPath = `/${newView}/incidents`;
     }
 
-    console.log(`[ViewMode] Switching from ${viewMode} to ${newView} view`);
+    logger.debug('Switching view mode', { code: 'GodModeCard', from: viewMode, to: newView });
     router.push(newPath as any);
   };
 

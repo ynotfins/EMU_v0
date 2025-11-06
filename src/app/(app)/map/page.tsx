@@ -1,13 +1,13 @@
-﻿"use client"
+"use client"
 
 import { RoleLayout } from "@/components/features/role-layout"
 import { LiveMap } from "@/components/features/live-map"
-import { useLiveLocations } from "@/hooks/use-live-locations"
 import { useIncidents } from "@/hooks/use-incidents"
 import { Button } from "@/components/ui/button"
 import { RefreshCw } from "lucide-react"
 import { useMemo } from "react"
 import { logger } from "@/lib/utils/logger"
+import { useProfile } from "@/hooks/use-profile"
 
 // Helper to normalize Firestore timestamps
 function normalizeTimestamp(ts: string | Date | { seconds: number }): number {
@@ -17,8 +17,14 @@ function normalizeTimestamp(ts: string | Date | { seconds: number }): number {
   return Date.now();
 }
 
-export default function SupeMapPage() {
+export default function SharedMapPage() {
   const { data: allIncidents } = useIncidents()
+  const { data: profile } = useProfile()
+
+  // Determine role dynamically based on user profile
+  const userRole = profile?.role === "super_admin" || profile?.role === "admin" || profile?.role === "supe" 
+    ? "supe" 
+    : "chaser"
 
   // Filter incidents from last 4 hours
   const recentIncidents = useMemo(() => {
@@ -40,12 +46,12 @@ export default function SupeMapPage() {
 
   const handleRefresh = () => {
     logger.debug('Refresh live locations', {
-      code: 'SupeMapPage',
+      code: 'MapPage',
     });
   }
 
   return (
-    <RoleLayout role="supe">
+    <RoleLayout role={userRole}>
       <div className="flex flex-col h-screen">
         {/* Header */}
         <div className="bg-white border-b border-[#E5E7EB] p-4 flex items-center justify-between fixed top-0 left-0 right-0 z-20">
@@ -69,3 +75,4 @@ export default function SupeMapPage() {
     </RoleLayout>
   )
 }
+

@@ -1,4 +1,6 @@
-﻿/**
+﻿import { logger } from './logger';
+
+/**
  * High Alert System
  * 
  * When High Alert is enabled:
@@ -35,12 +37,12 @@ export class HighAlertSystem {
       // Request notification permission
       if ('Notification' in window && Notification.permission === 'default') {
         const permission = await Notification.requestPermission();
-        console.log('[HighAlert] Notification permission:', permission);
+        logger.debug('Notification permission', { code: 'HighAlert', permission });
       }
 
       return true;
     } catch (error) {
-      console.error('[HighAlert] Permission request failed:', error);
+      logger.error('Permission request failed', error as Error, { code: 'HighAlert' });
       return false;
     }
   }
@@ -51,7 +53,7 @@ export class HighAlertSystem {
    */
   async playTrainHorn(): Promise<void> {
     if (!this.audioContext) {
-      console.warn('[HighAlert] AudioContext not available');
+      logger.warn('AudioContext not available', { code: 'HighAlert' });
       return;
     }
 
@@ -93,9 +95,9 @@ export class HighAlertSystem {
         }
       }, 3000);
 
-      console.log('[HighAlert] 🚂 Train horn playing at MAX volume');
+      logger.debug('Train horn playing at MAX volume', { code: 'HighAlert' });
     } catch (error) {
-      console.error('[HighAlert] Failed to play sound:', error);
+      logger.error('Failed to play sound', error as Error, { code: 'HighAlert' });
     }
   }
 
@@ -104,7 +106,7 @@ export class HighAlertSystem {
    */
   startVibration(): void {
     if (typeof window === 'undefined' || !('vibrate' in navigator)) {
-      console.warn('[HighAlert] Vibration not supported');
+      logger.warn('Vibration not supported', { code: 'HighAlert' });
       return;
     }
 
@@ -115,7 +117,7 @@ export class HighAlertSystem {
       navigator.vibrate(vibratePattern);
     }, 1000) as unknown as number;
 
-    console.log('[HighAlert] 📳 Vibration started');
+    logger.debug('Vibration started', { code: 'HighAlert' });
   }
 
   /**
@@ -131,7 +133,7 @@ export class HighAlertSystem {
       navigator.vibrate(0); // Stop vibration
     }
 
-    console.log('[HighAlert] 📳 Vibration stopped');
+    logger.debug('Vibration stopped', { code: 'HighAlert' });
   }
 
   /**
@@ -145,7 +147,7 @@ export class HighAlertSystem {
       this.audioContext.suspend();
     }
 
-    console.log('[HighAlert] ⏸️ High Alert stopped');
+    logger.debug('High Alert stopped', { code: 'HighAlert' });
   }
 
   /**
@@ -153,7 +155,7 @@ export class HighAlertSystem {
    * Call this when user enables High Alert
    */
   async start(): Promise<void> {
-    console.log('[HighAlert] [ALERT] HIGH ALERT ACTIVATED!');
+    logger.debug('HIGH ALERT ACTIVATED', { code: 'HighAlert' });
 
     // Request permissions first
     await this.requestPermissions();

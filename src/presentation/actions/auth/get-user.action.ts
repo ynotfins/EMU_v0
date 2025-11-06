@@ -11,6 +11,7 @@ import { getServerContainer } from '../container';
 import { TOKENS } from '@infrastructure/di/tokens';
 import { GetCurrentUserUseCase } from '@application/auth';
 import { User } from '@domain/entities/user/user.entity';
+import { logger } from '@/lib/utils/logger';
 
 const SESSION_COOKIE_NAME = '__emu_session';
 
@@ -79,7 +80,7 @@ export async function getCurrentUser(): Promise<GetUserResult> {
 
     return { user: serializedUser };
   } catch (error) {
-    console.error('Get current user error:', error);
+    logger.error('Get current user error', error as Error, { code: 'GetUserAction' });
     return {
       user: null,
       error: 'An unexpected error occurred',

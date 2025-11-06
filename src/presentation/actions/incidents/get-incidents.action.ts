@@ -11,6 +11,7 @@ import { TOKENS } from '@infrastructure/di/tokens';
 import { GetIncidentsUseCase } from '@application/incidents';
 import { getCurrentUser } from '../auth';
 import { IncidentStatus, IncidentType } from '@domain/entities/incident/incident.entity';
+import { logger } from '@/lib/utils/logger';
 
 export interface GetIncidentsResult {
   success: boolean;
@@ -138,7 +139,7 @@ export async function getIncidents(
       incidents: serializedIncidents,
     };
   } catch (error) {
-    console.error('Get incidents error:', error);
+    logger.error('Get incidents error', error as Error, { code: 'GetIncidentsAction' });
     return {
       success: false,
       error: 'An unexpected error occurred',

@@ -29,20 +29,16 @@ export default function HomePage() {
               role,
             });
             
-            // Hard navigation to break loops
-            const targetPath = (role === "super_admin" || role === "admin" || role === "supe") 
-              ? "/supe/incidents" 
-              : "/chaser/incidents";
-            
-            window.location.href = targetPath;
+            // Hard navigation to break loops - use shared /incidents route
+            window.location.href = "/incidents";
           } else {
-            window.location.href = "/chaser/incidents";
+            window.location.href = "/incidents";
           }
         } catch (error) {
           logger.error('Error checking user role', error, {
             code: 'HomePage',
           });
-          window.location.href = "/chaser/incidents";
+          window.location.href = "/incidents";
         }
       } else {
         logger.debug('No user authenticated, redirecting to login', {

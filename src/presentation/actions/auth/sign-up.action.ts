@@ -11,6 +11,7 @@ import { cookies } from 'next/headers';
 import { getServerContainer } from '../container';
 import { TOKENS } from '@infrastructure/di/tokens';
 import { SignUpUseCase } from '@application/auth';
+import { logger } from '@/lib/utils/logger';
 
 // Cookie configuration
 const SESSION_COOKIE_NAME = '__emu_session';
@@ -71,7 +72,7 @@ export async function signUp(
       redirectTo,
     };
   } catch (error) {
-    console.error('Sign up error:', error);
+    logger.error('Sign up error', error as Error, { code: 'SignUpAction' });
     return {
       success: false,
       error: 'An unexpected error occurred',
@@ -97,7 +98,7 @@ export async function checkEmailAvailability(email: string): Promise<{
       available: true,
     };
   } catch (error) {
-    console.error('Email check error:', error);
+    logger.error('Email check error', error as Error, { code: 'SignUpAction' });
     return {
       available: false,
       error: 'Unable to check email availability',

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase-client";
+import { logger } from "@/lib/utils/logger";
 
 export interface Response {
   id: string;
@@ -26,7 +27,7 @@ export function useResponses(userId: string | undefined) {
       return;
     }
 
-    console.log(`[useResponses] [API] Subscribing to responses for user: ${userId}`);
+    logger.debug('Subscribing to responses', { code: 'useResponses', userId });
 
     const responsesRef = collection(db, "responses");
     const q = query(
@@ -43,12 +44,12 @@ export function useResponses(userId: string | undefined) {
           ...doc.data(),
         })) as Response[];
 
-        console.log(`[useResponses] [OK] Loaded ${responsesData.length} responses`);
+        logger.debug('Loaded responses', { code: 'useResponses', count: responsesData.length, userId });
         setResponses(responsesData);
         setLoading(false);
       },
       (error) => {
-        console.error("[useResponses] [X] Error fetching responses:", error);
+        logger.error('Error fetching responses', error, { code: 'useResponses', userId });
         setLoading(false);
       }
     );

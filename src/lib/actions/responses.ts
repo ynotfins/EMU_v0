@@ -1,6 +1,7 @@
 ﻿"use server";
 
 import { db } from "@/lib/firebase-client";
+import { logger } from "@/lib/utils/logger";
 import {
   collection,
   addDoc,
@@ -25,7 +26,7 @@ export async function recordAlertResponse(
   incidentAddress: string
 ) {
   try {
-    console.log(`[Responses] [DOC] Recording response for incident ${incidentId} by ${userName}`);
+    logger.debug('Recording response', { code: 'Responses', incidentId, userName, userRole });
 
     // Create response record
     const responsesRef = collection(db, "responses");
@@ -40,14 +41,14 @@ export async function recordAlertResponse(
       createdAt: serverTimestamp(),
     });
 
-    console.log(`[Responses] [OK] Response recorded: ${responseDoc.id}`);
+    logger.debug('Response recorded', { code: 'Responses', responseId: responseDoc.id, incidentId });
 
     // Notify all supes
     await notifyAllSupes(incidentId, userName, incidentAddress);
 
     return { success: true, responseId: responseDoc.id };
   } catch (error) {
-    console.error("[Responses] [X] Error recording response:", error);
+    logger.error('Error recording response', error as Error, { code: 'Responses', incidentId, userId });
     return { success: false, error: String(error) };
   }
 }
@@ -61,7 +62,7 @@ async function notifyAllSupes(
   incidentAddress: string
 ) {
   try {
-    console.log(`[Responses] 📢 Notifying all supes about response`);
+    logger.debug('Notifying all supes about response', { code: 'Responses', incidentId, responderName });
 
     // Get all supe users
     const usersRef = collection(db, "users");
@@ -87,9 +88,9 @@ async function notifyAllSupes(
     });
 
     await Promise.all(notificationPromises);
-    console.log(`[Responses] [OK] Notified ${supesSnap.size} supes`);
+    logger.debug('Notified supes', { code: 'Responses', incidentId, supeCount: supesSnap.size });
   } catch (error) {
-    console.error("[Responses] [X] Error notifying supes:", error);
+    logger.error('Error notifying supes', error as Error, { code: 'Responses', incidentId });
   }
 }
 
@@ -113,7 +114,7 @@ export async function getUserResponses(userId: string) {
 
     return responses;
   } catch (error) {
-    console.error("[Responses] [X] Error fetching user responses:", error);
+    logger.error('Error fetching user responses', error as Error, { code: 'Responses', userId });
     return [];
   }
 }
@@ -138,7 +139,7 @@ export async function getIncidentResponses(incidentId: string) {
 
     return responses;
   } catch (error) {
-    console.error("[Responses] [X] Error fetching incident responses:", error);
+    logger.error('Error fetching incident responses', error as Error, { code: 'Responses', incidentId });
     return [];
   }
 }
@@ -157,10 +158,10 @@ export async function updateResponseStatus(
       updatedAt: serverTimestamp(),
     });
 
-    console.log(`[Responses] [OK] Updated response ${responseId} to ${status}`);
+    logger.debug('Updated response status', { code: 'Responses', responseId, status });
     return { success: true };
   } catch (error) {
-    console.error("[Responses] [X] Error updating response status:", error);
+    logger.error('Error updating response status', error as Error, { code: 'Responses', responseId, status });
     return { success: false, error: String(error) };
   }
 }

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
@@ -19,14 +19,22 @@ import { LogOut } from "lucide-react";
 import { useProfile } from "@/hooks/use-profile";
 import { logger } from "@/lib/utils/logger";
 
-export default function SupeProfilePage() {
+export default function SharedProfilePage() {
   const router = useRouter();
   const { data: profile, updateSettings, updatePayout } = useProfile();
+
+  // Determine role dynamically based on user profile
+  const userRole = profile?.role === "super_admin" || profile?.role === "admin" || profile?.role === "supe" 
+    ? "supe" 
+    : "chaser"
+
+  // Determine if user is supe (for showing supe-specific features)
+  const isSupe = profile?.role === "super_admin" || profile?.role === "admin" || profile?.role === "supe";
 
   const handleSignOut = async () => {
     try {
       logger.debug('Signing out', {
-        code: 'SupeProfilePage',
+        code: 'ProfilePage',
       });
 
       // Clear all auth persistence FIRST
@@ -36,19 +44,19 @@ export default function SupeProfilePage() {
       await signOut(auth);
 
       logger.debug('Signed out successfully', {
-        code: 'SupeProfilePage',
+        code: 'ProfilePage',
       });
       router.push("/login");
     } catch (error) {
       logger.error('Sign out error', error, {
-        code: 'SupeProfilePage',
+        code: 'ProfilePage',
       });
     }
   };
 
   if (!profile) {
     return (
-      <RoleLayout role="supe">
+      <RoleLayout role={userRole}>
         <div className="flex items-center justify-center min-h-screen">
           <p className="text-[#6B7280]">Loading profile...</p>
         </div>
@@ -57,13 +65,15 @@ export default function SupeProfilePage() {
   }
 
   return (
-    <RoleLayout role="supe">
+    <RoleLayout role={userRole}>
       <div className="flex flex-col min-h-screen">
         <ProfileHeader profile={profile} />
 
         <div className="flex-1 p-4 space-y-4">
-          {/* Supe Controls Card - Shows for all Supe users */}
-          <SupeControlsCard userRole={profile.role} />
+          {/* Supe Controls Card - Shows if user can toggle to Supe view */}
+          {isSupe && (
+            <SupeControlsCard userRole={profile.role} />
+          )}
 
           {/* God Mode Card - Only shows when actively in Super Admin mode */}
           {(() => {
@@ -83,12 +93,12 @@ export default function SupeProfilePage() {
             daysActive={profile.stats?.daysActive ?? 0}
           />
 
-          {/* Live Team Map - Above ID Verification */}
-          <LiveTeamMap />
+          {/* Live Team Map - Only for Supe users */}
+          {isSupe && <LiveTeamMap />}
 
           <IDVerificationCard
             verified={profile.payout?.verified ?? false}
-            onUploadID={() => console.log("[v0] Upload ID")}
+            onUploadID={() => logger.debug('Upload ID', { code: 'ProfilePage' })}
           />
 
           <PreferencesCard
@@ -110,8 +120,8 @@ export default function SupeProfilePage() {
           />
 
           <HelpLegalCard
-            onHelpSupport={() => console.log("[v0] Help & Support")}
-            onTermsPrivacy={() => console.log("[v0] Terms & Privacy")}
+            onHelpSupport={() => logger.debug('Help & Support', { code: 'ProfilePage' })}
+            onTermsPrivacy={() => logger.debug('Terms & Privacy', { code: 'ProfilePage' })}
           />
 
           <Button
@@ -127,3 +137,4 @@ export default function SupeProfilePage() {
     </RoleLayout>
   );
 }
+

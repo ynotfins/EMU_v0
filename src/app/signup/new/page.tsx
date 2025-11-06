@@ -131,7 +131,7 @@ export default function NewSignupPage() {
       };
       reader.readAsDataURL(file);
     } catch (err) {
-      console.error("[Signup] [X] ID capture error:", err);
+      logger.error('ID capture error', err as Error, { code: 'SignupPage' });
       setError("Failed to capture ID. Please try again.");
       setLoading(false);
     }
@@ -228,7 +228,7 @@ export default function NewSignupPage() {
 
       // Redirect after 2 seconds
       setTimeout(() => {
-        router.push("/chaser/incidents");
+        router.push("/incidents");
       }, 2000);
 
     } catch (err) {

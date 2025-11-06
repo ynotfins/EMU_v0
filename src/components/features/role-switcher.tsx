@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { RefreshCw } from "lucide-react";
+import { logger } from "@/lib/utils/logger";
 
 interface RoleSwitcherProps {
   currentRole: "super_admin" | "admin" | "supe" | "chaser";
@@ -28,8 +29,7 @@ export function RoleSwitcher({ currentRole }: RoleSwitcherProps) {
     // Replace route: /chaser/* ? /supe/* or vice versa
     const newPath = pathname.replace(`/${currentView}/`, `/${newView}/`);
     
-    console.log(`[RoleSwitcher] Switching from ${currentView} to ${newView}`);
-    console.log(`[RoleSwitcher] New path: ${newPath}`);
+    logger.debug('Switching role view', { code: 'RoleSwitcher', from: currentView, to: newView, newPath });
     
     router.push(newPath as any);
   };

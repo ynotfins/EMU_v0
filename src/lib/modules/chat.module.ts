@@ -21,6 +21,7 @@ import {
 import { collection, getDocs, where, query as firestoreQuery } from 'firebase/firestore';
 import { db, rtdb } from '../firebase-client';
 import { auth } from '../firebase-client';
+import { logger } from '../utils/logger';
 
 export interface ChatMessage {
   id?: string;
@@ -78,7 +79,7 @@ class ChatModule {
       const currentUser = auth.currentUser;
       if (!currentUser) throw new Error('User not authenticated');
 
-      console.log('[Chat Module] Creating incident chat for:', incidentAddress);
+      logger.debug('Creating incident chat', { code: 'ChatModule', incidentAddress });
 
       // Get current user data
       const userDoc = await getDocs(
@@ -127,10 +128,10 @@ class ChatModule {
         type: 'system'
       });
 
-      console.log('[Chat Module] Incident chat created:', chatRef.key);
+      logger.debug('Incident chat created', { code: 'ChatModule', chatId: chatRef.key || undefined });
       return chatRef.key!;
     } catch (error) {
-      console.error('[Chat Module] Failed to create incident chat:', error);
+      logger.error('Failed to create incident chat', error as Error, { code: 'ChatModule', incidentAddress });
       throw error;
     }
   }
@@ -143,7 +144,7 @@ class ChatModule {
       const currentUser = auth.currentUser;
       if (!currentUser) throw new Error('User not authenticated');
 
-      console.log('[Chat Module] Creating direct chat with:', otherUserName);
+      logger.debug('Creating direct chat', { code: 'ChatModule', otherUserName });
 
       // Generate consistent chat ID from sorted user IDs
       const chatId = [currentUser.uid, otherUserId].sort().join('_');
@@ -151,7 +152,7 @@ class ChatModule {
       // Check if chat already exists
       const existingChat = await get(ref(this.getRtdb(), `direct-chats/${chatId}`));
       if (existingChat.exists()) {
-        console.log('[Chat Module] Direct chat already exists:', chatId);
+        logger.debug('Direct chat already exists', { code: 'ChatModule', chatId });
         return chatId;
       }
 
@@ -176,10 +177,10 @@ class ChatModule {
 
       await set(ref(this.getRtdb(), `direct-chats/${chatId}`), chatData);
 
-      console.log('[Chat Module] Direct chat created:', chatId);
+      logger.debug('Direct chat created', { code: 'ChatModule', chatId });
       return chatId;
     } catch (error) {
-      console.error('[Chat Module] Failed to create direct chat:', error);
+      logger.error('Failed to create direct chat', error as Error, { code: 'ChatModule', otherUserId });
       throw error;
     }
   }
@@ -189,7 +190,7 @@ class ChatModule {
    */
   async sendMessage(chatId: string, message: Omit<ChatMessage, 'id' | 'timestamp'>): Promise<void> {
     try {
-      console.log('[Chat Module] Sending message to chat:', chatId);
+      logger.debug('Sending message', { code: 'ChatModule', chatId });
 
       const messageData = {
         ...message,
@@ -208,9 +209,9 @@ class ChatModule {
       await set(ref(this.getRtdb(), `${chatPath}/${chatId}/lastMessage`), message.message);
       await set(ref(this.getRtdb(), `${chatPath}/${chatId}/lastMessageTime`), Date.now());
 
-      console.log('[Chat Module] Message sent');
+      logger.debug('Message sent', { code: 'ChatModule', chatId });
     } catch (error) {
-      console.error('[Chat Module] Failed to send message:', error);
+      logger.error('Failed to send message', error as Error, { code: 'ChatModule', chatId });
       throw error;
     }
   }
@@ -224,7 +225,7 @@ class ChatModule {
     limit: number = 50
   ): () => void {
     try {
-      console.log('[Chat Module] Subscribing to messages for chat:', chatId);
+      logger.debug('Subscribing to messages', { code: 'ChatModule', chatId });
 
       // Determine chat type
       const isIncidentChat = !chatId.includes('_');
@@ -262,7 +263,7 @@ class ChatModule {
         delete this.activeListeners[listenerId];
       };
     } catch (error) {
-      console.error('[Chat Module] Failed to subscribe to messages:', error);
+      logger.error('Failed to subscribe to messages', error as Error, { code: 'ChatModule', chatId });
       throw error;
     }
   }
@@ -278,7 +279,7 @@ class ChatModule {
         return () => {};
       }
 
-      console.log('[Chat Module] Subscribing to chat threads');
+      logger.debug('Subscribing to chat threads', { code: 'ChatModule' });
 
       const threads: ChatThread[] = [];
       const listeners: any[] = [];
@@ -330,7 +331,7 @@ class ChatModule {
         listeners.forEach(({ ref, listener }) => off(ref, 'value', listener));
       };
     } catch (error) {
-      console.error('[Chat Module] Failed to subscribe to threads:', error);
+      logger.error('Failed to subscribe to threads', error as Error, { code: 'ChatModule' });
       callback([]);
       return () => {};
     }
@@ -379,7 +380,7 @@ class ChatModule {
 
       return participants;
     } catch (error) {
-      console.error('[Chat Module] Failed to get participants:', error);
+      logger.error('Failed to get participants', error as Error, { code: 'ChatModule', chatId });
       return [];
     }
   }
@@ -399,9 +400,9 @@ class ChatModule {
       });
 
       await set(ref(this.getRtdb()), updates);
-      console.log('[Chat Module] Marked messages as read');
+      logger.debug('Marked messages as read', { code: 'ChatModule', chatId, userId });
     } catch (error) {
-      console.error('[Chat Module] Failed to mark messages as read:', error);
+      logger.error('Failed to mark messages as read', error as Error, { code: 'ChatModule', chatId, userId });
     }
   }
 
@@ -432,7 +433,7 @@ class ChatModule {
 
       return unreadCount;
     } catch (error) {
-      console.error('[Chat Module] Failed to get unread count:', error);
+      logger.error('Failed to get unread count', error as Error, { code: 'ChatModule', chatId, userId });
       return 0;
     }
   }
@@ -454,9 +455,9 @@ class ChatModule {
         null
       );
 
-      console.log('[Chat Module] Left chat:', chatId);
+      logger.debug('Left chat', { code: 'ChatModule', chatId, userId });
     } catch (error) {
-      console.error('[Chat Module] Failed to leave chat:', error);
+      logger.error('Failed to leave chat', error as Error, { code: 'ChatModule', chatId, userId });
       throw error;
     }
   }
@@ -469,7 +470,7 @@ class ChatModule {
       off(ref, 'value', listener);
     });
     this.activeListeners = {};
-    console.log('[Chat Module] All listeners cleaned up');
+    logger.debug('All listeners cleaned up', { code: 'ChatModule' });
   }
 }
 

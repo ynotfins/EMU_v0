@@ -10,11 +10,34 @@ import { firestoreIncidentSchema, type Activity } from './ingress-schemas/firest
 import { mapIncidentToFirestore } from './ingress-utils/mappers';
 import { fetchWeatherForLocation } from './ingress-utils/weather';
 import { Client } from '@googlemaps/google-maps-services-js';
+import * as express from 'express';
 
 // Firebase Admin is initialized in index.ts, reuse the existing instance
 const db = getFirestore();
 const mapsClient = new Client({});
 const secretManagerClient = new SecretManagerServiceClient();
+
+/**
+ * Allocate the next sequential display number starting from 7000000.
+ * This is the number shown to users (e.g., #NFA-7000000).
+ */
+async function allocateNextDisplayNumber(): Promise<number> {
+  const counterRef = db.collection('_counters').doc('incident-display-numbers');
+  let newNumber: number = 0;
+  await db.runTransaction(async (tx) => {
+    const counterSnap = await tx.get(counterRef);
+    const startFrom = 7000000; // Start at 7000000 as requested
+    if (counterSnap.exists && typeof (counterSnap.data() as any).next === 'number') {
+      const currentNext = Number((counterSnap.data() as any).next);
+      newNumber = currentNext + 1;
+    } else {
+      // First allocation uses the start value directly
+      newNumber = startFrom;
+    }
+    tx.set(counterRef, { next: newNumber, updatedAt: Timestamp.now() }, { merge: true });
+  });
+  return newNumber;
+}
 
 // Cache for webhook secret
 let cachedWebhookSecret: string | null = null;
@@ -103,48 +126,120 @@ const notificationSchema = z.object({
   authToken: z.string().optional(), // Optional: can be in header or body
 }).passthrough(); // Allow extra fields to pass through
 
-export const ingress = onRequest(
-  {
-    cors: true,
-    memory: '512MiB',
-    timeoutSeconds: 60,
-    secrets: ['OPENROUTER_API_KEY', 'GOOGLE_MAPS_API_KEY', 'OPENWEATHER_API_KEY'],
-    region: 'us-central1',
-  },
-  async (request, response) => {
+/**
+ * Attempt to fix common JSON syntax errors from MacroDroid
+ * 
+ * Common issue: MacroDroid sends unquoted string values like:
+ *   "source": Emergency_Alerts  (WRONG)
+ * Should be:
+ *   "source": "Emergency_Alerts"  (CORRECT)
+ */
+function tryFixJson(jsonString: string): object | null {
+  try {
+    // Try 1: Parse as-is
+    return JSON.parse(jsonString);
+  } catch {
     try {
-      if (request.method !== 'POST') {
-        response.status(405).json({ error: 'Method not allowed. Use POST.' });
-        return;
-      }
-
-      // Handle malformed JSON - Macrodroid may send raw text or invalid JSON
-      let body = request.body;
-      
-      // If body is a string, try to parse it
-      if (typeof body === 'string') {
+      // Try 2: Fix missing quotes around string values after colons
+      // Pattern: "key": unquotedValue -> "key": "quotedValue"
+      // This fixes cases like "source": Emergency_Alerts
+      let fixed = jsonString.replace(/"([^"]+)"\s*:\s*([A-Za-z_][A-Za-z0-9_]*)(\s*)([,}])/g, '"$1": "$2"$3$4');
+      return JSON.parse(fixed);
+    } catch {
+      try {
+        // Try 3: More aggressive - fix any unquoted identifier after colon
+        let fixed = jsonString.replace(/:(\s*)([A-Za-z_][A-Za-z0-9_]*)(\s*)([,}])/g, ':$1"$2"$3$4');
+        return JSON.parse(fixed);
+      } catch {
         try {
-          body = JSON.parse(body);
-        } catch (parseError) {
-          // If JSON parse fails, treat it as a raw message
-          console.warn('[Ingress] Invalid JSON received, treating as raw message:', body.substring(0, 100));
+          // Try 4: Extract fields using regex (fallback for severely malformed JSON)
+          const messageMatch = jsonString.match(/"message"\s*:\s*"([^"]*)"/) || 
+                              jsonString.match(/"message"\s*:\s*([^,}]+)/);
+          const sourceMatch = jsonString.match(/"source"\s*:\s*"([^"]*)"/) || 
+                             jsonString.match(/"source"\s*:\s*([A-Za-z_][A-Za-z0-9_]*)/);
+          const titleMatch = jsonString.match(/"title"\s*:\s*"([^"]*)"/) || 
+                            jsonString.match(/"title"\s*:\s*([^,}]+)/);
+          
+          if (messageMatch) {
+            const message = messageMatch[1]?.replace(/^"|"$/g, '').trim() || 
+                           messageMatch[2]?.trim() || '';
+            const source = sourceMatch?.[1]?.replace(/^"|"$/g, '').trim() || 
+                          sourceMatch?.[2]?.trim() || 
+                          'Emergency_Alerts';
+            const title = titleMatch?.[1]?.replace(/^"|"$/g, '').trim() || 
+                         titleMatch?.[2]?.trim() || undefined;
+            
+            return {
+              message,
+              source,
+              ...(title && { title }),
+              receivedAt: new Date().toISOString(),
+            };
+          }
+        } catch {}
+      }
+    }
+  }
+  return null;
+}
+
+async function ingressHandler(request: any, response: any) {
+  try {
+    if (request.method !== 'POST') {
+      response.status(405).json({ error: 'Method not allowed. Use POST.' });
+      return;
+    }
+
+    // Handle malformed JSON - MacroDroid may send invalid JSON with unquoted values
+    let body = request.body;
+    
+    // If body-parser failed to parse (body is undefined or error), try to get raw body
+    if (!body || (typeof body === 'object' && Object.keys(body).length === 0)) {
+      // Try to get raw body from request
+      const rawBodyStr = (request as any).rawBody?.toString('utf8') || 
+                        (request as any).body?.toString?.('utf8') || '';
+      
+      if (rawBodyStr) {
+        // Try to fix and parse JSON
+        const fixed = tryFixJson(rawBodyStr);
+        if (fixed) {
+          body = fixed;
+        } else {
+          // If all fixes fail, treat entire body as message
           body = {
-            message: body,
-            source: request.headers['x-source'] || 'unknown',
+            message: rawBodyStr,
+            source: request.headers['x-source'] || 'Emergency_Alerts',
             receivedAt: new Date().toISOString(),
           };
         }
       }
-      
-      // If body is empty or not an object, create a default structure
-      if (!body || typeof body !== 'object' || Array.isArray(body)) {
-        console.warn('[Ingress] Invalid body format, creating default structure');
+    }
+    
+    // If body is a string, try to parse it
+    if (typeof body === 'string') {
+      const fixed = tryFixJson(body);
+      if (fixed) {
+        body = fixed;
+      } else {
+        // If JSON parse fails, treat it as a raw message
+        console.warn('[Ingress] Invalid JSON received, treating as raw message:', body.substring(0, 100));
         body = {
-          message: typeof body === 'string' ? body : JSON.stringify(body) || 'No message provided',
-          source: request.headers['x-source'] || 'unknown',
+          message: body,
+          source: request.headers['x-source'] || 'Emergency_Alerts',
           receivedAt: new Date().toISOString(),
         };
       }
+    }
+    
+    // If body is empty or not an object, create a default structure
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      console.warn('[Ingress] Invalid body format, creating default structure');
+      body = {
+        message: typeof body === 'string' ? body : JSON.stringify(body) || 'No message provided',
+        source: request.headers['x-source'] || 'Emergency_Alerts',
+        receivedAt: new Date().toISOString(),
+      };
+    }
 
       // Parse and validate notification
       const notification = notificationSchema.parse(body);
@@ -314,59 +409,159 @@ Now parse and format the message according to these requirements.`,
 
       let incidentDocId: string;
       let isUpdate = false;
+      let displayNumber: number;
 
-      if (validatedIncident.incidentId) {
-        const existingQuery = await db
-          .collection('incidents')
-          .where('incidentId', '==', validatedIncident.incidentId)
-          .limit(1)
-          .get();
+      // Extract MacroDroid ID from incident ID field (may be in format "#1831535" or "1831535")
+      let macroDroidId: string | undefined = validatedIncident.incidentId;
+      if (macroDroidId) {
+        // Clean the ID (remove # if present)
+        macroDroidId = macroDroidId.replace('#', '').trim();
+      }
 
-        if (!existingQuery.empty) {
-          incidentDocId = existingQuery.docs[0].id;
+      // If no incidentId in parsed data, try to extract from message (look for #183xxxx pattern)
+      if (!macroDroidId && notification.message) {
+        const idMatch = notification.message.match(/#?(\d{6,})/);
+        if (idMatch) {
+          macroDroidId = idMatch[1];
+        }
+      }
+
+      if (macroDroidId) {
+        // Use MacroDroid ID as document ID
+        incidentDocId = macroDroidId;
+
+        // Check if document already exists
+        const incidentRef = db.collection('incidents').doc(incidentDocId);
+        const existingDoc = await incidentRef.get();
+
+        if (existingDoc.exists) {
+          // This is an update - create a document in the updates subcollection
           isUpdate = true;
+          const existingData = existingDoc.data();
+          
+          // Preserve existing display number
+          displayNumber = (existingData as any)?.incidentNumber || await allocateNextDisplayNumber();
+          
+          // Get all existing update documents to concatenate messages
+          const updatesSnapshot = await incidentRef.collection('updates').get();
+          const existingMessages: string[] = [];
+          
+          updatesSnapshot.docs.forEach(doc => {
+            const data = doc.data();
+            if (data.lastMessage) {
+              existingMessages.push(data.lastMessage);
+            }
+          });
 
-          const existingData = existingQuery.docs[0].data();
-          validatedIncident.createdAt = existingData.createdAt;
+          // Add current message
+          const currentMessage = notification.message || validatedIncident.description || '';
+          existingMessages.push(currentMessage);
 
-          const existingActivity = (existingData.activity as Activity[]) || [];
-          const newActivity: Activity = {
-            id: randomUUID(),
-            type: 'update',
-            description: `Incident updated from notification: ${notification.title || 'Notification update'}`,
-            timestamp: Timestamp.now(),
-            source: notification.source || 'webhook',
+          // Create update document in subcollection
+          const updateDocData: any = {
+            lastMessage: currentMessage,
+            lastTitle: notification.title || validatedIncident.type || '',
+            lastType: validatedIncident.type || null,
+            lastTS: Timestamp.now(),
+            lat: validatedIncident.latitude || null,
+            lng: validatedIncident.longitude || null,
+            stage: 'update',
+            source: notification.source || validatedIncident.source || 'ingress',
+            state: validatedIncident.state || null,
+            city: validatedIncident.city || null,
+            address: validatedIncident.address || null,
+            updateCount: updatesSnapshot.docs.length + 1,
+            firstSeenAt: existingData?.createdAt || Timestamp.now(),
+            lastSeenAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+            updatesText: existingMessages.join('. '), // Concatenate all messages
           };
 
-          validatedIncident.activity = [...existingActivity, newActivity];
+          // Add geocodedAt if we have coordinates
+          if (validatedIncident.latitude && validatedIncident.longitude) {
+            updateDocData.geocodedAt = new Date().toISOString();
+          }
 
-          await db.collection('incidents').doc(incidentDocId).update(validatedIncident);
+          // Create new update document in subcollection
+          await incidentRef.collection('updates').add(updateDocData);
+
+          // Update main document with latest info (but preserve createdAt and incidentNumber)
+          await incidentRef.update({
+            updatedAt: Timestamp.now(),
+            lastMessage: currentMessage,
+            lastTitle: notification.title || validatedIncident.type || '',
+            lastType: validatedIncident.type || null,
+            lastTS: Timestamp.now(),
+            lat: validatedIncident.latitude || null,
+            lng: validatedIncident.longitude || null,
+            stage: 'update',
+          });
         } else {
-          validatedIncident.createdAt = firestoreIncident.updatedAt;
-          const initialActivity: Activity = {
-            id: randomUUID(),
-            type: 'created',
-            description: `Incident created from notification: ${notification.title || 'New incident'}`,
-            timestamp: Timestamp.now(),
-            source: notification.source || 'webhook',
+          // Create new incident with MacroDroid ID as document ID
+          isUpdate = false;
+          displayNumber = await allocateNextDisplayNumber();
+          
+          const now = Timestamp.now();
+          const incidentData: any = {
+            ...validatedIncident,
+            id: macroDroidId, // Store MacroDroid ID in id field too
+            incidentId: macroDroidId, // Store as incidentId field
+            incidentNumber: displayNumber, // Display number (7000000+)
+            createdAt: now,
+            updatedAt: now,
+            lastMessage: notification.message || validatedIncident.description || '',
+            lastTitle: notification.title || validatedIncident.type || '',
+            lastType: validatedIncident.type || null,
+            lastTS: now,
+            lat: validatedIncident.latitude || null,
+            lng: validatedIncident.longitude || null,
+            stage: 'create',
+            source: notification.source || validatedIncident.source || 'ingress',
+            updateCount: 0,
           };
-          validatedIncident.activity = [initialActivity];
 
-          const docRef = await db.collection('incidents').add(validatedIncident);
-          incidentDocId = docRef.id;
+          // Use the MacroDroid ID as the document ID
+          await incidentRef.set(incidentData);
+
+          // Create first update document in subcollection
+          const firstUpdateData: any = {
+            lastMessage: notification.message || validatedIncident.description || '',
+            lastTitle: notification.title || validatedIncident.type || '',
+            lastType: validatedIncident.type || null,
+            lastTS: now,
+            lat: validatedIncident.latitude || null,
+            lng: validatedIncident.longitude || null,
+            stage: 'create',
+            source: notification.source || validatedIncident.source || 'ingress',
+            state: validatedIncident.state || null,
+            city: validatedIncident.city || null,
+            address: validatedIncident.address || null,
+            updateCount: 1,
+            firstSeenAt: now,
+            lastSeenAt: now,
+            updatedAt: now,
+            updatesText: notification.message || validatedIncident.description || '',
+          };
+
+          if (validatedIncident.latitude && validatedIncident.longitude) {
+            firstUpdateData.geocodedAt = new Date().toISOString();
+          }
+
+          await incidentRef.collection('updates').add(firstUpdateData);
         }
       } else {
-        validatedIncident.createdAt = firestoreIncident.updatedAt;
-        const initialActivity: Activity = {
-          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          type: 'created',
-          description: `Incident created from notification: ${notification.title || 'New incident'}`,
-          timestamp: Timestamp.now(),
-          source: notification.source || 'webhook',
+        // No MacroDroid ID found - generate a document ID and allocate display number
+        displayNumber = await allocateNextDisplayNumber();
+        const now = Timestamp.now();
+        
+        const incidentData: any = {
+          ...validatedIncident,
+          incidentNumber: displayNumber,
+          createdAt: now,
+          updatedAt: now,
         };
-        validatedIncident.activity = [initialActivity];
 
-        const docRef = await db.collection('incidents').add(validatedIncident);
+        const docRef = await db.collection('incidents').add(incidentData);
         incidentDocId = docRef.id;
       }
 
@@ -400,5 +595,72 @@ Now parse and format the message according to these requirements.`,
         message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
+}
+
+// Create Express app with custom body parsing to handle malformed JSON gracefully
+const ingressApp = express();
+
+// Configure body parser with strict: false to allow non-JSON content
+ingressApp.use(express.json({
+  strict: false, // Don't throw on non-JSON content
+  verify: (req: any, res, buf) => {
+    // Store raw body for recovery
+    req.rawBody = buf;
+  },
+}));
+
+// Error handler for JSON parsing errors from body-parser middleware
+ingressApp.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (error instanceof SyntaxError && error.status === 400 && 'body' in error) {
+    console.warn('[Ingress] JSON parsing error from body-parser, attempting recovery:', error.message);
+    
+    // Try to use raw body if available
+    const rawBody = (req as any).rawBody?.toString('utf8') || '';
+    
+    if (rawBody) {
+      // Try to fix the JSON
+      const fixed = tryFixJson(rawBody);
+      if (fixed) {
+        // Set the fixed body and continue
+        req.body = fixed;
+        return next(); // Continue to handler
+      } else {
+        // If fixing fails, create notification object from raw text
+        req.body = {
+          message: rawBody,
+          source: req.headers['x-source'] || 'Emergency_Alerts',
+          receivedAt: new Date().toISOString(),
+        };
+        return next(); // Continue to handler
+      }
+    }
+    
+    // If we can't recover, return error
+    res.status(400).json({
+      error: 'Invalid JSON format',
+      message: 'The request body could not be parsed as JSON. Please ensure MacroDroid variables are properly replaced and all string values are quoted.',
+      hint: 'Check that values like "source": Emergency_Alerts are quoted as "source": "Emergency_Alerts"',
+      details: error.message,
+    });
+    return;
   }
+  
+  // Pass other errors to next handler
+  next(error);
+});
+
+// Route handler
+ingressApp.post('*', async (req, res) => {
+  return ingressHandler(req, res);
+});
+
+export const ingress = onRequest(
+  {
+    cors: true,
+    memory: '512MiB',
+    timeoutSeconds: 60,
+    secrets: ['OPENROUTER_API_KEY', 'GOOGLE_MAPS_API_KEY', 'OPENWEATHER_API_KEY'],
+    region: 'us-central1',
+  },
+  ingressApp
 );

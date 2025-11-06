@@ -10,6 +10,7 @@ import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { AlertTriangle } from 'lucide-react';
+import { logger } from '@/lib/utils/logger';
 
 export default function ChaserError({
   error,
@@ -19,7 +20,10 @@ export default function ChaserError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error('Chaser section error:', error);
+    logger.error('Chaser section error boundary triggered', error, {
+      code: 'ChaserErrorBoundary',
+      digest: error.digest,
+    });
   }, [error]);
 
   return (
