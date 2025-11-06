@@ -22,8 +22,7 @@ import {
 import type { IUserRepository } from '@domain/repositories/user.repository.interface';
 import type { IIncidentRepository } from '@domain/repositories/incident.repository.interface';
 import { IncidentFilter, IncidentSort } from '@domain/repositories/incident.repository.interface';
-import type { Pagination } from '@domain/repositories/shared.types';
-import { PaginatedResult } from '@domain/repositories/shared.types';
+import type { Pagination, PaginatedResult } from '@domain/repositories/shared.types';
 import { Incident } from '@domain/entities/incident/incident.entity';
 import { TOKENS } from '@infrastructure/di/tokens';
 import { 
