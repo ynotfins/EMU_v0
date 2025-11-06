@@ -6,7 +6,7 @@ import {
   getInitials,
   getAvatarGradient,
   type AvatarProps,
-} from "@/lib/avatar-utils";
+} from "@/lib/utils/avatar-utils";
 
 /**
  * Avatar Component - Consistent 20% rounded corners everywhere
