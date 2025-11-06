@@ -9,16 +9,7 @@ import {
   GeoPoint,
   Timestamp as FirestoreTimestamp,
   Query,
-  DocumentData,
-  query,
-  where,
-  orderBy,
-  limit,
-  startAfter,
-  getDocs,
-  doc,
-  setDoc,
-  collection
+  DocumentData
 } from 'firebase-admin/firestore';
 import { User } from '@domain/entities/user/user.entity';
 import { UserId, Email, Role, Location } from '@domain/shared/value-objects';
@@ -46,10 +37,13 @@ export class FirebaseUserRepository implements IUserRepository {
         const existingDoc = await transaction.get(docRef);
         
         // Check version for optimistic concurrency control
-        if (existingDoc.exists()) {
-          const existingVersion = existingDoc.data().version || 0;
-          if (existingVersion !== user.version - 1) {
-            throw new Error('Concurrency conflict: User has been modified');
+        if (existingDoc.exists) {
+          const existingData = existingDoc.data();
+          if (existingData) {
+            const existingVersion = existingData.version || 0;
+            if (existingVersion !== user.version - 1) {
+              throw new Error('Concurrency conflict: User has been modified');
+            }
           }
         }
         
@@ -67,11 +61,16 @@ export class FirebaseUserRepository implements IUserRepository {
       const docRef = adminDb.collection(this.collection).doc(id.value);
       const docSnap = await docRef.get();
       
-      if (!docSnap.exists()) {
+      if (!docSnap.exists) {
         return right(null);
       }
       
-      const user = UserMapper.toDomain(docSnap.data() as UserDocument);
+      const docData = docSnap.data();
+      if (!docData) {
+        return right(null);
+      }
+      
+      const user = UserMapper.toDomain(docData as UserDocument);
       return right(user);
     } catch (error) {
       return left(new Error(`Failed to find user: ${error instanceof Error ? error.message : 'Unknown error'}`));
@@ -108,12 +107,11 @@ export class FirebaseUserRepository implements IUserRepository {
       const users: User[] = [];
       
       for (const chunk of chunks) {
-        const q = query(
-          collection(adminDb, this.collection),
-          where('uid', 'in', chunk.map(id => id.value))
-        );
+        const snapshot = await adminDb
+          .collection(this.collection)
+          .where('uid', 'in', chunk.map(id => id.value))
+          .get();
         
-        const snapshot = await getDocs(q);
         snapshot.docs.forEach(doc => {
           users.push(UserMapper.toDomain(doc.data() as UserDocument));
         });
@@ -275,8 +273,8 @@ export class FirebaseUserRepository implements IUserRepository {
 
   async updateLastLogin(id: UserId): Promise<Either<Error, void>> {
     try {
-      const docRef = doc(adminDb, this.collection, id.value);
-      await setDoc(docRef, {
+      const docRef = adminDb.collection(this.collection).doc(id.value);
+      await docRef.set({
         lastLogin: FirestoreTimestamp.now(),
         updatedAt: FirestoreTimestamp.now(),
       }, { merge: true });
@@ -289,8 +287,8 @@ export class FirebaseUserRepository implements IUserRepository {
 
   async updateLocation(id: UserId, lat: number, lng: number): Promise<Either<Error, void>> {
     try {
-      const docRef = doc(adminDb, this.collection, id.value);
-      await setDoc(docRef, {
+      const docRef = adminDb.collection(this.collection).doc(id.value);
+      await docRef.set({
         lastLocation: {
           lat,
           lng,
