@@ -27,11 +27,11 @@ export function ThreadList({ threads, onSelectThread }: ThreadListProps) {
 
   const getThreadIcon = (kind: Thread["kind"]) => {
     switch (kind) {
-      case "team":
-        return <Users className="h-5 w-5 text-[#007AFF]" />
       case "incident":
         return <AlertCircle className="h-5 w-5 text-[#FF3B30]" />
-      case "dm":
+      case "direct":
+        return <MessageSquare className="h-5 w-5 text-[#34C759]" />
+      default:
         return <MessageSquare className="h-5 w-5 text-[#34C759]" />
     }
   }
