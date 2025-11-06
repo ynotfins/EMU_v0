@@ -19,7 +19,7 @@ export function RoleLayout({ role, children }: RoleLayoutProps) {
   const actualRole = profile?.role || role;
   
   // For super_admin users, check localStorage for active role (defaults to supe)
-  let navRole = actualRole;
+  let navRole: "chaser" | "supe" | "super_admin" = actualRole === "chaser" ? "chaser" : "supe";
   if (actualRole === "super_admin" && typeof window !== "undefined") {
     const activeRole = localStorage.getItem("activeRole");
     navRole = activeRole === "super_admin" ? "super_admin" : "supe";
