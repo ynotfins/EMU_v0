@@ -13,7 +13,7 @@ import {
   getCurrentUser, 
   signOut as signOutAction,
   type SerializedUser 
-} from '@presentation/actions/auth';
+} from '@/lib/actions/auth';
 
 interface AuthState {
   user: SerializedUser | null;

@@ -7,7 +7,7 @@
 
 import { create } from 'zustand';
 import { devtools, subscribeWithSelector } from 'zustand/middleware';
-import type { SerializedIncident } from '@presentation/actions/incidents';
+import type { SerializedIncident } from '@/lib/actions/incidents';
 import { IncidentStatus, IncidentType } from '@domain/entities/incident/incident.entity';
 
 interface IncidentFilters {

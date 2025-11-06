@@ -9,7 +9,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase-client';
-import type { SerializedIncident } from '@presentation/actions/incidents';
+import type { SerializedIncident } from '@/lib/actions/incidents';
 import { logger } from '@/lib/utils/logger';
 
 interface UseIncidentReturn {

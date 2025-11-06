@@ -15,7 +15,7 @@ import {
   type SerializedIncident,
   type GetIncidentsFilter,
   type CreateIncidentData
-} from '@presentation/actions/incidents';
+} from '@/lib/actions/incidents';
 import { onSnapshot, collection, query, where, orderBy, limit, type QueryConstraint } from 'firebase/firestore';
 import { db } from '@/lib/firebase-client';
 

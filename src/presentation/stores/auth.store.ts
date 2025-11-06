@@ -6,7 +6,7 @@
 
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import type { SerializedUser } from '@presentation/actions/auth';
+import type { SerializedUser } from '@/lib/actions/auth';
 
 interface AuthState {
   // State
