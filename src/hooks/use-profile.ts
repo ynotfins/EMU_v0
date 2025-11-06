@@ -55,11 +55,21 @@ export function useProfile(uid?: string | null) {
           
           // Map Firestore data to Profile type
           const profile: Profile = {
+            id: userId,
             uid: userId,
+            userId: userId,
             email: userData.email || "",
             displayName: userData.displayName || userData.name || userData.nickname || userData.email?.split("@")[0] || "User",
+            name: userData.displayName || userData.name || userData.nickname || userData.email?.split("@")[0] || "User",
             role: userData.role || "chaser",
             agency: userData.agency,
+            pushNotifications: userData.settings?.pushEnabled !== false,
+            locationTracking: userData.settings?.trackingEnabled !== false,
+            isActive: userData.isActive !== false,
+            preferences: {
+              favoriteChaser: userData.preferences?.favoriteChaser || false,
+              silencedAlerts: userData.preferences?.silencedAlerts || userData.settings?.silencedAlerts || [],
+            },
             stats: {
               responded: userData.stats?.responded || 0,
               noted: userData.stats?.noted || 0,
@@ -76,6 +86,8 @@ export function useProfile(uid?: string | null) {
               cashappHandle: userData.payout?.cashappHandle || "",
               venmoHandle: userData.payout?.venmoHandle || "",
             },
+            createdAt: userData.createdAt || new Date().toISOString(),
+            updatedAt: userData.updatedAt || new Date().toISOString(),
           }
 
           logger.debug('Profile loaded', {
