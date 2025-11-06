@@ -248,8 +248,8 @@ function mapToFirestoreIncident(parsedIncident: Incident, notificationReceivedAt
     city: parsedIncident.city,
     state: parsedIncident.state,
     county: parsedIncident.county,
-    lat: parsedIncident.latitude,
-    lng: parsedIncident.longitude,
+    lat: undefined, // Will be geocoded by autoGeocodeIncident Cloud Function
+    lng: undefined, // Will be geocoded by autoGeocodeIncident Cloud Function
     description: parsedIncident.description,
     source: parsedIncident.source,
     isActive: true,
@@ -352,7 +352,6 @@ export async function POST(request: NextRequest) {
     // Parse incident using AI
     const result = await generateObject({
       model,
-      specificationVersion: 'v2',
       schema: incidentSchema,
       prompt: `You are an expert at parsing emergency notification messages and formatting them beautifully for display.
 
