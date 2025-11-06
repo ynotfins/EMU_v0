@@ -62,7 +62,7 @@ export function GodModeCard({ userRole }: GodModeCardProps) {
     }
 
     console.log(`[ViewMode] Switching from ${viewMode} to ${newView} view`);
-    router.push(newPath);
+    router.push(newPath as any);
   };
 
   // Only show for super_admin
