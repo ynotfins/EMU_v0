@@ -13,8 +13,9 @@ import {
   sendDirectMessage,
   type ChatMessage,
 } from "@/lib/utils/realtime-database";
+import { logger } from "@/lib/utils/logger";
 
-export default function ChaserChatPage() {
+export default function ChatPage() {
   const { data: profile } = useProfile();
   const [selectedContact, setSelectedContact] = useState<{
     id: string;
@@ -23,18 +24,27 @@ export default function ChaserChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [messageText, setMessageText] = useState("");
 
+  // Determine role for RoleLayout - use actual user role
+  const userRole = profile?.role === "super_admin" || profile?.role === "admin" || profile?.role === "supe" 
+    ? "supe" 
+    : "chaser";
+
   // Subscribe to direct chat when contact is selected
   useEffect(() => {
     if (!selectedContact || !profile) return;
 
-    console.log(
-      "[Chat] ?? Subscribing to direct chat with:",
-      selectedContact.name
-    );
+    logger.debug("Subscribing to direct chat", {
+      code: 'ChatPage',
+      contactName: selectedContact.name,
+    });
+    
     const unsubscribe = subscribeToDirectChat(
       selectedContact.id,
       (updatedMessages: ChatMessage[]) => {
-        console.log(`[Chat] ?? Received ${updatedMessages.length} messages`);
+        logger.debug("Received messages", {
+          code: 'ChatPage',
+          count: updatedMessages.length,
+        });
         setMessages(updatedMessages);
       }
     );
@@ -46,7 +56,11 @@ export default function ChaserChatPage() {
     if (!messageText.trim() || !profile || !selectedContact) return;
 
     try {
-      console.log("[Chat] ?? Sending message to:", selectedContact.name);
+      logger.debug("Sending message", {
+        code: 'ChatPage',
+        contactName: selectedContact.name,
+      });
+      
       await sendDirectMessage(
         selectedContact.id,
         messageText.trim(),
@@ -56,14 +70,16 @@ export default function ChaserChatPage() {
 
       setMessageText("");
     } catch (error) {
-      console.error("[Chat] ? Error sending message:", error);
+      logger.error("Error sending message", error, {
+        code: 'ChatPage',
+      });
     }
   };
 
   // Contacts View
   if (!selectedContact) {
     return (
-      <RoleLayout role="chaser">
+      <RoleLayout role={userRole}>
         <div className="flex flex-col h-screen bg-white">
           {/* Header - Fixed at top */}
           <div className="bg-white border-b border-[#E5E7EB] p-4 fixed top-0 left-0 right-0 z-20">
@@ -83,7 +99,10 @@ export default function ChaserChatPage() {
             <ChatContacts
               currentUserId={profile?.uid || ""}
               onSelectContact={(contactId, contactName) => {
-                console.log("[Chat] Selected contact:", contactName);
+                logger.debug("Selected contact", {
+                  code: 'ChatPage',
+                  contactName,
+                });
                 setSelectedContact({ id: contactId, name: contactName });
                 setMessages([]); // Clear previous messages
               }}
@@ -96,7 +115,7 @@ export default function ChaserChatPage() {
 
   // Chat View
   return (
-    <RoleLayout role="chaser">
+    <RoleLayout role={userRole}>
       <div className="flex flex-col h-screen bg-gray-50">
         {/* Header - Fixed at top */}
         <div className="bg-white border-b border-[#E5E7EB] p-4 flex items-center gap-3 fixed top-0 left-0 right-0 z-20">
@@ -200,3 +219,4 @@ export default function ChaserChatPage() {
     </RoleLayout>
   );
 }
+
