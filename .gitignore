@@ -60,6 +60,8 @@ scripts/*.vsix
 !.cursor/environment.json
 !.cursor/README.md
 !.cursor/rules/
+!.cursor/global-credentials.yaml
+!.cursor/global-profile.yaml
 
 # Misc
 .turbo
