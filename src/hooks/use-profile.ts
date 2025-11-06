@@ -133,7 +133,7 @@ export function useProfile(uid?: string | null) {
     setData((prev) => (prev ? { ...prev, settings: { ...prev.settings, ...settings } } : null))
     
     // Persist key settings to localStorage
-    if (settings.pushEnabled !== undefined) {
+    if (settings?.pushEnabled !== undefined) {
       try {
         localStorage.setItem("emu.push", JSON.stringify(settings.pushEnabled))
       } catch (err) {
