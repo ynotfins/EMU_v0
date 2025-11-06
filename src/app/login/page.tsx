@@ -45,7 +45,7 @@ export default function LoginPage() {
         try {
           // Check user role and redirect accordingly
           const { doc: docRef, getDoc } = await import("firebase/firestore");
-          const { db } = await import("@/lib/firebase/firebase");
+          const { db } = await import("@/lib/firebase-client");
           
           const userDocRef = docRef(db, "users", user.uid);
           const userDoc = await getDoc(userDocRef);
@@ -117,7 +117,7 @@ export default function LoginPage() {
 
       // Check if user profile exists in Firestore
       const { doc: docRef, getDoc } = await import("firebase/firestore");
-      const { db } = await import("@/lib/firebase/firebase");
+      const { db } = await import("@/lib/firebase-client");
       
       const userDocRef = docRef(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
@@ -228,7 +228,7 @@ export default function LoginPage() {
       
       // Check user role and redirect accordingly
       const { doc: docRef, getDoc } = await import("firebase/firestore");
-      const { db } = await import("@/lib/firebase/firebase");
+      const { db } = await import("@/lib/firebase-client");
       
       const userDocRef = docRef(db, "users", result.user.uid);
       const userDoc = await getDoc(userDocRef);
