@@ -110,8 +110,10 @@ export default function LoginPage() {
       }
       
       const user = result.user;
-
-      console.log("[Login] [OK] Google sign-in successful:", user.email);
+      logger.debug('Google sign-in successful', {
+        code: 'LoginPage',
+        email: user.email || undefined,
+      });
 
       // Check if user profile exists in Firestore
       const { doc: docRef, getDoc } = await import("firebase/firestore");
@@ -123,7 +125,9 @@ export default function LoginPage() {
       let userRole = "chaser"; // Default to chaser for new users
 
       if (!userDoc.exists()) {
-        console.log("[Login] 🆕 New Google user - creating profile...");
+        logger.debug('New Google user - creating profile', {
+          code: 'LoginPage',
+        });
         
         // Special handling for ynotfins@gmail.com - default to super_admin
         const isSuperAdmin = user.email === "ynotfins@gmail.com";
@@ -159,7 +163,9 @@ export default function LoginPage() {
           createdAt: new Date().toISOString(),
         });
 
-        console.log("[Login] [OK] Firestore profile created for Google user");
+        logger.debug('Firestore profile created for Google user', {
+          code: 'LoginPage',
+        });
         userRole = defaultRole;
       } else {
         // Get existing role, but update name if ynotfins@gmail.com
@@ -178,7 +184,10 @@ export default function LoginPage() {
       }
 
       // Redirect based on role - super_admin defaults to supe view
-      console.log("[Login] Google sign-in complete, redirecting to:", userRole);
+      logger.debug('Google sign-in complete, redirecting', {
+        code: 'LoginPage',
+        role: userRole,
+      });
       const targetPath = (userRole === "super_admin" || userRole === "admin" || userRole === "supe") 
         ? "/supe/incidents" 
         : "/chaser/incidents";
@@ -186,7 +195,9 @@ export default function LoginPage() {
       // Use hard navigation to break any potential loops
       window.location.href = targetPath;
     } catch (err: any) {
-      console.error("[Login] [X] Google sign-in error:", err);
+      logger.error('Google sign-in error', err, {
+        code: 'LoginPage',
+      });
 
       if (err.code === "auth/popup-closed-by-user") {
         setError("Sign-in cancelled. Please try again.");
