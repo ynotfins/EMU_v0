@@ -17,6 +17,7 @@ import { useState, useEffect } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/firebase';
 import { geocodeCache, userLocationCache, locationPermission } from '@/lib/utils/offline-cache';
+import { logger } from '@/lib/utils/logger';
 
 interface Location {
   lat: number;
@@ -59,19 +60,29 @@ function toRad(degrees: number): number {
  * NOW WITH OFFLINE CACHE: Checks localStorage first!
  */
 async function geocodeAddress(address: string): Promise<Location | null> {
-  console.log('[geocodeAddress] ??? Geocoding:', address);
+  logger.debug('Geocoding address', {
+    code: 'useLocationDistance',
+    address,
+  });
 
   // Validate address - skip if empty or just punctuation
   const cleanAddress = address.trim().replace(/^[,\s]+$/, '');
   if (!cleanAddress || cleanAddress.length < 3) {
-    console.warn('[geocodeAddress] ⚠️ Invalid or empty address, skipping:', address);
+    logger.warn('Invalid or empty address, skipping', {
+      code: 'useLocationDistance',
+      address,
+    });
     return null;
   }
 
   // OFFLINE FIRST: Check localStorage cache
   const cached = geocodeCache.get(cleanAddress);
   if (cached) {
-    console.log('[geocodeAddress] ? Using offline cache:', { lat: cached.lat, lng: cached.lng });
+    logger.debug('Using offline cache', {
+      code: 'useLocationDistance',
+      lat: cached.lat,
+      lng: cached.lng,
+    });
     return { lat: cached.lat, lng: cached.lng };
   }
 
@@ -89,7 +100,11 @@ async function geocodeAddress(address: string): Promise<Location | null> {
 
       if (data.status === 'OK' && data.results && data.results.length > 0) {
         const { lat, lng } = data.results[0].geometry.location;
-        console.log('[geocodeAddress] ? Google Maps result:', { lat, lng });
+        logger.debug('Google Maps geocoding result', {
+          code: 'useLocationDistance',
+          lat,
+          lng,
+        });
         
         // SAVE TO OFFLINE CACHE
         geocodeCache.set(cleanAddress, lat, lng);
@@ -97,9 +112,14 @@ async function geocodeAddress(address: string): Promise<Location | null> {
         return { lat, lng };
       }
 
-      console.error('[geocodeAddress] ? Google Maps error:', data.status);
+      logger.error('Google Maps geocoding error', new Error(data.status), {
+        code: 'useLocationDistance',
+        status: data.status,
+      });
     } catch (error) {
-      console.error('[geocodeAddress] ? Google Maps fetch error:', error);
+      logger.error('Google Maps fetch error', error, {
+        code: 'useLocationDistance',
+      });
     }
   }
 
@@ -121,7 +141,11 @@ async function geocodeAddress(address: string): Promise<Location | null> {
     if (data && data.length > 0) {
       const lat = parseFloat(data[0].lat);
       const lng = parseFloat(data[0].lon);
-      console.log('[geocodeAddress] ? OSM Nominatim result:', { lat, lng });
+      logger.debug('OSM Nominatim geocoding result', {
+        code: 'useLocationDistance',
+        lat,
+        lng,
+      });
       
       // SAVE TO OFFLINE CACHE
       geocodeCache.set(cleanAddress, lat, lng);
@@ -129,9 +153,13 @@ async function geocodeAddress(address: string): Promise<Location | null> {
       return { lat, lng };
     }
 
-    console.error('[geocodeAddress] ? No results from Nominatim');
+    logger.error('No results from Nominatim', undefined, {
+      code: 'useLocationDistance',
+    });
   } catch (error) {
-    console.error('[geocodeAddress] ? Nominatim fetch error:', error);
+    logger.error('Nominatim fetch error', error, {
+      code: 'useLocationDistance',
+    });
   }
 
   return null;
@@ -189,10 +217,14 @@ export function useLocationDistance() {
         const didUpdate = userLocationCache.update(newLat, newLng, accuracy, 'gps');
         
         if (didUpdate) {
-          console.log('[useLocationDistance] ? Location updated (user moved)');
+          logger.debug('Location updated', {
+            code: 'useLocationDistance',
+          });
           setUserLocation({ lat: newLat, lng: newLng });
         } else {
-          console.log('[useLocationDistance] ?? Location unchanged (using cached)');
+          logger.debug('Location unchanged, using cached', {
+            code: 'useLocationDistance',
+          });
         }
         
         // Save permission status permanently (never ask again)
@@ -204,7 +236,9 @@ export function useLocationDistance() {
         setError(null);
       },
       (err) => {
-        console.error('[useLocationDistance] ? Location error:', err);
+        logger.error('Location error', err, {
+          code: 'useLocationDistance',
+        });
         
         // Provide helpful error messages
         let errorMessage = err.message;
@@ -221,9 +255,8 @@ export function useLocationDistance() {
           errorMessage += " Note: Location access requires HTTPS on most mobile browsers.";
         }
         
-        console.error('[useLocationDistance] ?? Error details:', {
-          code: err.code,
-          message: err.message,
+        logger.error('Location error details', err, {
+          code: 'useLocationDistance',
           protocol: typeof window !== "undefined" ? window.location.protocol : "unknown",
           hostname: typeof window !== "undefined" ? window.location.hostname : "unknown",
         });
@@ -239,7 +272,9 @@ export function useLocationDistance() {
     );
 
     return () => {
-      console.log('[useLocationDistance] ?? Stopping location watch');
+      logger.debug('Stopping location watch', {
+        code: 'useLocationDistance',
+      });
       navigator.geolocation.clearWatch(watchId);
     };
   }, []);
@@ -257,7 +292,9 @@ export function useLocationDistance() {
     incidentLng?: number
   ): Promise<number | undefined> {
     if (!userLocation) {
-      console.log('[getIncidentDistance] ? User location not available yet');
+      logger.debug('User location not available yet', {
+        code: 'useLocationDistance',
+      });
       return undefined;
     }
 
@@ -269,24 +306,25 @@ export function useLocationDistance() {
         incidentLat,
         incidentLng
       );
-      console.log(
-        `[getIncidentDistance] ? Distance calculated (cached): ${distance.toFixed(
-          1
-        )} mi`
-      );
+      logger.debug('Distance calculated (cached)', {
+        code: 'useLocationDistance',
+        distanceMi: distance.toFixed(1),
+      });
       return distance;
     }
 
     // Geocode address and cache result
-    console.log(
-      `[getIncidentDistance] ??? No cached location, geocoding: ${address}`
-    );
+    logger.debug('No cached location, geocoding', {
+      code: 'useLocationDistance',
+      address,
+    });
     const location = await geocodeAddress(address);
 
     if (!location) {
-      console.error(
-        `[getIncidentDistance] ? Failed to geocode: ${address}`
-      );
+      logger.error('Failed to geocode', new Error(address), {
+        code: 'useLocationDistance',
+        address,
+      });
       return undefined;
     }
 
@@ -298,14 +336,15 @@ export function useLocationDistance() {
         lng: location.lng,
         geocodedAt: new Date().toISOString(),
       });
-      console.log(
-        `[getIncidentDistance] ?? Cached lat/lng in Firestore: ${incidentId}`
-      );
+      logger.debug('Cached lat/lng in Firestore', {
+        code: 'useLocationDistance',
+        incidentId,
+      });
     } catch (cacheError) {
-      console.error(
-        '[getIncidentDistance] ?? Failed to cache location:',
-        cacheError
-      );
+      logger.error('Failed to cache location', cacheError, {
+        code: 'useLocationDistance',
+        incidentId,
+      });
       // Continue anyway - distance calculation doesn't depend on caching
     }
 
@@ -316,11 +355,10 @@ export function useLocationDistance() {
       location.lat,
       location.lng
     );
-    console.log(
-      `[getIncidentDistance] ? Distance calculated (new): ${distance.toFixed(
-        1
-      )} mi`
-    );
+    logger.debug('Distance calculated (new)', {
+      code: 'useLocationDistance',
+      distanceMi: distance.toFixed(1),
+    });
     return distance;
   }
 
@@ -345,12 +383,16 @@ export function useLocationDistance() {
   async function refreshLocation(): Promise<boolean> {
     return new Promise((resolve) => {
       if (!navigator.geolocation) {
-        console.error('[refreshLocation] ? Geolocation not supported');
+        logger.error('Geolocation not supported', undefined, {
+          code: 'useLocationDistance',
+        });
         resolve(false);
         return;
       }
 
-      console.log('[refreshLocation] ?? Forcing location refresh...');
+      logger.debug('Forcing location refresh', {
+        code: 'useLocationDistance',
+      });
       
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -365,11 +407,15 @@ export function useLocationDistance() {
           setPermissionGranted(true);
           setError(null);
           
-          console.log('[refreshLocation] ? Location refreshed successfully');
+          logger.debug('Location refreshed successfully', {
+            code: 'useLocationDistance',
+          });
           resolve(true);
         },
         (err) => {
-          console.error('[refreshLocation] ? Failed to refresh:', err);
+          logger.error('Failed to refresh location', err, {
+            code: 'useLocationDistance',
+          });
           resolve(false);
         },
         {

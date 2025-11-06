@@ -482,7 +482,9 @@ Now parse and format the message according to these requirements.`,
       },
     });
   } catch (error) {
-    console.error('[Webhook] Error parsing incident:', error);
+    logger.error('Error parsing incident', error, {
+      code: 'Webhook',
+    });
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(

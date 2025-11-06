@@ -7,6 +7,7 @@ import { useIncidents } from "@/hooks/use-incidents"
 import { Button } from "@/components/ui/button"
 import { RefreshCw } from "lucide-react"
 import { useMemo } from "react"
+import { logger } from "@/lib/utils/logger"
 
 // Helper to normalize Firestore timestamps
 function normalizeTimestamp(ts: string | Date | { seconds: number }): number {
@@ -38,7 +39,9 @@ export default function SupeMapPage() {
   }, [allIncidents])
 
   const handleRefresh = () => {
-    console.log("[v0] Refresh live locations")
+    logger.debug('Refresh live locations', {
+      code: 'SupeMapPage',
+    });
   }
 
   return (

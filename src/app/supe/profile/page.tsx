@@ -17,6 +17,7 @@ import { LiveTeamMap } from "@/components/features/live-team-map";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useProfile } from "@/hooks/use-profile";
+import { logger } from "@/lib/utils/logger";
 
 export default function SupeProfilePage() {
   const router = useRouter();
@@ -24,7 +25,9 @@ export default function SupeProfilePage() {
 
   const handleSignOut = async () => {
     try {
-      console.log("[Profile] Signing out...");
+      logger.debug('Signing out', {
+        code: 'SupeProfilePage',
+      });
 
       // Clear all auth persistence FIRST
       clearAuthState();
@@ -32,10 +35,14 @@ export default function SupeProfilePage() {
       // Then sign out from Firebase
       await signOut(auth);
 
-      console.log("[Profile] [OK] Signed out successfully - all auth cleared");
+      logger.debug('Signed out successfully', {
+        code: 'SupeProfilePage',
+      });
       router.push("/login");
     } catch (error) {
-      console.error("[Profile] [X] Sign out error:", error);
+      logger.error('Sign out error', error, {
+        code: 'SupeProfilePage',
+      });
     }
   };
 

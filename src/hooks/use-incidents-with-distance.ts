@@ -18,6 +18,7 @@ import { useIncidents } from "./use-incidents";
 import { useLocationDistance } from "./use-location-distance";
 import type { IncidentLite } from "@/types/extended-domain";
 import type { IncidentFilters } from "./use-filters";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * Enhanced useIncidents with real-time distance calculation
@@ -56,15 +57,18 @@ export function useIncidentsWithDistance(filters?: Partial<IncidentFilters>) {
 
     async function enrichWithDistances() {
       if (hasRun) {
-        console.log('[useIncidentsWithDistance] ⏭️ Already running, skipping...');
+        logger.debug('Already running, skipping', {
+          code: 'useIncidentsWithDistance',
+        });
         return;
       }
       hasRun = true;
       
       // Process ALL incidents for scrolling support
-      console.log(
-        `[useIncidentsWithDistance] 📏 Processing ALL ${incidents.length} incidents for distance calculation`
-      );
+      logger.debug('Processing incidents for distance calculation', {
+        code: 'useIncidentsWithDistance',
+        count: incidents.length,
+      });
       
       // Process in batches to avoid blocking UI for too long
       const BATCH_SIZE = 5; // Process 5 at a time
@@ -84,7 +88,10 @@ export function useIncidentsWithDistance(filters?: Partial<IncidentFilters>) {
             
             if (addressParts.length === 0) {
               // No valid address data, skip geocoding
-              console.log(`[useIncidentsWithDistance] ⚠️ Skipping incident ${incident.id}: no valid address`);
+              logger.warn('Skipping incident: no valid address', {
+                code: 'useIncidentsWithDistance',
+                incidentId: incident.id,
+              });
               return;
             }
             
@@ -130,9 +137,10 @@ export function useIncidentsWithDistance(filters?: Partial<IncidentFilters>) {
       }
 
       if (isMounted) {
-        console.log(
-          `[useIncidentsWithDistance] [OK] Distance calculation complete - processed ${incidents.length} incidents`
-        );
+        logger.debug('Distance calculation complete', {
+          code: 'useIncidentsWithDistance',
+          processed: incidents.length,
+        });
         setCalculatingDistance(false);
       }
     }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { auth, db } from "@/lib/firebase/firebase"
 import { doc, getDoc } from "firebase/firestore"
+import { logger } from "@/lib/utils/logger"
 
 export default function HomePage() {
   const [checking, setChecking] = useState(true)
@@ -13,14 +14,20 @@ export default function HomePage() {
       const user = auth.currentUser;
       
       if (user) {
-        console.log("[Home] User authenticated:", user.email)
+        logger.debug('User authenticated', {
+          code: 'HomePage',
+          email: user.email || undefined,
+        });
         
         try {
           const userDoc = await getDoc(doc(db, "users", user.uid))
           
           if (userDoc.exists()) {
             const role = userDoc.data().role
-            console.log("[Home] User role:", role)
+            logger.debug('User role determined', {
+              code: 'HomePage',
+              role,
+            });
             
             // Hard navigation to break loops
             const targetPath = (role === "super_admin" || role === "admin" || role === "supe") 
@@ -32,11 +39,15 @@ export default function HomePage() {
             window.location.href = "/chaser/incidents";
           }
         } catch (error) {
-          console.error("[Home] Error checking user role:", error)
+          logger.error('Error checking user role', error, {
+            code: 'HomePage',
+          });
           window.location.href = "/chaser/incidents";
         }
       } else {
-        console.log("[Home] No user authenticated, redirecting to login")
+        logger.debug('No user authenticated, redirecting to login', {
+          code: 'HomePage',
+        });
         window.location.href = "/login";
       }
       

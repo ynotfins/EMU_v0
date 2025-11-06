@@ -29,7 +29,8 @@ import {
   serverTimestamp,
   Timestamp,
   CollectionReference,
-  DocumentReference
+  DocumentReference,
+  type Transaction
 } from 'firebase/firestore';
 import { db } from '../firebase/firebase';
 import { logger } from '../utils/logger';
@@ -325,7 +326,7 @@ class DatabaseModule {
    * Run a transaction
    */
   async runTransaction<T>(
-    transactionFn: (transaction: Parameters<Parameters<typeof runTransaction>[1]>[0]) => Promise<T>
+    transactionFn: (transaction: Transaction) => Promise<T>
   ): Promise<T> {
     try {
       return await runTransaction(this.db, transactionFn);

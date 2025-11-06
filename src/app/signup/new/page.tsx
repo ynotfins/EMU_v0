@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Mail, Phone, User, Camera, CheckCircle2 } from "lucide-react";
+import { logger } from "@/lib/utils/logger";
 
 type Step = "info" | "verify" | "id" | "processing" | "complete";
 
@@ -62,10 +63,14 @@ export default function NewSignupPage() {
       // Send verification email
       await sendEmailVerification(userCredential.user);
 
-      console.log("[Signup] [OK] Account created, verification email sent");
+      logger.debug('Account created, verification email sent', {
+        code: 'SignupPage',
+      });
       setStep("verify");
     } catch (err: any) {
-      console.error("[Signup] [X] Error:", err);
+      logger.error('Error creating account', err, {
+        code: 'SignupPage',
+      });
 
       if (err.code === "auth/email-already-in-use") {
         setError("Email already in use");
@@ -86,13 +91,17 @@ export default function NewSignupPage() {
       await auth.currentUser?.reload();
       
       if (auth.currentUser?.emailVerified) {
-        console.log("[Signup] [OK] Email verified");
+        logger.debug('Email verified', {
+          code: 'SignupPage',
+        });
         setStep("id");
       } else {
         setError("Email not verified yet. Please check your inbox.");
       }
     } catch (err) {
-      console.error("[Signup] [X] Verification check error:", err);
+      logger.error('Verification check error', err, {
+        code: 'SignupPage',
+      });
       setError("Error checking verification status");
     } finally {
       setLoading(false);

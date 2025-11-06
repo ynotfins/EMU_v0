@@ -18,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { logger } from "@/lib/utils/logger";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,7 +36,10 @@ export default function LoginPage() {
       const user = auth.currentUser;
       
       if (user) {
-        console.log("[Login] User already authenticated:", user.email);
+        logger.debug('User already authenticated', {
+          code: 'LoginPage',
+          email: user.email || undefined,
+        });
         setRedirecting(true);
         
         try {
@@ -51,17 +55,25 @@ export default function LoginPage() {
             userRole = userDoc.data().role || "supe";
           }
 
-          console.log("[Login] Redirecting to:", userRole);
+          logger.debug('Redirecting user', {
+            code: 'LoginPage',
+            role: userRole,
+          });
 
           // Immediate redirect - no delay
           const targetPath = (userRole === "super_admin" || userRole === "admin" || userRole === "supe") 
             ? "/supe/incidents" 
             : "/chaser/incidents";
           
-          console.log("[Login] Navigating to:", targetPath);
+          logger.debug('Navigating to role home', {
+            code: 'LoginPage',
+            targetPath,
+          });
           window.location.href = targetPath; // Force hard navigation to break any loops
         } catch (err) {
-          console.error("[Login] Error during redirect:", err);
+          logger.error('Error during redirect', err, {
+            code: 'LoginPage',
+          });
           setRedirecting(false);
         }
       }

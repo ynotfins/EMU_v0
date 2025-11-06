@@ -116,7 +116,10 @@ export class CreateIncidentUseCase extends UseCase<CreateIncidentRequest, Create
         const assignResult = incident.assignSupe(reporter, reporter);
         if (assignResult.isLeft()) {
           // Log warning but don't fail
-          console.warn('Failed to auto-assign reporter as Supe:', assignResult.value);
+          logger.warn('Failed to auto-assign reporter as Supe', {
+            code: 'CreateIncidentUseCase',
+            error: assignResult.value instanceof Error ? assignResult.value.message : String(assignResult.value),
+          });
         }
       }
 
@@ -131,16 +134,29 @@ export class CreateIncidentUseCase extends UseCase<CreateIncidentRequest, Create
       }
 
       // 7. Publish domain event (async, non-blocking)
-      this.publishIncidentCreatedEvent(incident).catch(console.error);
+      this.publishIncidentCreatedEvent(incident).catch((error) => {
+        logger.error('Failed to publish incident created event', error, {
+          code: 'CreateIncidentUseCase',
+          incidentId: incident.id.value,
+        });
+      });
 
       // 8. Send notifications (async, non-blocking)
       this.notificationService.notifyNewIncident(incident, location)
         .then(result => {
           if (result.isLeft()) {
-            console.error('Failed to send notifications:', result.value);
+            logger.error('Failed to send notifications', result.value instanceof Error ? result.value : new Error(String(result.value)), {
+              code: 'CreateIncidentUseCase',
+              incidentId: incident.id.value,
+            });
           }
         })
-        .catch(console.error);
+        .catch((error) => {
+          logger.error('Error sending notifications', error, {
+            code: 'CreateIncidentUseCase',
+            incidentId: incident.id.value,
+          });
+        });
 
       // 9. Return response
       return right({

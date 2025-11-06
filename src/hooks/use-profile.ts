@@ -5,6 +5,7 @@ import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore"
 import { db, auth } from "@/lib/firebase/firebase"
 import { onAuthStateChanged } from "firebase/auth"
 import type { Profile } from "@/types/extended-domain"
+import { logger } from "@/lib/utils/logger"
 
 export function useProfile(uid?: string | null) {
   const [data, setData] = useState<Profile | null>(null)
@@ -30,13 +31,18 @@ export function useProfile(uid?: string | null) {
     }
 
     if (!userId) {
-      console.log("[useProfile] No user ID, setting to null")
+      logger.debug('No user ID, setting to null', {
+        code: 'useProfile',
+      });
       setData(null)
       setIsLoading(false)
       return
     }
 
-    console.log("[useProfile] Loading profile for user:", userId)
+    logger.debug('Loading profile for user', {
+      code: 'useProfile',
+      userId,
+    });
 
     const userDocRef = doc(db, "users", userId)
 
@@ -72,18 +78,28 @@ export function useProfile(uid?: string | null) {
             },
           }
 
-          console.log("[useProfile] [OK] Profile loaded:", profile.displayName, profile.role)
+          logger.debug('Profile loaded', {
+            code: 'useProfile',
+            displayName: profile.displayName,
+            role: profile.role,
+          });
           setData(profile)
           setError(null)
         } else {
-          console.warn("[useProfile] [WARN] User document not found:", userId)
+          logger.warn('User document not found', {
+            code: 'useProfile',
+            userId,
+          });
           setData(null)
           setError(new Error("User profile not found"))
         }
         setIsLoading(false)
       },
       (err) => {
-        console.error("[useProfile] [X] Error loading profile:", err)
+        logger.error('Error loading profile', err, {
+          code: 'useProfile',
+          userId,
+        });
         setError(err)
         setIsLoading(false)
       }
@@ -95,7 +111,10 @@ export function useProfile(uid?: string | null) {
   const updateSettings = async (settings: Partial<Profile["settings"]>) => {
     if (!userId) return
     
-    console.log("[useProfile] updateSettings:", settings)
+    logger.debug('Updating settings', {
+      code: 'useProfile',
+      settings,
+    });
     
     // Update local state immediately (optimistic update)
     setData((prev) => (prev ? { ...prev, settings: { ...prev.settings, ...settings } } : null))
@@ -105,14 +124,18 @@ export function useProfile(uid?: string | null) {
       try {
         localStorage.setItem("emu.push", JSON.stringify(settings.pushEnabled))
       } catch (err) {
-        console.error("[useProfile] Failed to save push setting to localStorage:", err)
+        logger.error('Failed to save push setting to localStorage', err, {
+          code: 'useProfile',
+        });
       }
     }
     if (settings.trackingEnabled !== undefined) {
       try {
         localStorage.setItem("emu.tracking", JSON.stringify(settings.trackingEnabled))
       } catch (err) {
-        console.error("[useProfile] Failed to save tracking setting to localStorage:", err)
+        logger.error('Failed to save tracking setting to localStorage', err, {
+          code: 'useProfile',
+        });
       }
     }
     
@@ -126,16 +149,23 @@ export function useProfile(uid?: string | null) {
           ...settings,
         },
       })
-      console.log("[useProfile] [OK] Settings updated in Firestore")
+      logger.debug('Settings updated in Firestore', {
+        code: 'useProfile',
+      });
     } catch (err) {
-      console.error("[useProfile] [X] Failed to update settings in Firestore:", err)
+      logger.error('Failed to update settings in Firestore', err, {
+        code: 'useProfile',
+      });
     }
   }
 
   const updatePayout = async (payout: Partial<Profile["payout"]>) => {
     if (!userId) return
     
-    console.log("[useProfile] updatePayout:", payout)
+    logger.debug('Updating payout', {
+      code: 'useProfile',
+      payout,
+    });
     
     // Update local state immediately (optimistic update)
     setData((prev) => (prev ? { ...prev, payout: { ...prev.payout, ...payout } } : null))
@@ -150,9 +180,13 @@ export function useProfile(uid?: string | null) {
           ...payout,
         },
       })
-      console.log("[useProfile] [OK] Payout updated in Firestore")
+      logger.debug('Payout updated in Firestore', {
+        code: 'useProfile',
+      });
     } catch (err) {
-      console.error("[useProfile] [X] Failed to update payout in Firestore:", err)
+      logger.error('Failed to update payout in Firestore', err, {
+        code: 'useProfile',
+      });
     }
   }
 
@@ -161,26 +195,46 @@ export function useProfile(uid?: string | null) {
 
 // Action stubs
 export function updateProfile(userId: string, data: Partial<Profile>): void {
-  console.debug("[useProfile] updateProfile:", { userId, data })
+  logger.debug('updateProfile', {
+    code: 'useProfile',
+    userId,
+    data,
+  });
   // TODO: Update Firestore: user_profiles/{userId} merge data
 }
 
 export function togglePush(userId: string, enabled: boolean): void {
-  console.debug("[useProfile] togglePush:", { userId, enabled })
+  logger.debug('togglePush', {
+    code: 'useProfile',
+    userId,
+    enabled,
+  });
   // TODO: Update Firestore: user_profiles/{userId} set pushEnabled field
 }
 
 export function toggleLocation(userId: string, enabled: boolean): void {
-  console.debug("[useProfile] toggleLocation:", { userId, enabled })
+  logger.debug('toggleLocation', {
+    code: 'useProfile',
+    userId,
+    enabled,
+  });
   // TODO: Update Firestore: user_profiles/{userId} set locationEnabled field
 }
 
 export function uploadAvatar(userId: string, file: File): void {
-  console.debug("[useProfile] uploadAvatar:", { userId, fileName: file.name })
+  logger.debug('uploadAvatar', {
+    code: 'useProfile',
+    userId,
+    fileName: file.name,
+  });
   // TODO: Upload to Firebase Storage, then update user_profiles/{userId} avatar field
 }
 
 export function uploadID(userId: string, file: File): void {
-  console.debug("[useProfile] uploadID:", { userId, fileName: file.name })
+  logger.debug('uploadID', {
+    code: 'useProfile',
+    userId,
+    fileName: file.name,
+  });
   // TODO: Upload to Firebase Storage, then update user_profiles/{userId} isVerified field
 }

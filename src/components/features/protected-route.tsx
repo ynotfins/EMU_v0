@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase/firebase";
+import { logger } from "@/lib/utils/logger";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -18,11 +19,16 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
       if (!isMounted) return;
       
       if (user) {
-        console.log("[ProtectedRoute] [OK] User authenticated:", user.email);
+        logger.debug('User authenticated', {
+          code: 'ProtectedRoute',
+          email: user.email || undefined,
+        });
         setAuthenticated(true);
         setLoading(false);
       } else {
-        console.log("[ProtectedRoute] [X] No user, redirecting to login");
+        logger.debug('No user, redirecting to login', {
+          code: 'ProtectedRoute',
+        });
         setAuthenticated(false);
         setLoading(false);
         
