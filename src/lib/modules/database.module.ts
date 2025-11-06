@@ -25,7 +25,7 @@ import {
   clearIndexedDbPersistence,
   enableIndexedDbPersistence,
   writeBatch,
-  runTransaction,
+  runTransaction as firestoreRunTransaction,
   serverTimestamp,
   Timestamp,
   CollectionReference,
@@ -329,7 +329,7 @@ class DatabaseModule {
     transactionFn: (transaction: Transaction) => Promise<T>
   ): Promise<T> {
     try {
-      return await runTransaction(this.db, transactionFn);
+      return await firestoreRunTransaction(this.db, transactionFn);
     } catch (error) {
       logger.error('Transaction failed', error, {
         code: 'DatabaseModule',

@@ -258,7 +258,7 @@ class ChatModule {
 
       // Return unsubscribe function
       return () => {
-        off(messagesRef, listener);
+        off(messagesRef, 'value', listener);
         delete this.activeListeners[listenerId];
       };
     } catch (error) {
@@ -327,7 +327,7 @@ class ChatModule {
 
       // Return unsubscribe function
       return () => {
-        listeners.forEach(({ ref, listener }) => off(ref, listener));
+        listeners.forEach(({ ref, listener }) => off(ref, 'value', listener));
       };
     } catch (error) {
       console.error('[Chat Module] Failed to subscribe to threads:', error);
@@ -466,7 +466,7 @@ class ChatModule {
    */
   cleanup(): void {
     Object.entries(this.activeListeners).forEach(([id, { ref, listener }]) => {
-      off(ref, listener);
+      off(ref, 'value', listener);
     });
     this.activeListeners = {};
     console.log('[Chat Module] All listeners cleaned up');
