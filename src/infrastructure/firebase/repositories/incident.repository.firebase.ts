@@ -11,18 +11,7 @@ import {
   Query,
   DocumentData,
   QuerySnapshot,
-  CollectionReference,
-  query,
-  where,
-  orderBy,
-  limit,
-  startAfter,
-  getDocs,
-  doc,
-  onSnapshot,
-  deleteDoc,
-  setDoc,
-  collection
+  CollectionReference
 } from 'firebase-admin/firestore';
 import {
   Incident,
@@ -105,12 +94,11 @@ export class FirebaseIncidentRepository implements IIncidentRepository {
       const incidents: Incident[] = [];
 
       for (const chunk of chunks) {
-        const q = query(
-          collection(adminDb, this.collection),
-          where('id', 'in', chunk.map(id => id.value))
-        );
+        const snapshot = await adminDb
+          .collection(this.collection)
+          .where('id', 'in', chunk.map(id => id.value))
+          .get();
 
-        const snapshot = await getDocs(q);
         snapshot.docs.forEach(doc => {
           incidents.push(IncidentMapper.toDomain(doc.data() as IncidentDocument));
         });
@@ -128,63 +116,58 @@ export class FirebaseIncidentRepository implements IIncidentRepository {
     pagination?: Pagination
   ): Promise<Either<Error, PaginatedResult<Incident>>> {
     try {
-      let q: Query<DocumentData> = collection(adminDb, this.collection);
+      let q = adminDb.collection(this.collection) as Query<DocumentData>;
 
       // Apply filters
       if (filter) {
         if (filter.status) {
           const statusArray = Array.isArray(filter.status) ? filter.status : [filter.status];
-          q = query(q, where('status', 'in', statusArray));
+          q = q.where('status', 'in', statusArray);
         }
         
         if (filter.type) {
           const typeArray = Array.isArray(filter.type) ? filter.type : [filter.type];
-          q = query(q, where('type', 'in', typeArray));
+          q = q.where('type', 'in', typeArray);
         }
 
         if (filter.priority) {
           const priorityArray = Array.isArray(filter.priority) ? filter.priority : [filter.priority];
-          q = query(q, where('priority', 'in', priorityArray));
+          q = q.where('priority', 'in', priorityArray);
         }
 
         if (filter.reportedBy) {
-          q = query(q, where('reportedBy', '==', filter.reportedBy.value));
+          q = q.where('reportedBy', '==', filter.reportedBy.value);
         }
 
         if (filter.assignedSupe) {
-          q = query(q, where('assignedSupes', 'array-contains', filter.assignedSupe.value));
-        }
-
-        if (filter.assignedChaser) {
-          // This is more complex - need to check chaserResponses keys
-          // For now, we'll filter in memory after fetching
+          q = q.where('assignedSupes', 'array-contains', filter.assignedSupe.value);
         }
 
         if (filter.createdAfter) {
-          q = query(q, where('createdAt', '>=', 
-            FirestoreTimestamp.fromDate(new Date(filter.createdAfter.value))));
+          q = q.where('createdAt', '>=', 
+            FirestoreTimestamp.fromDate(new Date(filter.createdAfter.value)));
         }
 
         if (filter.createdBefore) {
-          q = query(q, where('createdAt', '<=', 
-            FirestoreTimestamp.fromDate(new Date(filter.createdBefore.value))));
+          q = q.where('createdAt', '<=', 
+            FirestoreTimestamp.fromDate(new Date(filter.createdBefore.value)));
         }
       }
 
       // Apply sorting
       if (sort) {
-        q = query(q, orderBy(sort.field, sort.direction));
+        q = q.orderBy(sort.field, sort.direction);
       } else {
-        q = query(q, orderBy('createdAt', 'desc'));
+        q = q.orderBy('createdAt', 'desc');
       }
 
       // Apply pagination limit before counting
       const pageSize = pagination?.pageSize || 20;
       const maxLimit = Math.min(pageSize * 3, 100); // Cap at 100 for performance
-      q = query(q, limit(maxLimit));
+      q = q.limit(maxLimit);
 
       // Get total count (limited query)
-      const countSnapshot = await getDocs(q);
+      const countSnapshot = await q.get();
       let allDocs = countSnapshot.docs;
 
       // Apply in-memory filters if needed
@@ -223,6 +206,7 @@ export class FirebaseIncidentRepository implements IIncidentRepository {
         totalPages: Math.ceil(total / pageSize),
       });
     } catch (error) {
+      logger.error(`Failed to find incidents`, error, { code: 'IncidentRepository' });
       return left(new Error(`Failed to find incidents: ${error instanceof Error ? error.message : 'Unknown error'}`));
     }
   }
