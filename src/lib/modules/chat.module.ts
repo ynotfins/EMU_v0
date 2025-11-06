@@ -15,7 +15,8 @@ import {
   orderByChild,
   limitToLast,
   serverTimestamp,
-  DataSnapshot
+  DataSnapshot,
+  type Database
 } from 'firebase/database';
 import { collection, getDocs, where, query as firestoreQuery } from 'firebase/firestore';
 import { db, rtdb } from '../firebase-client';
@@ -58,6 +59,16 @@ export interface ChatParticipant {
 class ChatModule {
   private rtdb = rtdb;
   private activeListeners: { [key: string]: any } = {};
+
+  /**
+   * Get RTDB instance, throwing error if not configured
+   */
+  private getRtdb(): Database {
+    if (!this.getRtdb()) {
+      throw new Error('Realtime Database not configured. Set NEXT_PUBLIC_FIREBASE_DATABASE_URL in .env.local');
+    }
+    return this.getRtdb();
+  }
 
   /**
    * Create an incident chat (group chat with all supervisors)
@@ -104,7 +115,7 @@ class ChatModule {
         lastMessageTime: Date.now()
       };
 
-      const chatRef = push(ref(this.rtdb, 'incident-chats'));
+      const chatRef = push(ref(this.getRtdb(), 'incident-chats'));
       await set(chatRef, chatData);
 
       // Send initial system message
@@ -138,7 +149,7 @@ class ChatModule {
       const chatId = [currentUser.uid, otherUserId].sort().join('_');
 
       // Check if chat already exists
-      const existingChat = await get(ref(this.rtdb, `direct-chats/${chatId}`));
+      const existingChat = await get(ref(this.getRtdb(), `direct-chats/${chatId}`));
       if (existingChat.exists()) {
         console.log('[Chat Module] Direct chat already exists:', chatId);
         return chatId;
@@ -163,7 +174,7 @@ class ChatModule {
         lastMessageTime: Date.now()
       };
 
-      await set(ref(this.rtdb, `direct-chats/${chatId}`), chatData);
+      await set(ref(this.getRtdb(), `direct-chats/${chatId}`), chatData);
 
       console.log('[Chat Module] Direct chat created:', chatId);
       return chatId;
@@ -191,11 +202,11 @@ class ChatModule {
       const chatPath = isIncidentChat ? 'incident-chats' : 'direct-chats';
 
       // Add message
-      await push(ref(this.rtdb, `${chatPath}/${chatId}/messages`), messageData);
+      await push(ref(this.getRtdb(), `${chatPath}/${chatId}/messages`), messageData);
 
       // Update last message info
-      await set(ref(this.rtdb, `${chatPath}/${chatId}/lastMessage`), message.message);
-      await set(ref(this.rtdb, `${chatPath}/${chatId}/lastMessageTime`), Date.now());
+      await set(ref(this.getRtdb(), `${chatPath}/${chatId}/lastMessage`), message.message);
+      await set(ref(this.getRtdb(), `${chatPath}/${chatId}/lastMessageTime`), Date.now());
 
       console.log('[Chat Module] Message sent');
     } catch (error) {
@@ -218,7 +229,7 @@ class ChatModule {
       // Determine chat type
       const isIncidentChat = !chatId.includes('_');
       const chatPath = isIncidentChat ? 'incident-chats' : 'direct-chats';
-      const messagesRef = ref(this.rtdb, `${chatPath}/${chatId}/messages`);
+      const messagesRef = ref(this.getRtdb(), `${chatPath}/${chatId}/messages`);
 
       // Create query
       const messagesQuery = query(
@@ -273,7 +284,7 @@ class ChatModule {
       const listeners: any[] = [];
 
       // Subscribe to incident chats
-      const incidentChatsRef = ref(this.rtdb, 'incident-chats');
+      const incidentChatsRef = ref(this.getRtdb(), 'incident-chats');
       const incidentListener = onValue(incidentChatsRef, (snapshot) => {
         const incidentThreads: ChatThread[] = [];
         
@@ -288,7 +299,7 @@ class ChatModule {
         });
 
         // Subscribe to direct chats
-        const directChatsRef = ref(this.rtdb, 'direct-chats');
+        const directChatsRef = ref(this.getRtdb(), 'direct-chats');
         const directListener = onValue(directChatsRef, (directSnapshot) => {
           const directThreads: ChatThread[] = [];
           
@@ -335,7 +346,7 @@ class ChatModule {
       const chatPath = isIncidentChat ? 'incident-chats' : 'direct-chats';
 
       // Get chat data
-      const chatSnapshot = await get(ref(this.rtdb, `${chatPath}/${chatId}`));
+      const chatSnapshot = await get(ref(this.getRtdb(), `${chatPath}/${chatId}`));
       if (!chatSnapshot.exists()) {
         throw new Error('Chat not found');
       }
@@ -387,7 +398,7 @@ class ChatModule {
         updates[`${chatPath}/${chatId}/messages/${messageId}/read`] = true;
       });
 
-      await set(ref(this.rtdb), updates);
+      await set(ref(this.getRtdb()), updates);
       console.log('[Chat Module] Marked messages as read');
     } catch (error) {
       console.error('[Chat Module] Failed to mark messages as read:', error);
@@ -406,7 +417,7 @@ class ChatModule {
       const chatPath = isIncidentChat ? 'incident-chats' : 'direct-chats';
 
       const messagesSnapshot = await get(
-        ref(this.rtdb, `${chatPath}/${chatId}/messages`)
+        ref(this.getRtdb(), `${chatPath}/${chatId}/messages`)
       );
 
       if (!messagesSnapshot.exists()) return 0;
@@ -439,7 +450,7 @@ class ChatModule {
 
       // Remove user from participants
       await set(
-        ref(this.rtdb, `${chatPath}/${chatId}/participants/${currentUser.uid}`),
+        ref(this.getRtdb(), `${chatPath}/${chatId}/participants/${currentUser.uid}`),
         null
       );
 
