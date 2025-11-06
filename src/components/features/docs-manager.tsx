@@ -109,7 +109,7 @@ export function DocsManager({ files, onPickFile, onDeleteFile, canDelete }: Docs
                   <p className="text-sm font-medium text-foreground">{file.name}</p>
                   <div className="flex items-center gap-2 flex-wrap">
                     <Badge variant="outline" className="text-xs">
-                      {typeof file.uploadedBy === 'string' ? file.uploadedBy : file.uploadedBy.name || 'Unknown'}
+                      {file.uploadedBy || 'Unknown'}
                     </Badge>
                     {file.role && (
                       <Badge variant="outline" className="text-xs capitalize">
