@@ -80,8 +80,8 @@ function normalize(docId: string, data: FirestoreIncidentData): IncidentLite {
   if (typeof updatedAtRaw === "object" && updatedAtRaw !== null) {
     if ('seconds' in updatedAtRaw) {
       updatedAt = new Date((updatedAtRaw as { seconds: number }).seconds * 1000);
-    } else if (updatedAtRaw instanceof Date) {
-      updatedAt = updatedAtRaw;
+    } else if ((updatedAtRaw as any) instanceof Date) {
+      updatedAt = updatedAtRaw as Date;
     } else {
       updatedAt = new Date().toISOString();
     }
@@ -94,8 +94,8 @@ function normalize(docId: string, data: FirestoreIncidentData): IncidentLite {
   if (typeof createdAtRaw === "object" && createdAtRaw !== null) {
     if ('seconds' in createdAtRaw) {
       createdAt = new Date((createdAtRaw as { seconds: number }).seconds * 1000);
-    } else if (createdAtRaw instanceof Date) {
-      createdAt = createdAtRaw;
+    } else if ((createdAtRaw as any) instanceof Date) {
+      createdAt = createdAtRaw as Date;
     } else {
       createdAt = updatedAt;
     }
