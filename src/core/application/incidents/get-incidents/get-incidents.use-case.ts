@@ -22,7 +22,7 @@ import {
 import type { IUserRepository } from '@domain/repositories/user.repository.interface';
 import type { IIncidentRepository } from '@domain/repositories/incident.repository.interface';
 import { IncidentFilter, IncidentSort } from '@domain/repositories/incident.repository.interface';
-import type { Pagination, PaginatedResult } from '@domain/repositories/shared.types';
+import type { Pagination as PaginationParams, PaginatedResult } from '@domain/repositories/shared.types';
 import { Incident } from '@domain/entities/incident/incident.entity';
 import { TOKENS } from '@infrastructure/di/tokens';
 import { 
@@ -70,7 +70,7 @@ export class GetIncidentsUseCase extends UseCase<GetIncidentsRequest, GetInciden
       };
 
       // 4. Build pagination
-      const pagination: Pagination = {
+      const paginationParams: PaginationParams = {
         page: request.page || 1,
         pageSize: request.pageSize || 20,
       };
@@ -93,15 +93,15 @@ export class GetIncidentsUseCase extends UseCase<GetIncidentsRequest, GetInciden
 
         // Convert to paginated format
         const incidents = nearResult.value;
-        const start = (pagination.page - 1) * pagination.pageSize;
-        const paginatedIncidents = incidents.slice(start, start + pagination.pageSize);
+        const start = (paginationParams.page - 1) * paginationParams.pageSize;
+        const paginatedIncidents = incidents.slice(start, start + paginationParams.pageSize);
 
         result = {
           items: paginatedIncidents.map(i => i.incident),
           total: incidents.length,
-          page: pagination.page,
-          pageSize: pagination.pageSize,
-          totalPages: Math.ceil(incidents.length / pagination.pageSize),
+          page: paginationParams.page,
+          pageSize: paginationParams.pageSize,
+          totalPages: Math.ceil(incidents.length / paginationParams.pageSize),
         };
 
         // Add distance to DTOs
@@ -132,7 +132,7 @@ export class GetIncidentsUseCase extends UseCase<GetIncidentsRequest, GetInciden
         const queryResult = await this.incidentRepository.findMany(
           filter,
           sort,
-          pagination
+          paginationParams
         );
         
         if (queryResult.isLeft()) {
