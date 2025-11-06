@@ -104,4 +104,3 @@ Using `firestore_list_collections`:
 1. Use `firebase_validate_security_rules` on local rules file
 2. Use `firestore_query_collection` to test query patterns
 3. Deploy with confidence after validation
-
