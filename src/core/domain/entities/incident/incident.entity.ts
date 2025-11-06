@@ -247,7 +247,7 @@ export class Incident {
     if (props.homeownerInfo) {
       const validationResult = this.validateHomeownerInfo(props.homeownerInfo);
       if (validationResult.isLeft()) {
-        return validationResult;
+        return left(validationResult.value);
       }
     }
 
