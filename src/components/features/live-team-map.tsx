@@ -9,6 +9,8 @@ import { MapPin, Users } from "lucide-react";
 import { logger } from "@/lib/utils/logger";
 import { GoogleMapLive } from "./google-map-live";
 
+import type { IncidentLite } from "@/types/extended-domain";
+
 interface TeamMember {
   id: string;
   name: string;
@@ -65,13 +67,19 @@ export function LiveTeamMap() {
   }, [teamMembers]);
 
   // Convert team members with locations to incidents format for the map
-  const mapIncidents = useMemo(() => {
-    return onlineMembers.map((member) => ({
+  const mapIncidents = useMemo<IncidentLite[]>(() => {
+    return onlineMembers.map((member): IncidentLite => ({
       id: member.id,
-      type: member.role === 'supe' ? 'Team Member (Supe)' : 'Team Member',
+      incidentNumber: member.id,
+      title: `${member.role === 'supe' ? 'Team Member (Supe)' : 'Team Member'} - ${member.nickname}`,
+      description: `${member.nickname}'s Location`,
+      type: 'other' as const,
+      status: 'active' as const,
+      priority: 'low' as const,
       address: `${member.nickname}'s Location`,
       lat: member.location!.lat,
       lng: member.location!.lng,
+      createdAt: member.location!.lastUpdated || new Date().toISOString(),
       updatedAt: member.location!.lastUpdated || new Date().toISOString(),
       city: '',
       state: '',

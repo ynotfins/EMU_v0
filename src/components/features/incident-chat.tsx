@@ -35,7 +35,7 @@ export function IncidentChat({ incidentId, incidentAddress }: IncidentChatProps)
         // Create chat with this chaser + ALL supes
         await createIncidentChat(
           incidentId,
-          incidentAddress,
+          incidentAddress || 'Unknown Address',
           profile.id,
           profile.name || profile.email || 'Chaser',
           supes
