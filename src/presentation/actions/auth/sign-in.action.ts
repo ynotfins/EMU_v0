@@ -15,6 +15,7 @@ import {
   SignInWithEmailUseCase,
   SignInWithGoogleUseCase 
 } from '@application/auth';
+import { logger } from '@/lib/utils/logger';
 
 // Cookie configuration
 const SESSION_COOKIE_NAME = '__emu_session';
@@ -68,7 +69,9 @@ export async function signInWithEmail(
       redirectTo,
     };
   } catch (error) {
-    console.error('Sign in error:', error);
+    logger.error('Sign in error', error, {
+      code: 'SignInAction',
+    });
     return {
       success: false,
       error: 'An unexpected error occurred',

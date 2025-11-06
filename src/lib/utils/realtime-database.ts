@@ -243,7 +243,7 @@ export async function sendDirectMessage(
     lastMessageTime: serverTimestamp(),
   }, { onlyIf: { exists: true } });
 
-  console.log(`[DirectChat] ? Message sent to chat ${chatId}`);
+  // Direct message sent successfully
 }
 
 /**

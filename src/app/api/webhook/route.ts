@@ -5,6 +5,7 @@ import { collection, query, where, getDocs, addDoc, updateDoc, doc, serverTimest
 import { generateObject } from 'ai';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
+import { logger } from '@/lib/utils/logger';
 
 // Notification schema
 const notificationSchema = z.object({
@@ -17,10 +18,40 @@ const notificationSchema = z.object({
   authToken: z.string().optional(), // Optional: can be in header or body
 });
 
-// Cache for the webhook secret to avoid repeated Secret Manager calls
-let cachedWebhookSecret: string | null = null;
-let secretCacheExpiry: number = 0;
-const SECRET_CACHE_TTL = 60 * 60 * 1000; // 1 hour cache
+/**
+ * Rate limiting for webhook endpoint
+ * Simple in-memory rate limiter (for production, use Redis or Upstash)
+ */
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX = 10; // 10 requests per minute
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+  
+  if (!record || now > record.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+  
+  if (record.count >= RATE_LIMIT_MAX) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
+}
+
+function getClientIP(request: NextRequest): string {
+  // Try various headers for IP (handles proxies/CDNs)
+  return (
+    request.headers.get('x-forwarded-for')?.split(',')[0] ||
+    request.headers.get('x-real-ip') ||
+    request.ip ||
+    'unknown'
+  );
+}
 
 /**
  * Retrieve webhook secret from Google Cloud Secret Manager
@@ -42,7 +73,10 @@ async function getWebhookSecret(): Promise<string> {
     const client = new SecretManagerServiceClient();
     const name = `projects/${projectId}/secrets/${secretName}/versions/latest`;
 
-    console.log(`[Webhook] Retrieving secret: ${name}`);
+    logger.debug(`Retrieving secret from Secret Manager`, {
+      code: 'Webhook',
+      secretName,
+    });
 
     const [version] = await client.accessSecretVersion({ name });
     const secretValue = version.payload?.data?.toString() || '';
@@ -55,10 +89,14 @@ async function getWebhookSecret(): Promise<string> {
     cachedWebhookSecret = secretValue.trim();
     secretCacheExpiry = Date.now() + SECRET_CACHE_TTL;
 
-    console.log(`[Webhook] Secret retrieved and cached successfully`);
+    logger.info(`Secret retrieved and cached successfully`, {
+      code: 'Webhook',
+    });
     return cachedWebhookSecret;
   } catch (error) {
-    console.error('[Webhook] Failed to retrieve secret from Secret Manager:', error);
+    logger.error('Failed to retrieve secret from Secret Manager', error, {
+      code: 'Webhook',
+    });
     throw error;
   }
 }
@@ -94,10 +132,17 @@ async function authenticateRequest(request: NextRequest, bodyAuthToken?: string)
 
     return false;
   } catch (error) {
-    console.error('[Webhook] Authentication error:', error);
+    logger.error('Authentication error', error, {
+      code: 'Webhook',
+    });
     return false;
   }
 }
+
+// Cache for the webhook secret to avoid repeated Secret Manager calls
+let cachedWebhookSecret: string | null = null;
+let secretCacheExpiry: number = 0;
+const SECRET_CACHE_TTL = 60 * 60 * 1000; // 1 hour cache
 
 // Incident schema (for AI parsing)
 const incidentSchema = z.object({
@@ -230,19 +275,40 @@ function mapToFirestoreIncident(parsedIncident: Incident, notificationReceivedAt
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('[Webhook] POST request received');
-    console.log('[Webhook] Request method:', request.method);
-    console.log('[Webhook] Request URL:', request.url);
-    console.log('[Webhook] Request headers:', Object.fromEntries(request.headers.entries()));
+    // Rate limiting check
+    const clientIP = getClientIP(request);
+    if (!checkRateLimit(clientIP)) {
+      logger.warn('Rate limit exceeded', {
+        code: 'Webhook',
+        ip: clientIP,
+      });
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
+    logger.debug('POST request received', {
+      code: 'Webhook',
+      ip: clientIP,
+      method: request.method,
+      url: request.url,
+    });
     
     // Parse request body first
     const body = await request.json();
-    console.log('[Webhook] Request body parsed:', { ...body, message: body.message?.substring(0, 100) });
+    logger.debug('Request body parsed', {
+      code: 'Webhook',
+      messageLength: body.message?.length || 0,
+    });
     
     // Authenticate request (check headers and body authToken)
     const isAuthenticated = await authenticateRequest(request, body.authToken);
     if (!isAuthenticated) {
-      console.warn('[Webhook] Unauthorized request attempt');
+      logger.warn('Unauthorized request attempt', {
+        code: 'Webhook',
+        ip: clientIP,
+      });
       return NextResponse.json(
         { error: 'Unauthorized. Invalid or missing authentication token.' },
         { status: 401 }
@@ -259,12 +325,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('[Webhook] Authenticated request received from:', notification.source || 'unknown');
+    logger.info('Authenticated request received', {
+      code: 'Webhook',
+      source: notification.source || 'unknown',
+    });
 
     // Check for API key
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
-      console.error('[Webhook] OPENROUTER_API_KEY is not configured');
+      logger.error('OPENROUTER_API_KEY is not configured', undefined, {
+        code: 'Webhook',
+      });
       return NextResponse.json(
         { error: 'OPENROUTER_API_KEY secret is not configured' },
         { status: 500 }

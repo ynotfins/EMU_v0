@@ -1,17 +1,13 @@
 /**
  * Authentication Middleware
  * 
- * NOTE: Currently DISABLED because Firebase Auth uses localStorage, not cookies.
- * The middleware was checking for cookies that Firebase Auth doesn't set,
- * causing redirect loops. Client-side Firebase Auth handles authentication via
- * ProtectedRoute component instead.
- * 
- * TODO: If you want server-side auth checking, implement cookie-based auth
- * or use Firebase Admin SDK to verify tokens server-side.
+ * Server-side authentication check using session cookies.
+ * Provides additional security layer beyond client-side ProtectedRoute.
  */
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { adminAuth } from '@/lib/firebase-admin';
 
 // Static assets and API routes that should be ignored
 const IGNORED_PATHS = [
@@ -31,7 +27,70 @@ const IGNORED_PATHS = [
   '.js',
 ];
 
-export function middleware(request: NextRequest) {
+// Public routes that don't require authentication
+const PUBLIC_ROUTES = [
+  '/login',
+  '/signup',
+  '/',
+];
+
+// Role-based route mappings
+const ROLE_ROUTES: Record<string, string[]> = {
+  supe: ['/supe'],
+  chaser: ['/chaser'],
+  admin: ['/admin', '/supe', '/chaser'],
+};
+
+/**
+ * Get user role from session cookie
+ */
+async function getUserRoleFromSession(request: NextRequest): Promise<string | null> {
+  try {
+    const sessionCookie = request.cookies.get('__emu_session')?.value;
+    if (!sessionCookie) {
+      return null;
+    }
+
+    const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
+    return decodedClaims.role || decodedClaims.customClaims?.role || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Check if route requires authentication
+ */
+function isProtectedRoute(pathname: string): boolean {
+  return !PUBLIC_ROUTES.some(route => pathname === route || pathname.startsWith(route + '/'));
+}
+
+/**
+ * Check if route matches user role
+ */
+function isRoleRoute(pathname: string, role: string | null): boolean {
+  if (!role) return false;
+  
+  const allowedRoutes = ROLE_ROUTES[role] || [];
+  return allowedRoutes.some(route => pathname.startsWith(route));
+}
+
+/**
+ * Get home route for role
+ */
+function getRoleHome(role: string | null): string {
+  if (!role) return '/login';
+  
+  const roleRoutes: Record<string, string> = {
+    supe: '/supe/incidents',
+    chaser: '/chaser/incidents',
+    admin: '/admin',
+  };
+  
+  return roleRoutes[role] || '/login';
+}
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
   // Skip middleware for ignored paths
@@ -39,8 +98,28 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  // MIDDLEWARE DISABLED - Firebase Auth handles authentication client-side
-  // via ProtectedRoute component. No server-side cookie checking needed.
+  // Public routes don't require authentication
+  if (!isProtectedRoute(pathname)) {
+    return NextResponse.next();
+  }
+  
+  // Get user role from session
+  const userRole = await getUserRoleFromSession(request);
+  
+  // Redirect to login if not authenticated
+  if (!userRole) {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+  
+  // Check role-based access
+  if (!isRoleRoute(pathname, userRole)) {
+    // User has wrong role for this route - redirect to their home
+    const homeUrl = new URL(getRoleHome(userRole), request.url);
+    return NextResponse.redirect(homeUrl);
+  }
+  
   return NextResponse.next();
 }
 

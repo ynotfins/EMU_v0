@@ -36,9 +36,14 @@ export function saveAuthState(userId: string, email: string) {
     document.cookie = `${AUTH_KEYS.USER_ID}=${userId}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Lax`;
     document.cookie = `${AUTH_KEYS.EMAIL}=${email}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Lax`;
     
-    console.log('[AuthPersistence] [OK] Auth state saved to 3 locations:', email);
+    logger.debug('Auth state saved to 3 locations', {
+      code: 'AuthPersistence',
+      email,
+    });
   } catch (error) {
-    console.error('[AuthPersistence] [X] Failed to save auth state:', error);
+    logger.error('Failed to save auth state', error, {
+      code: 'AuthPersistence',
+    });
   }
 }
 
