@@ -75,7 +75,7 @@ export function SupeControlsCard({ userRole }: SupeControlsCardProps) {
     }
 
     console.log(`[SupeControls] Switching from ${viewMode} to ${newView} view`);
-    router.push(newPath);
+    router.push(newPath as any);
   };
 
   // Only show for supe users (including those who can toggle to super_admin)
