@@ -272,7 +272,10 @@ export default function LoginPage() {
       }
 
       // Redirect based on role - super_admin defaults to supe view
-      console.log("[Login] Email sign-in complete, redirecting to:", userRole);
+      logger.debug('Email sign-in complete, redirecting', {
+        code: 'LoginPage',
+        role: userRole,
+      });
       const targetPath = (userRole === "super_admin" || userRole === "admin" || userRole === "supe") 
         ? "/supe/incidents" 
         : "/chaser/incidents";
@@ -280,7 +283,9 @@ export default function LoginPage() {
       // Use hard navigation to break any potential loops
       window.location.href = targetPath;
     } catch (err: any) {
-      console.error("[Login] [X] Email sign-in error:", err);
+      logger.error('Email sign-in error', err, {
+        code: 'LoginPage',
+      });
 
       if (err.code === "auth/user-not-found") {
         setError("No account found with this email.");

@@ -165,12 +165,22 @@ export function useIncidentsWithDistance(filters?: Partial<IncidentFilters>) {
       
       // Debug logging for distance filter
       if (inc.distanceMi !== undefined) {
-        console.log(`[distance filter] ${inc.address}: ${inc.distanceMi.toFixed(1)}mi - ${withinDistance && isRecent ? 'SHOW' : 'HIDE'}`);
+        logger.debug('Distance filter check', {
+          code: 'useIncidentsWithDistance',
+          address: inc.address,
+          distanceMi: inc.distanceMi.toFixed(1),
+          withinDistance: withinDistance && isRecent,
+        });
       }
       
       return isRecent && withinDistance;
     });
-    console.log(`[useIncidentsWithDistance] [SEARCH] Distance filter: ${filteredIncidents.length}/${enrichedIncidents.length} incidents within ${filters.distanceMi}mi in last 4 hours`);
+    logger.debug('Distance filter applied', {
+      code: 'useIncidentsWithDistance',
+      filtered: filteredIncidents.length,
+      total: enrichedIncidents.length,
+      distanceMi: filters.distanceMi,
+    });
   }
 
   return {

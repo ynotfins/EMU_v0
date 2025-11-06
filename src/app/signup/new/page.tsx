@@ -140,7 +140,9 @@ export default function NewSignupPage() {
   // Step 4: Process ID with OCR
   const processIDWithOCR = async (imageData: string) => {
     try {
-      console.log("[Signup] [SEARCH] Processing ID with OCR...");
+      logger.debug('Processing ID with OCR', {
+        code: 'SignupPage',
+      });
       
       // Simulate OCR processing (2 seconds)
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -157,7 +159,10 @@ export default function NewSignupPage() {
         idNumber: "D1234567",
       };
 
-      console.log("[Signup] [OK] OCR complete, extracted data:", extractedData);
+      logger.debug('OCR complete, extracted data', {
+        code: 'SignupPage',
+        extractedData,
+      });
 
       // Create Firestore user profile
       await setDoc(doc(db, "users", auth.currentUser!.uid), {
@@ -216,7 +221,9 @@ export default function NewSignupPage() {
         createdAt: new Date().toISOString(),
       });
 
-      console.log("[Signup] [OK] User profile and contractor record created");
+      logger.debug('User profile and contractor record created', {
+        code: 'SignupPage',
+      });
       setStep("complete");
 
       // Redirect after 2 seconds
@@ -225,7 +232,9 @@ export default function NewSignupPage() {
       }, 2000);
 
     } catch (err) {
-      console.error("[Signup] [X] OCR processing error:", err);
+      logger.error('OCR processing error', err, {
+        code: 'SignupPage',
+      });
       setError("Failed to process ID. Please try again.");
       setStep("id");
     } finally {
