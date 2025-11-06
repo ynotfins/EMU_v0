@@ -13,7 +13,8 @@
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, type Firestore } from "firebase/firestore";
-import { getStorage, type Storage } from "firebase/storage";
+import { getStorage } from "firebase/storage";
+import type { FirebaseStorage } from "firebase/storage";
 import { getDatabase, type Database } from "firebase/database";
 import { getMessaging, type Messaging, isSupported } from "firebase/messaging";
 import { logger } from './utils/logger';
@@ -86,7 +87,7 @@ if (typeof window !== "undefined") {
 }
 
 // Initialize Storage
-export const storage: Storage = getStorage(app);
+export const storage: FirebaseStorage = getStorage(app);
 
 // Initialize Realtime Database (if databaseURL is provided)
 export const database: Database | null = firebaseConfig.databaseURL 
@@ -119,8 +120,9 @@ export const messaging: Messaging | null = (() => {
     
     return getMessaging(app);
   } catch (error) {
-    logger.warn("Messaging initialization failed", error, {
+    logger.warn("Messaging initialization failed", {
       code: 'FirebaseClient',
+      error: error instanceof Error ? error.message : String(error),
     });
     return null;
   }

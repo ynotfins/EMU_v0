@@ -277,7 +277,9 @@ class AuthenticationModule {
    */
   private async postSignIn(user: User): Promise<void> {
     // Save auth state for persistence
-    saveAuthState(user);
+    if (user.uid && user.email) {
+      saveAuthState(user.uid, user.email);
+    }
     
     // Set auth cookie
     const domain = window.location.hostname === 'localhost' ? '' : '; Domain=.4axe.com';
