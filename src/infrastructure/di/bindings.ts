@@ -30,9 +30,7 @@ import {
   IEventBus, 
   INotificationService,
   IEmailService,
-  IStorageService,
-  ILoggerService,
-  ICacheService
+  IStorageService
 } from '@application/shared/interfaces/services.interface';
 
 // Concrete implementations
