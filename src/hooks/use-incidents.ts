@@ -66,6 +66,17 @@ interface FirestoreIncidentData {
   [key: string]: unknown; // Allow other fields
 }
 
+// Helper to convert IncidentLite timestamp to Date
+function toDate(value: string | Date | { seconds: number }): Date {
+  if (typeof value === 'object' && value !== null && 'seconds' in value) {
+    return new Date((value as { seconds: number }).seconds * 1000);
+  } else if (value instanceof Date) {
+    return value;
+  } else {
+    return new Date(value);
+  }
+}
+
 // Normalize inconsistent Firestore data into IncidentLite type
 function normalize(docId: string, data: FirestoreIncidentData): IncidentLite {
   // Handle timestamp variations - try multiple fields and handle Firestore Timestamp objects
@@ -312,7 +323,7 @@ export function useIncidents(filters?: Partial<IncidentFilters>) {
           )
           .sort(
             (a, b) =>
-              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+              toDate(b.updatedAt).getTime() - toDate(a.updatedAt).getTime()
           );
 
         logger.info(`Loaded ${data.length} unique incidents from ${snapshot.docs.length} documents`, {
