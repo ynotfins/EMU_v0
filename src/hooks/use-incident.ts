@@ -8,11 +8,13 @@ import {
   where,
   onSnapshot,
   orderBy,
+  limit,
   doc,
   getDoc,
   updateDoc,
 } from "firebase/firestore";
 import { logError } from "@/lib/utils/logger";
+import { logger } from "@/lib/utils/logger";
 import type { Incident } from "@/types/extended-domain";
 import { getUid } from "@/lib/utils/dev";
 
@@ -25,9 +27,20 @@ const BOROUGH_TO_COUNTY: Record<string, string> = {
   "Staten Island": "Richmond",
 };
 
+interface IncidentUpdate {
+  id: string;
+  message: string;
+  title: string;
+  address: string;
+  stage: string;
+  ts: string;
+  lat?: number;
+  lng?: number;
+}
+
 export function useIncident(incidentId: string) {
   const [data, setData] = useState<Incident | undefined>();
-  const [updates, setUpdates] = useState<any[]>([]);
+  const [updates, setUpdates] = useState<IncidentUpdate[]>([]);
   const [isLoading, setIsLoading] = useState(!incidentId ? false : true);
   const [error, setError] = useState<string | undefined>(!incidentId ? "missing-id" : undefined);
 
@@ -37,9 +50,10 @@ export function useIncident(incidentId: string) {
       return;
     }
 
-    console.log(
-      `[useIncident] Loading incident and updates subcollection: "${incidentId}"`
-    );
+    logger.debug(`Loading incident and updates subcollection: "${incidentId}"`, {
+      code: 'useIncident',
+      incidentId,
+    });
 
     // Load the incident document
     const incidentDocRef = doc(db, "incidents", incidentId);
@@ -51,16 +65,21 @@ export function useIncident(incidentId: string) {
       incidentId,
       "updates"
     );
-    const updatesQuery = query(updatesCollectionRef, orderBy("ts", "desc"));
+    const updatesQuery = query(
+      updatesCollectionRef,
+      orderBy("ts", "desc"),
+      limit(50) // Limit updates to prevent high costs
+    );
 
     // Subscribe to incident document
     const unsubIncident = onSnapshot(
       incidentDocRef,
       (docSnap) => {
         if (!docSnap.exists()) {
-          console.error(
-            `[useIncident] [X] Document "${incidentId}" does not exist`
-          );
+          logger.error(`Document "${incidentId}" does not exist`, undefined, {
+            code: 'useIncident',
+            incidentId,
+          });
           setError("not-found");
           setData(undefined);
           setIsLoading(false);
@@ -68,12 +87,11 @@ export function useIncident(incidentId: string) {
         }
 
         const latestData = docSnap.data();
-        console.log(`[useIncident] [OK] Loaded incident:`, {
+        logger.debug(`Loaded incident`, {
+          code: 'useIncident',
           incidentId,
           lastType: latestData.lastType,
-          lastMessage: latestData.lastMessage,
           updateCount: latestData.updateCount,
-          stage: latestData.stage,
         });
 
         // Compute user flags
@@ -106,7 +124,7 @@ export function useIncident(incidentId: string) {
           notes: latestData.notes || [],
           isFavorited,
           isBookmarked,
-        } as any);
+        } as Incident);
 
         setIsLoading(false);
       },
@@ -120,13 +138,14 @@ export function useIncident(incidentId: string) {
     const unsubUpdates = onSnapshot(
       updatesQuery,
       (snapshot) => {
-        console.log(
-          `[useIncident] [SEARCH] UPDATES DEBUG for ${incidentId}:`,
-          `Found ${snapshot.docs.length} update docs`
-        );
+        logger.debug(`Found ${snapshot.docs.length} update docs`, {
+          code: 'useIncident',
+          incidentId,
+          updateCount: snapshot.docs.length,
+        });
 
         // Map and AGGRESSIVELY deduplicate updates by message content
-        const seenMessages = new Map<string, any>();
+        const seenMessages = new Map<string, IncidentUpdate>();
         const updatesData = snapshot.docs
           .map((doc) => {
             const data = doc.data();
@@ -152,10 +171,10 @@ export function useIncident(incidentId: string) {
             
             if (seenMessages.has(normalizedMsg)) {
               const existing = seenMessages.get(normalizedMsg);
-              console.log(`[useIncident] [WARN] Skipping duplicate message:`, {
+              logger.debug(`Skipping duplicate message`, {
+                code: 'useIncident',
                 duplicate: update.ts.substring(0, 19),
                 original: existing.ts.substring(0, 19),
-                message: update.message.substring(0, 50) + '...'
               });
               return false;
             }
@@ -164,14 +183,19 @@ export function useIncident(incidentId: string) {
             return true;
           });
 
-        console.log(
-          `[useIncident] [OK] Processed ${updatesData.length} unique updates (filtered ${snapshot.docs.length - updatesData.length} duplicates):`,
-          updatesData.map((u) => ({ id: u.id, messageLength: u.message.length, ts: u.ts }))
-        );
+        logger.debug(`Processed ${updatesData.length} unique updates`, {
+          code: 'useIncident',
+          incidentId,
+          uniqueCount: updatesData.length,
+          filteredCount: snapshot.docs.length - updatesData.length,
+        });
         setUpdates(updatesData);
       },
       (e) => {
-        console.error(`[useIncident] [X] Error loading updates:`, e);
+        logger.error(`Error loading updates`, e, {
+          code: 'useIncident',
+          incidentId,
+        });
         logError(e, "updates-snapshot", { incidentId });
       }
     );
@@ -188,14 +212,21 @@ export function useIncident(incidentId: string) {
 
 // Save note to Firestore
 export async function addNote(incidentId: string, note: string): Promise<void> {
-  console.log("[useIncident] [SAVE] Saving note:", { incidentId, note });
+  logger.debug("Saving note", {
+    code: 'useIncident',
+    incidentId,
+    noteLength: note.length,
+  });
   
   try {
     const incidentRef = doc(db, "incidents", incidentId);
     const incidentSnap = await getDoc(incidentRef);
     
     if (!incidentSnap.exists()) {
-      console.error("[useIncident] [X] Incident not found:", incidentId);
+      logger.error("Incident not found", undefined, {
+        code: 'useIncident',
+        incidentId,
+      });
       return;
     }
     
@@ -210,13 +241,23 @@ export async function addNote(incidentId: string, note: string): Promise<void> {
       notes: [...currentNotes, newNote],
     });
     
-    console.log("[useIncident] [OK] Note saved successfully");
+    logger.info("Note saved successfully", {
+      code: 'useIncident',
+      incidentId,
+    });
   } catch (error) {
-    console.error("[useIncident] [X] Error saving note:", error);
+    logger.error("Error saving note", error, {
+      code: 'useIncident',
+      incidentId,
+    });
   }
 }
 
 export function updateStatus(incidentId: string, status: string): void {
-  console.debug("[useIncident] updateStatus:", { incidentId, status });
+  logger.debug("updateStatus", {
+    code: 'useIncident',
+    incidentId,
+    status,
+  });
   // TODO: Update Firestore: incidents/{incidentId} set status field
 }

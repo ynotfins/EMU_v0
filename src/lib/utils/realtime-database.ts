@@ -92,7 +92,7 @@ export async function createIncidentChat(
     incidentAddress,
   });
 
-  console.log(`[IncidentChat] ? Created chat for incident ${incidentId} with ${supes.length} supes`);
+  // Chat created successfully
 }
 
 /**
@@ -121,7 +121,7 @@ export async function sendIncidentMessage(
     read: false,
   });
 
-  console.log(`[IncidentChat] ? Message sent to incident ${incidentId}`);
+  // Message sent successfully
 }
 
 /**
@@ -142,7 +142,15 @@ export function subscribeToIncidentChat(
     }
 
     // Convert object to array and sort by timestamp
-    const messages: ChatMessage[] = Object.entries(data).map(([id, msg]: [string, any]) => ({
+    interface RawMessage {
+      userId: string;
+      userName: string;
+      userRole: 'chaser' | 'supe' | 'admin';
+      message: string;
+      timestamp?: number;
+      read?: boolean;
+    }
+    const messages: ChatMessage[] = Object.entries(data as Record<string, RawMessage>).map(([id, msg]) => ({
       id,
       userId: msg.userId,
       userName: msg.userName,
@@ -197,7 +205,7 @@ export async function createDirectChat(
     lastMessageTime: 0,
   });
 
-  console.log(`[DirectChat] ? Created chat ${chatId}`);
+  // Direct chat created successfully
   return chatId;
 }
 
@@ -261,7 +269,15 @@ export function subscribeToDirectChat(
       return;
     }
 
-    const messages: ChatMessage[] = Object.entries(data).map(([id, msg]: [string, any]) => ({
+    interface RawMessage {
+      userId: string;
+      userName: string;
+      userRole: 'chaser' | 'supe' | 'admin';
+      message: string;
+      timestamp?: number;
+      read?: boolean;
+    }
+    const messages: ChatMessage[] = Object.entries(data as Record<string, RawMessage>).map(([id, msg]) => ({
       id,
       userId: msg.userId,
       userName: msg.userName,
@@ -310,8 +326,12 @@ export function subscribeToUnreadCount(
     }
 
     // Count messages not sent by current user and not read
-    const unreadCount = Object.values(data as Record<string, any>).filter(
-      (msg: any) => msg.userId !== userId && !msg.read
+    interface RawMessage {
+      userId: string;
+      read?: boolean;
+    }
+    const unreadCount = Object.values(data as Record<string, RawMessage>).filter(
+      (msg) => msg.userId !== userId && !msg.read
     ).length;
 
     callback(unreadCount);

@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase/firebase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -40,11 +40,12 @@ export default function CRMContractorsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("[CRM] [SYNC] Loading contractors...");
+    logger.debug("Loading contractors", { code: 'CRMContractors' });
 
     const q = query(
       collection(db, "independent_contractors"),
-      orderBy("createdAt", "desc")
+      orderBy("createdAt", "desc"),
+      limit(100) // Limit to prevent high-cost queries
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -53,7 +54,10 @@ export default function CRMContractorsPage() {
         ...doc.data(),
       })) as Contractor[];
 
-      console.log(`[CRM] [OK] Loaded ${contractorsList.length} contractors`);
+      logger.info(`Loaded ${contractorsList.length} contractors`, {
+        code: 'CRMContractors',
+        count: contractorsList.length,
+      });
       setContractors(contractorsList);
       setLoading(false);
     });
@@ -199,7 +203,7 @@ export default function CRMContractorsPage() {
               {/* Role Filter */}
               <select
                 value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value as any)}
+                onChange={(e) => setRoleFilter(e.target.value as "all" | "chaser" | "supe")}
                 className="h-12 px-4 border-2 border-gray-200 rounded-xl text-base font-medium focus:border-blue-500 focus:outline-none"
               >
                 <option value="all">All Roles</option>
@@ -210,7 +214,7 @@ export default function CRMContractorsPage() {
               {/* Status Filter */}
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as any)}
+                onChange={(e) => setStatusFilter(e.target.value as "all" | "active" | "inactive" | "pending")}
                 className="h-12 px-4 border-2 border-gray-200 rounded-xl text-base font-medium focus:border-blue-500 focus:outline-none"
               >
                 <option value="all">All Status</option>

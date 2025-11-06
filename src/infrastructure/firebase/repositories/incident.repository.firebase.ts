@@ -47,6 +47,7 @@ import { Either, left, right } from '@domain/shared/errors';
 import { adminDb } from '@/lib/firebase-admin';
 import { IncidentMapper, IncidentDocument } from '../mappers/incident.mapper';
 import * as geofire from 'geofire-common';
+import { logger } from '@/lib/utils/logger';
 
 @injectable()
 export class FirebaseIncidentRepository implements IIncidentRepository {
@@ -177,7 +178,12 @@ export class FirebaseIncidentRepository implements IIncidentRepository {
         q = query(q, orderBy('createdAt', 'desc'));
       }
 
-      // Get total count
+      // Apply pagination limit before counting
+      const pageSize = pagination?.pageSize || 20;
+      const maxLimit = Math.min(pageSize * 3, 100); // Cap at 100 for performance
+      q = query(q, limit(maxLimit));
+
+      // Get total count (limited query)
       const countSnapshot = await getDocs(q);
       let allDocs = countSnapshot.docs;
 
@@ -247,6 +253,8 @@ export class FirebaseIncidentRepository implements IIncidentRepository {
         }
       }
 
+      // Add limit for geospatial queries
+      q = query(q, limit(100));
       const snapshot = await getDocs(q);
       let incidents = snapshot.docs.map(doc => 
         IncidentMapper.toDomain(doc.data() as IncidentDocument)
@@ -347,6 +355,8 @@ export class FirebaseIncidentRepository implements IIncidentRepository {
         q = query(q, where('status', 'in', statusArray));
       }
 
+      // Add limit to prevent fetching all incidents
+      q = query(q, limit(100));
       const snapshot = await getDocs(q);
       const incidents = snapshot.docs
         .map(doc => IncidentMapper.toDomain(doc.data() as IncidentDocument))
@@ -372,6 +382,8 @@ export class FirebaseIncidentRepository implements IIncidentRepository {
         q = query(q, where('status', 'in', statusArray));
       }
 
+      // Add limit to prevent high costs
+      q = query(q, limit(100));
       const snapshot = await getDocs(q);
       const incidents = snapshot.docs.map(doc => 
         IncidentMapper.toDomain(doc.data() as IncidentDocument)
@@ -480,7 +492,7 @@ export class FirebaseIncidentRepository implements IIncidentRepository {
           callback(incident);
         }
       }, (error) => {
-        console.error('Incident subscription error:', error);
+        logger.error('Incident subscription error:', error, { code: 'IncidentRepository' });
       });
 
       return right(unsubscribe);
@@ -511,8 +523,8 @@ export class FirebaseIncidentRepository implements IIncidentRepository {
         }
       }
 
-      // Order by creation date
-      q = query(q, orderBy('createdAt', 'desc'), limit(50));
+      // Order by creation date with limit
+      q = query(q, orderBy('createdAt', 'desc'), limit(50)); // Already has limit ✅
 
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const incidents = snapshot.docs.map(doc => 
@@ -532,7 +544,7 @@ export class FirebaseIncidentRepository implements IIncidentRepository {
 
         callback(filtered);
       }, (error) => {
-        console.error('Incidents subscription error:', error);
+        logger.error('Incidents subscription error:', error, { code: 'IncidentRepository' });
       });
 
       return right(unsubscribe);

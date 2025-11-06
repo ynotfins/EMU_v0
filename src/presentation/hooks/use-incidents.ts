@@ -16,7 +16,7 @@ import {
   type GetIncidentsFilter,
   type CreateIncidentData
 } from '@presentation/actions/incidents';
-import { onSnapshot, collection, query, where, orderBy, limit } from 'firebase/firestore';
+import { onSnapshot, collection, query, where, orderBy, limit, type QueryConstraint } from 'firebase/firestore';
 import { db } from '@/lib/firebase-client';
 
 interface IncidentsState {
@@ -92,7 +92,7 @@ export function useIncidents(
 
     // Build Firestore query
     let q = collection(db, 'incidents');
-    const constraints: any[] = [];
+    const constraints: QueryConstraint[] = [];
 
     if (filter?.status) {
       const statusArray = Array.isArray(filter.status) ? filter.status : [filter.status];

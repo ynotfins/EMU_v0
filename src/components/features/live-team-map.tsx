@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { collection, query, onSnapshot } from "firebase/firestore";
+import { collection, query, onSnapshot, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase/firebase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
@@ -29,7 +29,10 @@ export function LiveTeamMap() {
   useEffect(() => {
     logger.debug("Loading team locations", { code: 'LiveTeamMap' });
 
-    const q = query(collection(db, "users"));
+    const q = query(
+      collection(db, "users"),
+      limit(100) // Limit to prevent high-cost queries
+    );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const members = snapshot.docs.map((doc) => {

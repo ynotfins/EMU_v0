@@ -2,8 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   typescript: {
-    // Temporarily ignore build errors while fixing TypeScript issues
-    ignoreBuildErrors: true,
+    // Strict type checking enabled - all type errors must be fixed
+    ignoreBuildErrors: false,
   },
   experimental: {
     serverActions: {
