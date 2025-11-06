@@ -76,6 +76,11 @@ export function LiveTeamMap() {
       type: 'other' as const,
       status: 'active' as const,
       priority: 'low' as const,
+      location: {
+        lat: member.location!.lat,
+        lng: member.location!.lng,
+        address: `${member.nickname}'s Location`,
+      },
       address: `${member.nickname}'s Location`,
       lat: member.location!.lat,
       lng: member.location!.lng,
