@@ -45,10 +45,10 @@ function checkRateLimit(ip: string): boolean {
 
 function getClientIP(request: NextRequest): string {
   // Try various headers for IP (handles proxies/CDNs)
+  // Note: NextRequest doesn't have .ip property in Next.js 14+
   return (
-    request.headers.get('x-forwarded-for')?.split(',')[0] ||
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     request.headers.get('x-real-ip') ||
-    request.ip ||
     'unknown'
   );
 }
