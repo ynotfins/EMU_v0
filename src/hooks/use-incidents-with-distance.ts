@@ -159,7 +159,13 @@ export function useIncidentsWithDistance(filters?: Partial<IncidentFilters>) {
   if (filters?.distanceMi !== undefined && userLocation) {
     const fourHoursAgo = Date.now() - (4 * 60 * 60 * 1000);
     filteredIncidents = enrichedIncidents.filter((inc) => {
-      const incidentTime = new Date(inc.updatedAt).getTime();
+      // Handle Firestore timestamp objects { seconds: number }
+      const updatedAtValue = typeof inc.updatedAt === 'object' && 'seconds' in inc.updatedAt
+        ? inc.updatedAt.seconds * 1000
+        : inc.updatedAt instanceof Date
+        ? inc.updatedAt.getTime()
+        : new Date(inc.updatedAt).getTime();
+      const incidentTime = updatedAtValue;
       const isRecent = incidentTime >= fourHoursAgo;
       const withinDistance = inc.distanceMi !== undefined && inc.distanceMi <= filters.distanceMi!;
       

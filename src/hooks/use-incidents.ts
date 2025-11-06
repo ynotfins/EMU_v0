@@ -16,7 +16,6 @@ import {
   arrayRemove,
 } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase-client";
-import type { IncidentLite, IncidentUpdate } from "@/types/extended-domain";
 import { useFavoritesContext } from "@/lib/context/favorites-context";
 
 // NYC Borough to County mapping

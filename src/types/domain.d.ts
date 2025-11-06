@@ -8,34 +8,7 @@
  */
 
 // Basic types that components are expecting
-export interface IncidentLite {
-  id: string;
-  title: string;
-  description: string;
-  lat?: number;
-  lng?: number;
-  location?: {
-    lat: number;
-    lng: number;
-    address?: string;
-  };
-  status: 'pending' | 'active' | 'resolved' | 'closed';
-  type: 'fire' | 'accident' | 'hazard' | 'medical' | 'other';
-  createdAt: Date | string;
-  updatedAt: Date | string;
-  assignedTo?: string;
-  reportedBy?: string;
-  
-  // UI state properties
-  isFavorited?: boolean;
-  isBookmarked?: boolean;
-  distanceMi?: number;
-  
-  // Additional properties
-  priority?: 'low' | 'medium' | 'high' | 'critical';
-  images?: string[];
-  address?: string;
-}
+// IncidentLite moved to extended-domain.d.ts to avoid duplicate
 
 export interface IncidentUpdate {
   id: string;
