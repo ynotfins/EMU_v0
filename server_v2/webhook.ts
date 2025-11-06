@@ -55,8 +55,28 @@ app.get('/healthz', (_req, res) => res.status(200).send('ok'));
 // === AI-enhanced webhook ===
 app.post('/webhook', async (req, res) => {
   try {
-    const { message } = req.body ?? {};
-    if (!message || typeof message !== 'string') {
+    const body = req.body ?? {};
+    // Accept either simple { message } or a richer MacroDroid-style payload
+    const bodyMessage: unknown = typeof body === 'string' ? body : body?.message;
+    const isSimple = typeof bodyMessage === 'string' && Object.keys(body ?? {}).length <= 2; // message + maybe source
+    const composedMessage =
+      typeof bodyMessage === 'string'
+        ? isSimple
+          ? bodyMessage
+          : [
+              `App: ${body?.appName ?? ''}`.trim(),
+              `Title: ${body?.title ?? ''}`.trim(),
+              `Message: ${bodyMessage}`,
+              body?.ticker ? `Ticker: ${body.ticker}` : '',
+              body?.subText ? `SubText: ${body.subText}` : '',
+              body?.infoText ? `InfoText: ${body.infoText}` : '',
+              body?.receivedAtEpoch ? `ReceivedAt(ms): ${body.receivedAtEpoch}` : '',
+            ]
+              .filter(Boolean)
+              .join('\n')
+        : undefined;
+
+    if (!composedMessage) {
       return res.status(400).json({ error: 'Missing message string' });
     }
 
@@ -64,10 +84,11 @@ app.post('/webhook', async (req, res) => {
     const provider = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY! });
     const { object: parsed } = await generateObject({
       model: provider('anthropic/claude-3.5-sonnet'),
-      schema: incidentSchema,
+      // Cast to reduce TS generic depth issues
+      schema: incidentSchema as any,
       prompt: `Extract normalized incident fields from the notification below and return valid JSON.
 Notification:
-${message}`,
+${composedMessage}`,
       temperature: 0,
     });
 
@@ -84,6 +105,12 @@ ${message}`,
     // Upsert by incidentId when available
     let ref;
     let updated = false;
+    const bodySource: string | undefined = (typeof body === 'object' && body?.source) ? String(body.source) : undefined;
+    const receivedAtMs: number | undefined =
+      typeof body === 'object' && body?.receivedAtEpoch && !Number.isNaN(Number(body.receivedAtEpoch))
+        ? Number(body.receivedAtEpoch)
+        : undefined;
+    const activityTimestamp = receivedAtMs ? Timestamp.fromMillis(receivedAtMs) : Timestamp.now();
 
     if (data.incidentId) {
       const snap = await db.collection('incidents')
@@ -104,8 +131,8 @@ ${message}`,
               id: `${Date.now()}`,
               type: 'update',
               description: 'Updated via v2 webhook',
-              timestamp: Timestamp.now(),
-              source: parsed.source ?? 'webhook-v2',
+              timestamp: activityTimestamp,
+              source: parsed.source ?? bodySource ?? 'webhook-v2',
             },
           ],
         }, { merge: true });
@@ -123,8 +150,8 @@ ${message}`,
           id: `${Date.now()}`,
           type: 'create',
           description: 'Created via v2 webhook',
-          timestamp: Timestamp.now(),
-          source: parsed.source ?? 'webhook-v2',
+          timestamp: activityTimestamp,
+          source: parsed.source ?? bodySource ?? 'webhook-v2',
         }],
       });
     }
