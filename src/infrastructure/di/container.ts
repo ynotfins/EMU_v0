@@ -43,7 +43,6 @@ export interface ContainerOptions {
 export function createContainer(options: ContainerOptions): Container {
   const container = new Container({
     defaultScope: 'Singleton',
-    skipBaseClassChecks: true,
   });
 
   // Bind configurations
