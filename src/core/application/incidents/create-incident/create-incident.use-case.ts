@@ -63,9 +63,9 @@ export class CreateIncidentUseCase extends UseCase<CreateIncidentRequest, Create
 
       const reporter = userResult.value;
       if (!reporter) {
-        return left(new ApplicationError(
+        return left(new UseCaseError(
+          'CreateIncident',
           'Reporting user not found',
-          'USER_NOT_FOUND'
         ));
       }
 
