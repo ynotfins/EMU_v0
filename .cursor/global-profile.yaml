@@ -1,0 +1,285 @@
+# Global Profile Configuration
+#
+# APPEND-ONLY TEMPORAL RULE:
+# - Never delete or overwrite prior content
+# - Always append new updates with timestamps
+# - Mark obsolete sections as superseded by referencing line ranges
+# - Use UTC timestamps and unique IDs
+# - Document all changes with reason and source
+
+---
+# Update 2025-01-05T04:30:00Z
+# [id]: prof_20250105_043000_init
+# [source]: human
+# [reason]: Initial creation with MCP server profiles and available tools
+# [status]: active
+
+# MCP Server Profiles
+# Detailed profiles of available MCP servers and their tools
+
+mcp_profiles:
+  github:
+    name: "GitHub MCP Server"
+    version: "latest"
+    provider: "@modelcontextprotocol/server-github"
+    tools_available: 26
+    tools:
+      - "create_repository"
+      - "get_repository"
+      - "list_repositories"
+      - "create_branch"
+      - "get_branch"
+      - "list_branches"
+      - "create_pull_request"
+      - "get_pull_request"
+      - "list_pull_requests"
+      - "merge_pull_request"
+      - "create_issue"
+      - "get_issue"
+      - "list_issues"
+      - "update_issue"
+      - "add_issue_comment"
+      - "search_repositories"
+      - "search_code"
+      - "search_issues"
+      - "get_file_contents"
+      - "create_or_update_file"
+      - "push_files"
+      - "fork_repository"
+      - "get_pull_request_files"
+      - "get_pull_request_comments"
+      - "get_pull_request_reviews"
+      - "create_pull_request_review"
+    capabilities:
+      - "Repository management"
+      - "Pull request operations"
+      - "Issue tracking"
+      - "Code search"
+      - "File operations"
+    use_cases:
+      - "Creating PRs from code changes"
+      - "Searching codebase"
+      - "Managing issues"
+      - "Repository operations"
+    best_practices_alignment:
+      - "Source control"
+      - "Code review"
+      - "Issue tracking"
+
+  firebase:
+    name: "Firebase MCP Server"
+    version: "latest"
+    provider: "firebase CLI"
+    tools_available: 32
+    resources_available: 6
+    tools:
+      # Authentication
+      - "firebase_login"
+      - "firebase_logout"
+      - "firebase_get_environment"
+      - "firebase_update_environment"
+      
+      # Project Management
+      - "firebase_get_project"
+      - "firebase_list_projects"
+      - "firebase_create_project"
+      - "firebase_list_apps"
+      - "firebase_get_sdk_config"
+      - "firebase_create_app"
+      - "firebase_create_android_sha"
+      
+      # Initialization
+      - "firebase_init"
+      
+      # Firestore
+      - "firestore_list_collections"
+      - "firestore_get_documents"
+      - "firestore_query_collection"
+      - "firestore_delete_document"
+      
+      # Storage
+      - "storage_get_object_download_url"
+      
+      # Authentication (Admin)
+      - "auth_get_users"
+      - "auth_update_user"
+      - "auth_set_sms_region_policy"
+      
+      # Cloud Messaging
+      - "messaging_send_message"
+      
+      # Cloud Functions
+      - "functions_list_functions"
+      - "functions_get_logs"
+      
+      # Remote Config
+      - "remoteconfig_get_template"
+      - "remoteconfig_update_template"
+      
+      # App Hosting
+      - "apphosting_list_backends"
+      - "apphosting_fetch_logs"
+      
+      # Realtime Database
+      - "realtimedatabase_get_data"
+      - "realtimedatabase_set_data"
+      
+      # Security Rules
+      - "firebase_get_security_rules"
+      - "firebase_validate_security_rules"
+      
+      # Resources
+      - "firebase_read_resources"
+      
+      # Commands
+      - "firebase:deploy"
+      - "firebase:init"
+      - "firebase:consult"
+    
+    resources:
+      - "firebase://guides/init/backend"
+      - "firebase://guides/init/ai"
+      - "firebase://guides/init/firestore"
+      - "firebase://guides/init/firestore_rules"
+      - "firebase://guides/init/auth"
+      - "firebase://guides/init/hosting"
+    
+    capabilities:
+      - "Firestore operations"
+      - "Realtime Database operations"
+      - "Auth users/claims management"
+      - "FCM push notifications"
+      - "Security Rules validation"
+      - "Cloud Functions logs"
+      - "Remote Config management"
+      - "Project/app management"
+      - "Storage operations"
+    
+    use_cases:
+      - "Schema discovery"
+      - "Rules validation"
+      - "Auth operations"
+      - "FCM testing"
+      - "Logs & debugging"
+      - "SDK configuration"
+    
+    best_practices_alignment:
+      - "Security hardening (rules validation)"
+      - "Query optimization"
+      - "Auth claims verification"
+      - "Observability (logs)"
+      - "SDK best practices"
+
+  context7:
+    name: "Context7 MCP Server"
+    version: "latest"
+    provider: "@upstash/context7-mcp"
+    tools_available: 2
+    tools:
+      - tool: "resolve-library-id"
+        description: "Resolves package/library name to Context7-compatible library ID"
+        usage: "Get library ID before fetching docs"
+        example: "resolve-library-id('firebase-admin')"
+      
+      - tool: "get-library-docs"
+        description: "Fetches up-to-date documentation for a library"
+        usage: "Get latest SDK patterns and best practices"
+        example: "get-library-docs('/firebase/firebase-admin-node', topic: 'Firestore queries')"
+    
+    capabilities:
+      - "Library documentation fetching"
+      - "API documentation lookup"
+      - "Latest version checking"
+      - "Best practices guidance"
+    
+    use_cases:
+      - "Fetching latest Firebase Admin SDK docs"
+      - "Verifying SDK usage patterns"
+      - "Finding best practices"
+      - "Getting API references"
+    
+    best_practices_alignment:
+      - "Using latest SDK patterns"
+      - "Following official documentation"
+      - "Best practices compliance"
+      - "Up-to-date API usage"
+    
+    verified_tests:
+      - test_date: "2025-01-05T04:30:00Z"
+        tool: "resolve-library-id"
+        input: "firebase-admin"
+        output: "Multiple matches including /firebase/firebase-admin-node"
+        status: "success"
+      
+      - test_date: "2025-01-05T04:30:00Z"
+        tool: "get-library-docs"
+        input: "/firebase/firebase-admin-node"
+        topic: "Firestore query operations"
+        output: "Complete documentation with code examples"
+        status: "success"
+
+  chrome_devtools:
+    name: "Chrome DevTools MCP Server"
+    version: "latest"
+    provider: "chrome-devtools-mcp@latest"
+    tools_available: "unknown"
+    status: "installed_but_disabled"
+    tools:
+      - "browser_navigate"
+      - "browser_snapshot"
+      - "browser_click"
+      - "browser_type"
+      - "browser_evaluate"
+      - "browser_take_screenshot"
+      - "browser_console_messages"
+      - "browser_network_requests"
+      # (Additional tools not listed, currently disabled)
+    
+    capabilities:
+      - "Browser navigation"
+      - "DOM inspection"
+      - "Screenshot capture"
+      - "Network monitoring"
+      - "Console access"
+      - "E2E testing"
+    
+    use_cases:
+      - "End-to-end testing"
+      - "UI debugging"
+      - "Performance monitoring"
+      - "Visual regression testing"
+    
+    best_practices_alignment:
+      - "E2E testing"
+      - "Visual verification"
+      - "Debugging workflows"
+    
+    notes: "Currently disabled - enable when needed for E2E testing"
+
+# Tool Usage Guidelines
+tool_usage_guidelines:
+  priority_order:
+    1: "Fix build errors first"
+    2: "Use Context7 for SDK docs"
+    3: "Use Firebase MCP for validation"
+    4: "Use GitHub MCP for source control"
+    5: "Enable Chrome DevTools for E2E when needed"
+  
+  best_practices:
+    - "Always use Context7 to fetch latest SDK docs before implementing"
+    - "Use Firebase MCP to validate security rules before deployment"
+    - "Use Firebase MCP to verify auth claims setup"
+    - "Use GitHub MCP for PR creation and code review"
+    - "Use MCP tools as helpers, not primary work - focus on best practices first"
+
+# Integration Status
+integration_status:
+  firebase_mcp: "fully_configured"
+  context7_mcp: "fully_configured_and_verified"
+  github_mcp: "fully_configured"
+  chrome_devtools: "configured_but_disabled"
+  
+  last_verification: "2025-01-05T04:30:00Z"
+  verified_by: "Cursor AI Assistant"
+  verification_method: "Tool execution tests"
+
