@@ -11,9 +11,9 @@ interface ThreadListProps {
 }
 
 export function ThreadList({ threads, onSelectThread }: ThreadListProps) {
-  const formatTime = (isoString?: string) => {
+  const formatTime = (isoString?: string | Date) => {
     if (!isoString) return ""
-    const date = new Date(isoString)
+    const date = isoString instanceof Date ? isoString : new Date(isoString)
     const now = new Date()
     const diffMs = now.getTime() - date.getTime()
     const diffMins = Math.floor(diffMs / 60000)
