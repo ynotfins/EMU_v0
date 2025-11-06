@@ -68,13 +68,14 @@ interface FirestoreIncidentData {
 
 // Helper to convert IncidentLite timestamp to Date
 function toDate(value: string | Date | { seconds: number }): Date {
-  if (typeof value === 'object' && value !== null && 'seconds' in value) {
-    return new Date((value as { seconds: number }).seconds * 1000);
-  } else if (value instanceof Date) {
-    return value;
-  } else {
-    return new Date(value);
+  if (typeof value === 'object' && value !== null) {
+    if ('seconds' in value) {
+      return new Date((value as { seconds: number }).seconds * 1000);
+    } else if ((value as any) instanceof Date) {
+      return value as Date;
+    }
   }
+  return new Date(value as string);
 }
 
 // Normalize inconsistent Firestore data into IncidentLite type
