@@ -20,9 +20,9 @@ import {
   confirmPasswordReset,
   UserCredential
 } from 'firebase/auth';
-import { auth } from '../firebase/firebase';
+import { auth } from '../firebase-client';
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebase/firebase';
+import { db } from '../firebase-client';
 import { saveAuthState } from '../firebase/auth-persistence';
 
 export interface AuthUser {
