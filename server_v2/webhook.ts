@@ -102,7 +102,7 @@ ${composedMessage}`,
     };
     const data = firestoreIncidentSchema.parse(mapped);
 
-    // Upsert by incidentId when available
+    // Upsert by explicit document id preference
     let ref;
     let updated = false;
     const bodySource: string | undefined = (typeof body === 'object' && body?.source) ? String(body.source) : undefined;
@@ -112,17 +112,19 @@ ${composedMessage}`,
         : undefined;
     const activityTimestamp = receivedAtMs ? Timestamp.fromMillis(receivedAtMs) : Timestamp.now();
 
-    if (data.incidentId) {
-      const snap = await db.collection('incidents')
-        .where('incidentId', '==', data.incidentId)
-        .limit(1)
-        .get();
+    // Prefer explicit incidentId, fallback to receivedAtEpoch string, else auto id
+    const preferredId =
+      (data.incidentId && String(data.incidentId)) ||
+      (receivedAtMs ? String(receivedAtMs) : undefined);
 
-      if (!snap.empty) {
-        ref = snap.docs[0].ref;
-        const existing = snap.docs[0].data();
+    if (preferredId) {
+      ref = db.collection('incidents').doc(preferredId);
+      const snap = await ref.get();
+      if (snap.exists) {
+        const existing = snap.data() as any;
         await ref.set({
           ...data,
+          incidentId: data.incidentId ?? preferredId,
           createdAt: existing.createdAt ?? Timestamp.now(),
           updatedAt: Timestamp.now(),
           activity: [
@@ -137,10 +139,22 @@ ${composedMessage}`,
           ],
         }, { merge: true });
         updated = true;
+      } else {
+        await ref.set({
+          ...data,
+          incidentId: data.incidentId ?? preferredId,
+          createdAt: Timestamp.now(),
+          updatedAt: Timestamp.now(),
+          activity: [{
+            id: `${Date.now()}`,
+            type: 'create',
+            description: 'Created via v2 webhook',
+            timestamp: activityTimestamp,
+            source: parsed.source ?? bodySource ?? 'webhook-v2',
+          }],
+        });
       }
-    }
-
-    if (!ref) {
+    } else {
       ref = db.collection('incidents').doc();
       await ref.set({
         ...data,
