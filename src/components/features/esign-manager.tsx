@@ -101,7 +101,7 @@ export function ESignManager({ files, onSendForESign, onLiveSign }: ESignManager
               <div className="flex-1">
                 <p className="text-sm font-medium text-foreground">{file.name}</p>
                 <p className="text-xs text-[#6B7280]">
-                  Uploaded by {file.uploadedBy.name} ({file.uploadedBy.role})
+                  Uploaded by {file.uploadedBy}{file.role ? ` (${file.role})` : ''}
                 </p>
               </div>
             </div>
