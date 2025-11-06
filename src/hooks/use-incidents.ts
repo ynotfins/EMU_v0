@@ -105,21 +105,29 @@ function normalize(docId: string, data: FirestoreIncidentData): IncidentLite {
       data.firestoreDocId ||
       parseInt(docId) ||
       0,
+    title: (typeof data.title === 'string' ? data.title : null) || message.substring(0, 50) || 'Incident',
+    description: message || data.description || '',
+    status: (data.status || 'active') as 'pending' | 'active' | 'resolved' | 'closed',
+    priority: (data.priority || 'medium') as 'low' | 'medium' | 'high' | 'critical',
+    location: {
+      lat: data.lat || 0,
+      lng: data.lng || 0,
+      address: address || undefined,
+    },
+    createdAt: updatedAt,
     updatedAt,
     state,
     county,
     city,
     address,
+    lat: data.lat,
+    lng: data.lng,
     type,
     message,
     highAlert: data.highAlert || false,
     isFavorited: false, // Will be computed by withUserFlags()
     isBookmarked: false, // Will be computed by withUserFlags()
-    isSilenced: data.isSilenced || false,
     distanceMi: data.distanceMi, // Legacy field, will be replaced by real-time calculation
-    lat: data.lat, // Cached from geocoding
-    lng: data.lng, // Cached from geocoding
-    geocodedAt: data.geocodedAt, // When was this address geocoded
     updates: data.updates || [],
     // Store raw arrays for favorite/bookmark logic
     favoritedBy: data.favoritedBy || [],
