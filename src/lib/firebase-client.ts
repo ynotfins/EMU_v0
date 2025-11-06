@@ -16,6 +16,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { getStorage, type Storage } from "firebase/storage";
 import { getDatabase, type Database } from "firebase/database";
 import { getMessaging, type Messaging, isSupported } from "firebase/messaging";
+import { logger } from './utils/logger';
 
 // Validate required environment variables
 const requiredEnvVars = [
@@ -58,10 +59,14 @@ export const auth: Auth = getAuth(app);
 if (typeof window !== "undefined") {
   setPersistence(auth, browserLocalPersistence)
     .then(() => {
-      console.log("[Firebase Client] Auth persistence set to LOCAL");
+      logger.debug("Auth persistence set to LOCAL", {
+        code: 'FirebaseClient',
+      });
     })
     .catch((error) => {
-      console.error("[Firebase Client] Failed to set persistence:", error);
+      logger.error("Failed to set persistence", error, {
+        code: 'FirebaseClient',
+      });
     });
 }
 
@@ -75,7 +80,9 @@ export const db: Firestore = typeof window !== "undefined"
   : initializeFirestore(app, {}); // Server-side: empty config
 
 if (typeof window !== "undefined") {
-  console.log("[Firebase Client] Offline persistence enabled (multi-tab support)");
+  logger.debug("Offline persistence enabled (multi-tab support)", {
+    code: 'FirebaseClient',
+  });
 }
 
 // Initialize Storage
@@ -95,20 +102,26 @@ export const messaging: Messaging | null = (() => {
   
   try {
     if (!("serviceWorker" in navigator)) {
-      console.warn("[Firebase Client] Service Worker not supported - Push notifications disabled");
+      logger.warn("Service Worker not supported - Push notifications disabled", {
+        code: 'FirebaseClient',
+      });
       return null;
     }
     
     // Check if messaging is supported before initializing
     isSupported().then((supported) => {
       if (!supported) {
-        console.warn("[Firebase Client] Messaging not supported on this browser");
+        logger.warn("Messaging not supported on this browser", {
+          code: 'FirebaseClient',
+        });
       }
     });
     
     return getMessaging(app);
   } catch (error) {
-    console.warn("[Firebase Client] Messaging initialization failed:", error);
+    logger.warn("Messaging initialization failed", error, {
+      code: 'FirebaseClient',
+    });
     return null;
   }
 })();

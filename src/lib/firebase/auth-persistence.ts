@@ -5,6 +5,8 @@
  * Multiple fallback mechanisms ensure users NEVER get signed out.
  */
 
+import { logger } from '@/lib/utils/logger';
+
 const AUTH_KEYS = {
   USER_ID: 'emu_user_id',
   EMAIL: 'emu_user_email',
@@ -77,14 +79,21 @@ export function loadAuthState(): { userId: string; email: string } | null {
     }
 
     if (userId && email) {
-      console.log('[AuthPersistence] [OK] Auth state loaded:', email);
+      logger.debug('Auth state loaded from storage', {
+        code: 'AuthPersistence',
+        email,
+      });
       return { userId, email };
     }
 
-    console.log('[AuthPersistence] [WARN] No auth state found');
+    logger.debug('No auth state found', {
+      code: 'AuthPersistence',
+    });
     return null;
   } catch (error) {
-    console.error('[AuthPersistence] [X] Failed to load auth state:', error);
+    logger.error('Failed to load auth state', error, {
+      code: 'AuthPersistence',
+    });
     return null;
   }
 }
@@ -110,9 +119,13 @@ export function clearAuthState() {
     document.cookie = `${AUTH_KEYS.USER_ID}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
     document.cookie = `${AUTH_KEYS.EMAIL}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
 
-    console.log('[AuthPersistence] [OK] Auth state cleared (manual sign out)');
+    logger.debug('Auth state cleared (manual sign out)', {
+      code: 'AuthPersistence',
+    });
   } catch (error) {
-    console.error('[AuthPersistence] [X] Failed to clear auth state:', error);
+    logger.error('Failed to clear auth state', error, {
+      code: 'AuthPersistence',
+    });
   }
 }
 

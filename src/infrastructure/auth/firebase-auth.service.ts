@@ -16,6 +16,7 @@ import { adminAuth } from '@/lib/firebase-admin';
 import { auth } from '@/lib/firebase-client';
 import { IAuthService } from '@application/shared/interfaces/services.interface';
 import { Either, left, right } from '@domain/shared/errors';
+import { logger } from '@/lib/utils/logger';
 
 @injectable()
 export class FirebaseAuthService implements IAuthService {
@@ -132,7 +133,10 @@ export class FirebaseAuthService implements IAuthService {
 
       // In production, send this link via your email service
       // For now, we'll just log it
-      console.log('Email verification link:', link);
+      logger.debug('Email verification link generated', {
+        code: 'FirebaseAuthService',
+        email,
+      });
 
       return right(undefined);
     } catch (error) {
@@ -158,7 +162,7 @@ export class FirebaseAuthService implements IAuthService {
   /**
    * Sets custom claims for a user (roles, permissions, etc.)
    */
-  async setCustomClaims(userId: string, claims: Record<string, any>): Promise<Either<Error, void>> {
+  async setCustomClaims(userId: string, claims: Record<string, unknown>): Promise<Either<Error, void>> {
     try {
       await adminAuth.setCustomUserClaims(userId, claims);
       return right(undefined);

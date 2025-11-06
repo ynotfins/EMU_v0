@@ -75,7 +75,9 @@ export function useIncidents(
         error: null,
       }));
     } catch (error) {
-      console.error('Error fetching incidents:', error);
+      logger.error('Error fetching incidents', error, {
+        code: 'useIncidents',
+      });
       setState(prev => ({ 
         ...prev, 
         loading: false, 
@@ -160,7 +162,9 @@ export function useIncidents(
         }));
       },
       (error) => {
-        console.error('Realtime subscription error:', error);
+        logger.error('Realtime subscription error', error, {
+          code: 'useIncidents',
+        });
         setState(prev => ({
           ...prev,
           error: 'Real-time updates unavailable',
@@ -189,7 +193,9 @@ export function useIncidents(
       setState(prev => ({ ...prev, isCreating: false }));
       return result;
     } catch (error) {
-      console.error('Error creating incident:', error);
+      logger.error('Error creating incident', error, {
+        code: 'useIncidents',
+      });
       setState(prev => ({ ...prev, isCreating: false }));
       return {
         success: false,
@@ -254,7 +260,9 @@ export function useMyIncidents(realtime: boolean = true) {
         loading: false,
       }));
     } catch (error) {
-      console.error('Error fetching my incidents:', error);
+      logger.error('Error fetching my incidents', error, {
+        code: 'useIncidents',
+      });
       setState(prev => ({ 
         ...prev, 
         loading: false, 

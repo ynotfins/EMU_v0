@@ -113,7 +113,9 @@ export async function signInWithGoogle(
       redirectTo,
     };
   } catch (error) {
-    console.error('Google sign in error:', error);
+    logger.error('Google sign in error', error, {
+      code: 'SignInAction',
+    });
     return {
       success: false,
       error: 'An unexpected error occurred',

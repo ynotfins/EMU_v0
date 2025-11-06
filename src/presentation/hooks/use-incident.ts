@@ -10,6 +10,7 @@ import { useState, useEffect, useRef } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase-client';
 import type { SerializedIncident } from '@presentation/actions/incidents';
+import { logger } from '@/lib/utils/logger';
 
 interface UseIncidentReturn {
   incident: SerializedIncident | null;
@@ -96,7 +97,10 @@ export function useIncident(incidentId: string): UseIncidentReturn {
         });
       },
       (error) => {
-        console.error('Error subscribing to incident:', error);
+        logger.error('Error subscribing to incident', error, {
+          code: 'useIncident',
+          incidentId,
+        });
         setState({
           incident: null,
           loading: false,

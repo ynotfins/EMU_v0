@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
+import { logger } from "@/lib/utils/logger"
 // Alert sounds will be loaded from user settings/preferences
 const ALERT_SOUNDS = [
   { id: "sound-001", name: "Classic Alarm" },
@@ -70,7 +71,10 @@ export function FilterBar({
 
   const handleCustomDistance = () => {
     const value = Number.parseInt(customDistance)
-    console.log("[v0] Custom distance set:", value)
+    logger.debug('Custom distance set', {
+      code: 'FilterBar',
+      distance: value,
+    });
     if (!isNaN(value) && value > 0) {
       onDistanceChange(value)
       setShowCustomDistance(false)
@@ -80,7 +84,10 @@ export function FilterBar({
 
   const handleCustomUpdates = () => {
     const value = Number.parseInt(customUpdates)
-    console.log("[v0] Custom updates set:", value)
+    logger.debug('Custom updates set', {
+      code: 'FilterBar',
+      updates: value,
+    });
     if (!isNaN(value) && value > 0) {
       onMinUpdatesChange(value)
       setShowCustomUpdates(false)

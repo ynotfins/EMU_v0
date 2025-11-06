@@ -32,6 +32,7 @@ import {
   DocumentReference
 } from 'firebase/firestore';
 import { db } from '../firebase/firebase';
+import { logger } from '../utils/logger';
 
 export interface PaginationOptions {
   pageSize: number;
@@ -39,7 +40,7 @@ export interface PaginationOptions {
 }
 
 export interface QueryOptions {
-  filters?: Array<{ field: string; operator: any; value: any }>;
+  filters?: Array<{ field: string; operator: string; value: unknown }>;
   orderByField?: string;
   orderDirection?: 'asc' | 'desc';
   limitTo?: number;
@@ -50,7 +51,7 @@ export interface BatchOperation {
   type: 'set' | 'update' | 'delete';
   collection: string;
   id: string;
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 class DatabaseModule {
@@ -61,7 +62,9 @@ class DatabaseModule {
     this.db = db;
     // Offline persistence is configured at Firestore initialization level
     // in firebase.ts using initializeFirestore with persistentLocalCache
-    console.log('[Database Module] Using persistent cache configured at initialization');
+    logger.debug('Using persistent cache configured at initialization', {
+      code: 'DatabaseModule',
+    });
   }
 
   /**
@@ -78,7 +81,11 @@ class DatabaseModule {
       
       return null;
     } catch (error) {
-      console.error(`[Database Module] Error getting document from ${collectionName}:`, error);
+      logger.error(`Error getting document from ${collectionName}`, error, {
+        code: 'DatabaseModule',
+        collection: collectionName,
+        documentId,
+      });
       throw error;
     }
   }
@@ -120,7 +127,10 @@ class DatabaseModule {
         ...doc.data()
       })) as T[];
     } catch (error) {
-      console.error(`[Database Module] Error getting documents from ${collectionName}:`, error);
+      logger.error(`Error getting documents from ${collectionName}`, error, {
+        code: 'DatabaseModule',
+        collection: collectionName,
+      });
       throw error;
     }
   }
@@ -128,7 +138,7 @@ class DatabaseModule {
   /**
    * Create a new document
    */
-  async createDocument<T extends { [key: string]: any }>(
+  async createDocument<T extends Record<string, unknown>>(
     collectionName: string,
     data: T,
     customId?: string
@@ -150,7 +160,10 @@ class DatabaseModule {
         return docRef.id;
       }
     } catch (error) {
-      console.error(`[Database Module] Error creating document in ${collectionName}:`, error);
+      logger.error(`Error creating document in ${collectionName}`, error, {
+        code: 'DatabaseModule',
+        collection: collectionName,
+      });
       throw error;
     }
   }
@@ -161,7 +174,7 @@ class DatabaseModule {
   async updateDocument(
     collectionName: string,
     documentId: string,
-    updates: { [key: string]: any }
+    updates: Record<string, unknown>
   ): Promise<void> {
     try {
       const docRef = doc(this.db, collectionName, documentId);
@@ -170,7 +183,11 @@ class DatabaseModule {
         updatedAt: serverTimestamp()
       });
     } catch (error) {
-      console.error(`[Database Module] Error updating document in ${collectionName}:`, error);
+      logger.error(`Error updating document in ${collectionName}`, error, {
+        code: 'DatabaseModule',
+        collection: collectionName,
+        documentId,
+      });
       throw error;
     }
   }
@@ -182,7 +199,11 @@ class DatabaseModule {
     try {
       await deleteDoc(doc(this.db, collectionName, documentId));
     } catch (error) {
-      console.error(`[Database Module] Error deleting document from ${collectionName}:`, error);
+      logger.error(`Error deleting document from ${collectionName}`, error, {
+        code: 'DatabaseModule',
+        collection: collectionName,
+        documentId,
+      });
       throw error;
     }
   }
@@ -204,7 +225,11 @@ class DatabaseModule {
         callback(null);
       }
     }, (error) => {
-      console.error(`[Database Module] Subscription error for ${collectionName}/${documentId}:`, error);
+      logger.error(`Subscription error for ${collectionName}/${documentId}`, error, {
+        code: 'DatabaseModule',
+        collection: collectionName,
+        documentId,
+      });
       callback(null);
     });
   }
@@ -245,7 +270,10 @@ class DatabaseModule {
       })) as T[];
       callback(data);
     }, (error) => {
-      console.error(`[Database Module] Subscription error for ${collectionName}:`, error);
+      logger.error(`Subscription error for ${collectionName}`, error, {
+        code: 'DatabaseModule',
+        collection: collectionName,
+      });
       callback([]);
     });
   }
@@ -281,9 +309,14 @@ class DatabaseModule {
       });
       
       await batch.commit();
-      console.log(`[Database Module] Batch operations completed: ${operations.length} operations`);
+      logger.debug(`Batch operations completed`, {
+        code: 'DatabaseModule',
+        operationCount: operations.length,
+      });
     } catch (error) {
-      console.error('[Database Module] Batch operations failed:', error);
+      logger.error('Batch operations failed', error, {
+        code: 'DatabaseModule',
+      });
       throw error;
     }
   }
@@ -292,12 +325,14 @@ class DatabaseModule {
    * Run a transaction
    */
   async runTransaction<T>(
-    transactionFn: (transaction: any) => Promise<T>
+    transactionFn: (transaction: Parameters<Parameters<typeof runTransaction>[1]>[0]) => Promise<T>
   ): Promise<T> {
     try {
       return await runTransaction(this.db, transactionFn);
     } catch (error) {
-      console.error('[Database Module] Transaction failed:', error);
+      logger.error('Transaction failed', error, {
+        code: 'DatabaseModule',
+      });
       throw error;
     }
   }
@@ -322,9 +357,13 @@ class DatabaseModule {
   async goOffline(): Promise<void> {
     try {
       await disableNetwork(this.db);
-      console.log('[Database Module] Offline mode enabled');
+      logger.debug('Offline mode enabled', {
+        code: 'DatabaseModule',
+      });
     } catch (error) {
-      console.error('[Database Module] Failed to enable offline mode:', error);
+      logger.error('Failed to enable offline mode', error, {
+        code: 'DatabaseModule',
+      });
       throw error;
     }
   }
@@ -335,9 +374,13 @@ class DatabaseModule {
   async goOnline(): Promise<void> {
     try {
       await enableNetwork(this.db);
-      console.log('[Database Module] Online mode restored');
+      logger.debug('Online mode restored', {
+        code: 'DatabaseModule',
+      });
     } catch (error) {
-      console.error('[Database Module] Failed to restore online mode:', error);
+      logger.error('Failed to restore online mode', error, {
+        code: 'DatabaseModule',
+      });
       throw error;
     }
   }
@@ -348,9 +391,13 @@ class DatabaseModule {
   async clearOfflineCache(): Promise<void> {
     try {
       await clearIndexedDbPersistence(this.db);
-      console.log('[Database Module] Offline cache cleared');
+      logger.debug('Offline cache cleared', {
+        code: 'DatabaseModule',
+      });
     } catch (error) {
-      console.error('[Database Module] Failed to clear offline cache:', error);
+      logger.error('Failed to clear offline cache', error, {
+        code: 'DatabaseModule',
+      });
       throw error;
     }
   }

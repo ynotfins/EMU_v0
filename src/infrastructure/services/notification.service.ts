@@ -15,6 +15,7 @@ import {
   MulticastMessage,
   BatchResponse
 } from 'firebase-admin/messaging';
+import { logger } from '@/lib/utils/logger';
 
 interface NotificationToken {
   userId: string;
@@ -95,7 +96,9 @@ export class NotificationService implements INotificationService {
 
       return right(undefined);
     } catch (error) {
-      console.error('Failed to send incident notifications:', error);
+      logger.error('Failed to send incident notifications', error, {
+        code: 'NotificationService',
+      });
       return left(new Error('Failed to send notifications'));
     }
   }
@@ -166,7 +169,9 @@ export class NotificationService implements INotificationService {
       await adminMessaging.sendEachForMulticast(message);
       return right(undefined);
     } catch (error) {
-      console.error('Failed to send assignment notification:', error);
+      logger.error('Failed to send assignment notification', error, {
+        code: 'NotificationService',
+      });
       return left(new Error('Failed to send notification'));
     }
   }
@@ -223,7 +228,9 @@ export class NotificationService implements INotificationService {
       await adminMessaging.sendEachForMulticast(message);
       return right(undefined);
     } catch (error) {
-      console.error('Failed to send update notifications:', error);
+      logger.error('Failed to send update notifications', error, {
+        code: 'NotificationService',
+      });
       return left(new Error('Failed to send notifications'));
     }
   }

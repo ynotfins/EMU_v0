@@ -151,7 +151,7 @@ export class SessionService implements ISessionService {
     uid: string;
     email?: string;
     emailVerified?: boolean;
-    customClaims?: Record<string, any>;
+    customClaims?: Record<string, unknown>;
   }>> {
     try {
       const decodedClaims = await adminAuth.verifySessionCookie(sessionToken, true);
