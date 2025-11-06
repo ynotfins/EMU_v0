@@ -377,7 +377,7 @@ export function useIncidents(filters?: Partial<IncidentFilters>) {
       const keyword = filters.keyword.toLowerCase();
       filtered = filtered.filter(
         (inc) =>
-          inc.address.toLowerCase().includes(keyword) ||
+          (inc.address || '').toLowerCase().includes(keyword) ||
           inc.type.toLowerCase().includes(keyword) ||
           inc.message.toLowerCase().includes(keyword)
       );
