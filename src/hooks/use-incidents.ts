@@ -185,7 +185,16 @@ function normalize(docId: string, data: FirestoreIncidentData): IncidentLite {
  * Returns standardized strings for the 3-line layout
  */
 export function formatListLines(incident: IncidentLite) {
-  const line1Date = new Date(incident.updatedAt);
+  // Handle Firestore timestamp objects { seconds: number }
+  let updatedAtValue: Date;
+  if (typeof incident.updatedAt === 'object' && incident.updatedAt !== null && 'seconds' in incident.updatedAt) {
+    updatedAtValue = new Date((incident.updatedAt as { seconds: number }).seconds * 1000);
+  } else if (incident.updatedAt instanceof Date) {
+    updatedAtValue = incident.updatedAt;
+  } else {
+    updatedAtValue = new Date(incident.updatedAt);
+  }
+  const line1Date = updatedAtValue;
   const dateStr = line1Date.toLocaleDateString(undefined, {
     month: "2-digit",
     day: "2-digit",
