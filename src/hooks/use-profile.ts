@@ -80,6 +80,7 @@ export function useProfile(uid?: string | null) {
               trackingEnabled: userData.settings?.trackingEnabled !== false,
               highAlertSound: userData.settings?.highAlertSound || "train",
               muted: userData.settings?.muted || false,
+              silencedAlerts: userData.settings?.silencedAlerts || [],
             },
             payout: {
               verified: userData.payout?.verified || false,
