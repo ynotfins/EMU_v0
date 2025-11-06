@@ -30,7 +30,8 @@ import {
   Timestamp,
   CollectionReference,
   DocumentReference,
-  type Transaction
+  type Transaction,
+  type WhereFilterOp
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase-client';
 import { logger } from '../utils/logger';
@@ -41,7 +42,7 @@ export interface PaginationOptions {
 }
 
 export interface QueryOptions {
-  filters?: Array<{ field: string; operator: string; value: unknown }>;
+  filters?: Array<{ field: string; operator: WhereFilterOp; value: unknown }>;
   orderByField?: string;
   orderDirection?: 'asc' | 'desc';
   limitTo?: number;
