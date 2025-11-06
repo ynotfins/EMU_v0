@@ -24,8 +24,9 @@ export function ChatRoom({ threadTitle, messages, currentUserId, onBack, onSend 
     }
   }
 
-  const formatTime = (isoString: string) => {
-    const date = new Date(isoString)
+  const formatTime = (isoString: string | Date | undefined) => {
+    if (!isoString) return ''
+    const date = isoString instanceof Date ? isoString : new Date(isoString)
     return date.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",

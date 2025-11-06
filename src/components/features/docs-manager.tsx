@@ -28,8 +28,9 @@ export function DocsManager({ files, onPickFile, onDeleteFile, canDelete }: Docs
     }
   }
 
-  const formatTime = (isoString: string) => {
-    const date = new Date(isoString)
+  const formatTime = (isoString: string | Date | undefined) => {
+    if (!isoString) return ''
+    const date = isoString instanceof Date ? isoString : new Date(isoString)
     return date.toLocaleString("en-US", {
       month: "short",
       day: "numeric",
@@ -108,12 +109,14 @@ export function DocsManager({ files, onPickFile, onDeleteFile, canDelete }: Docs
                   <p className="text-sm font-medium text-foreground">{file.name}</p>
                   <div className="flex items-center gap-2 flex-wrap">
                     <Badge variant="outline" className="text-xs">
-                      {file.uploadedBy.name}
+                      {typeof file.uploadedBy === 'string' ? file.uploadedBy : file.uploadedBy.name || 'Unknown'}
                     </Badge>
-                    <Badge variant="outline" className="text-xs capitalize">
-                      {file.uploadedBy.role}
-                    </Badge>
-                    <span className="text-xs text-[#6B7280]">{formatTime(file.ts)}</span>
+                    {file.role && (
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {file.role}
+                      </Badge>
+                    )}
+                    <span className="text-xs text-[#6B7280]">{formatTime(file.ts || file.uploadedAt)}</span>
                   </div>
                   {file.message && <p className="text-xs text-[#6B7280] mt-1">{file.message}</p>}
                 </div>
