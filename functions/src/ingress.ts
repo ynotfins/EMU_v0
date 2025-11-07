@@ -873,20 +873,35 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
       const snap = await ref.get();
       if (snap.exists) {
         const existing = snap.data() as any;
+        
+        // Append new description to existing description with bullet separator
+        const existingDescription = existing.description || '';
+        const newDescription = parsed.description || '';
+        const appendedDescription = existingDescription 
+          ? `${existingDescription} • ${newDescription}`
+          : newDescription;
+        
+        // Extract date and time from the received timestamp
+        const alertDate = activityTimestamp.toDate().toLocaleDateString();
+        const alertTime = activityTimestamp.toDate().toLocaleTimeString();
+        
         const updateData: any = {
           incidentId: parsed.incidentId ?? preferredId,
-          state: parsed.state || null,
-          county: parsed.county || null,
-          city: parsed.city || null,
-          address: parsed.address || null,
-          zipCode: parsed.zipCode || null,
-          country: parsed.country || 'USA',
-          type: parsed.type || null,
-          description: parsed.description,
-          severity: parsed.severity || null,
+          state: parsed.state || existing.state || null,
+          county: parsed.county || existing.county || null,
+          city: parsed.city || existing.city || null,
+          address: parsed.address || existing.address || null,
+          zipCode: parsed.zipCode || existing.zipCode || null,
+          country: parsed.country || existing.country || 'USA',
+          type: parsed.type || existing.type || null,
+          description: appendedDescription, // Append instead of overwrite
+          alertType: parsed.type || existing.alertType || null, // Store current alert type
+          alertDate: alertDate, // Store alert date
+          alertTime: alertTime, // Store alert time
+          severity: parsed.severity || existing.severity || null,
           originalText: composedMessage,
-          fireDepartmentInfo: parsed.fireDepartmentInfo || null,
-          departmentCodes: parsed.departmentCodes || null,
+          fireDepartmentInfo: parsed.fireDepartmentInfo || existing.fireDepartmentInfo || null,
+          departmentCodes: parsed.departmentCodes || existing.departmentCodes || null,
           createdAt: existing.createdAt ?? Timestamp.now(),
           updatedAt: Timestamp.now(),
           activity: [
@@ -906,6 +921,10 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
         await ref.set(updateData, { merge: true });
         updated = true;
       } else {
+        // Extract date and time from the received timestamp
+        const alertDate = activityTimestamp.toDate().toLocaleDateString();
+        const alertTime = activityTimestamp.toDate().toLocaleTimeString();
+        
         const createData: any = {
           incidentId: parsed.incidentId ?? preferredId,
           state: parsed.state || null,
@@ -916,6 +935,9 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
           country: parsed.country || 'USA',
           type: parsed.type || null,
           description: parsed.description,
+          alertType: parsed.type || null, // Store alert type
+          alertDate: alertDate, // Store alert date
+          alertTime: alertTime, // Store alert time
           severity: parsed.severity || null,
           originalText: composedMessage,
           fireDepartmentInfo: parsed.fireDepartmentInfo || null,
