@@ -117,36 +117,22 @@ const notificationSchema = z.object({
   title: z.string().optional(),
   message: z.string(),
   source: z.string().optional(),
-  authToken: z.string().optional(), // Optional: can be in header or body
-}).passthrough(); // Allow extra fields to pass through
+  authToken: z.string().optional(),
+}).passthrough();
 
-/**
- * Attempt to fix common JSON syntax errors from MacroDroid
- * 
- * Common issue: MacroDroid sends unquoted string values like:
- *   "source": Emergency_Alerts  (WRONG)
- * Should be:
- *   "source": "Emergency_Alerts"  (CORRECT)
- */
 function tryFixJson(jsonString: string): object | null {
   try {
-    // Try 1: Parse as-is
     return JSON.parse(jsonString);
   } catch {
     try {
-      // Try 2: Fix missing quotes around string values after colons
-      // Pattern: "key": unquotedValue -> "key": "quotedValue"
-      // This fixes cases like "source": Emergency_Alerts
       let fixed = jsonString.replace(/"([^"]+)"\s*:\s*([A-Za-z_][A-Za-z0-9_]*)(\s*)([,}])/g, '"$1": "$2"$3$4');
       return JSON.parse(fixed);
     } catch {
       try {
-        // Try 3: More aggressive - fix any unquoted identifier after colon
         let fixed = jsonString.replace(/:(\s*)([A-Za-z_][A-Za-z0-9_]*)(\s*)([,}])/g, ':$1"$2"$3$4');
         return JSON.parse(fixed);
       } catch {
         try {
-          // Try 4: Extract fields using regex (fallback for severely malformed JSON)
           const messageMatch = jsonString.match(/"message"\s*:\s*"([^"]*)"/) || 
                               jsonString.match(/"message"\s*:\s*([^,}]+)/);
           const sourceMatch = jsonString.match(/"source"\s*:\s*"([^"]*)"/) || 
@@ -177,29 +163,23 @@ function tryFixJson(jsonString: string): object | null {
   return null;
 }
 
-async function ingressHandler(request: any, response: any) {
+async function ingressHandler(request: RequestWithRawBody, response: express.Response) {
   try {
     if (request.method !== 'POST') {
       response.status(405).json({ error: 'Method not allowed. Use POST.' });
       return;
     }
 
-    // Handle malformed JSON - MacroDroid may send invalid JSON with unquoted values
     let body = request.body;
     
-    // If body-parser failed to parse (body is undefined or error), try to get raw body
     if (!body || (typeof body === 'object' && Object.keys(body).length === 0)) {
-      // Try to get raw body from request
-      const rawBodyStr = (request as any).rawBody?.toString('utf8') || 
-                        (request as any).body?.toString?.('utf8') || '';
+      const rawBodyStr = request.rawBody?.toString('utf8') || '';
       
       if (rawBodyStr) {
-        // Try to fix and parse JSON
         const fixed = tryFixJson(rawBodyStr);
         if (fixed) {
           body = fixed;
         } else {
-          // If all fixes fail, treat entire body as message
           body = {
             message: rawBodyStr,
             source: request.headers['x-source'] || 'Emergency_Alerts',
@@ -209,13 +189,11 @@ async function ingressHandler(request: any, response: any) {
       }
     }
     
-    // If body is a string, try to parse it
     if (typeof body === 'string') {
       const fixed = tryFixJson(body);
       if (fixed) {
         body = fixed;
       } else {
-        // If JSON parse fails, treat it as a raw message
         console.warn('[Ingress] Invalid JSON received, treating as raw message:', body.substring(0, 100));
         body = {
           message: body,
@@ -225,7 +203,6 @@ async function ingressHandler(request: any, response: any) {
       }
     }
     
-    // If body is empty or not an object, create a default structure
     if (!body || typeof body !== 'object' || Array.isArray(body)) {
       console.warn('[Ingress] Invalid body format, creating default structure');
       body = {
@@ -235,12 +212,10 @@ async function ingressHandler(request: any, response: any) {
       };
     }
 
-      // Parse and validate notification
       const notification = notificationSchema.parse(body);
 
-      // Authenticate request
       const authHeader = request.headers.authorization;
-      const webhookToken = request.headers['x-webhook-token'] as string | undefined;
+      const webhookToken = request.headers['x-webhook-token'];
       const isAuthenticated = await authenticateRequest(authHeader, webhookToken, notification.authToken);
       
       if (!isAuthenticated) {
@@ -379,7 +354,6 @@ Now parse and format the message according to these requirements.`,
         }
       }
       
-      // Fetch weather conditions if we have coordinates
       let weatherInfo = null;
       if (lat && lng) {
         try {
@@ -405,14 +379,11 @@ Now parse and format the message according to these requirements.`,
       let isUpdate = false;
       let displayNumber: number;
 
-      // Extract MacroDroid ID from incident ID field (may be in format "#1831535" or "1831535")
       let macroDroidId: string | undefined = validatedIncident.incidentId;
       if (macroDroidId) {
-        // Clean the ID (remove # if present)
         macroDroidId = macroDroidId.replace('#', '').trim();
       }
 
-      // If no incidentId in parsed data, try to extract from message (look for #183xxxx pattern)
       if (!macroDroidId && notification.message) {
         const idMatch = notification.message.match(/#?(\d{6,})/);
         if (idMatch) {
@@ -421,22 +392,23 @@ Now parse and format the message according to these requirements.`,
       }
 
       if (macroDroidId) {
-        // Use MacroDroid ID as document ID
         incidentDocId = macroDroidId;
 
-        // Check if document already exists
         const incidentRef = getDb().collection('incidents').doc(incidentDocId);
         const existingDoc = await incidentRef.get();
 
         if (existingDoc.exists) {
-          // This is an update - create a document in the updates subcollection
           isUpdate = true;
           const existingData = existingDoc.data();
           
-          // Preserve existing display number
-          displayNumber = (existingData as any)?.incidentNumber || await allocateNextDisplayNumber();
+          function isExistingIncidentData(data: DocumentData | undefined): data is ExistingIncidentData {
+            return data !== undefined;
+          }
           
-          // Get all existing update documents to concatenate messages
+          displayNumber = isExistingIncidentData(existingData) && typeof existingData.incidentNumber === 'number'
+            ? existingData.incidentNumber
+            : await allocateNextDisplayNumber();
+          
           const updatesSnapshot = await incidentRef.collection('updates').get();
           const existingMessages: string[] = [];
           
@@ -447,12 +419,10 @@ Now parse and format the message according to these requirements.`,
             }
           });
 
-          // Add current message
           const currentMessage = notification.message || validatedIncident.description || '';
           existingMessages.push(currentMessage);
 
-          // Create update document in subcollection
-          const updateDocData: any = {
+          const updateDocData: Record<string, unknown> = {
             lastMessage: currentMessage,
             lastTitle: notification.title || validatedIncident.type || '',
             lastType: validatedIncident.type || null,
@@ -468,18 +438,15 @@ Now parse and format the message according to these requirements.`,
             firstSeenAt: existingData?.createdAt || Timestamp.now(),
             lastSeenAt: Timestamp.now(),
             updatedAt: Timestamp.now(),
-            updatesText: existingMessages.join('. '), // Concatenate all messages
+            updatesText: existingMessages.join('. '),
           };
 
-          // Add geocodedAt if we have coordinates
           if (validatedIncident.latitude && validatedIncident.longitude) {
             updateDocData.geocodedAt = new Date().toISOString();
           }
 
-          // Create new update document in subcollection
           await incidentRef.collection('updates').add(updateDocData);
 
-          // Update main document with latest info (but preserve createdAt and incidentNumber)
           await incidentRef.update({
             updatedAt: Timestamp.now(),
             lastMessage: currentMessage,
@@ -491,16 +458,15 @@ Now parse and format the message according to these requirements.`,
             stage: 'update',
           });
         } else {
-          // Create new incident with MacroDroid ID as document ID
           isUpdate = false;
           displayNumber = await allocateNextDisplayNumber();
           
           const now = Timestamp.now();
-          const incidentData: any = {
+          const incidentData: Record<string, unknown> = {
             ...validatedIncident,
-            id: macroDroidId, // Store MacroDroid ID in id field too
-            incidentId: macroDroidId, // Store as incidentId field
-            incidentNumber: displayNumber, // Display number (7000000+)
+            id: macroDroidId,
+            incidentId: macroDroidId,
+            incidentNumber: displayNumber,
             createdAt: now,
             updatedAt: now,
             lastMessage: notification.message || validatedIncident.description || '',
@@ -514,11 +480,9 @@ Now parse and format the message according to these requirements.`,
             updateCount: 0,
           };
 
-          // Use the MacroDroid ID as the document ID
           await incidentRef.set(incidentData);
 
-          // Create first update document in subcollection
-          const firstUpdateData: any = {
+          const firstUpdateData: Record<string, unknown> = {
             lastMessage: notification.message || validatedIncident.description || '',
             lastTitle: notification.title || validatedIncident.type || '',
             lastType: validatedIncident.type || null,
@@ -544,11 +508,10 @@ Now parse and format the message according to these requirements.`,
           await incidentRef.collection('updates').add(firstUpdateData);
         }
       } else {
-        // No MacroDroid ID found - generate a document ID and allocate display number
         displayNumber = await allocateNextDisplayNumber();
         const now = Timestamp.now();
         
-        const incidentData: any = {
+        const incidentData: Record<string, unknown> = {
           ...validatedIncident,
           incidentNumber: displayNumber,
           createdAt: now,
@@ -591,45 +554,40 @@ Now parse and format the message according to these requirements.`,
     }
 }
 
-// Create Express app with custom body parsing to handle malformed JSON gracefully
 const ingressApp = express();
 
-// Configure body parser with strict: false to allow non-JSON content
 ingressApp.use(express.json({
-  strict: false, // Don't throw on non-JSON content
-  verify: (req: any, res, buf) => {
-    // Store raw body for recovery
+  strict: false,
+  verify: (req: RequestWithRawBody, res, buf) => {
     req.rawBody = buf;
   },
 }));
 
-// Error handler for JSON parsing errors from body-parser middleware
-ingressApp.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  if (error instanceof SyntaxError && (error as any).status === 400 && 'body' in error) {
+function isErrorWithStatus(error: unknown): error is ErrorWithStatus {
+  return error instanceof SyntaxError && 'status' in error && 'body' in error;
+}
+
+ingressApp.use((error: unknown, req: RequestWithRawBody, res: express.Response, next: express.NextFunction) => {
+  if (isErrorWithStatus(error) && error.status === 400) {
     console.warn('[Ingress] JSON parsing error from body-parser, attempting recovery:', error.message);
     
-    // Try to use raw body if available
-    const rawBody = (req as any).rawBody?.toString('utf8') || '';
+    const rawBody = req.rawBody?.toString('utf8') || '';
     
     if (rawBody) {
-      // Try to fix the JSON
       const fixed = tryFixJson(rawBody);
       if (fixed) {
-        // Set the fixed body and continue
         req.body = fixed;
-        return next(); // Continue to handler
+        return next();
       } else {
-        // If fixing fails, create notification object from raw text
         req.body = {
           message: rawBody,
           source: req.headers['x-source'] || 'Emergency_Alerts',
           receivedAt: new Date().toISOString(),
         };
-        return next(); // Continue to handler
+        return next();
       }
     }
     
-    // If we can't recover, return error
     res.status(400).json({
       error: 'Invalid JSON format',
       message: 'The request body could not be parsed as JSON. Please ensure MacroDroid variables are properly replaced and all string values are quoted.',
@@ -639,15 +597,12 @@ ingressApp.use((error: any, req: express.Request, res: express.Response, next: e
     return;
   }
   
-  // Pass other errors to next handler
   next(error);
 });
 
-// V2 Webhook handler for /webhook path (new format with department codes, incidentId as doc ID)
 ingressApp.post('/webhook', async (req: express.Request, res: express.Response) => {
   try {
     const body = req.body ?? {};
-    // Accept either simple { message } or a richer MacroDroid-style payload
     const bodyMessage: unknown = typeof body === 'string' ? body : body?.message;
     const isSimple = typeof bodyMessage === 'string' && Object.keys(body ?? {}).length <= 2;
     const composedMessage =
@@ -671,11 +626,9 @@ ingressApp.post('/webhook', async (req: express.Request, res: express.Response) 
       return res.status(400).json({ error: 'Missing message string' });
     }
 
-    // Log the composed message for debugging
     console.log('[Webhook V2] Composed message:', composedMessage);
     console.log('[Webhook V2] Message length:', composedMessage.length);
 
-    // V2 schema with department codes - location fields are critical
     const v2IncidentSchema = z.object({
       incidentId: z.string().optional(),
       source: z.string().optional(),
@@ -692,8 +645,6 @@ ingressApp.post('/webhook', async (req: express.Request, res: express.Response) 
       departmentCodes: z.array(z.string()).optional(),
     });
 
-    // AI extraction with Claude 3.5 Sonnet
-    // API key is injected from Secret Manager via function config
     const apiKey = process.env.OPENROUTER_API_KEY_EMU;
     if (!apiKey) {
       console.error('[Webhook V2] OPENROUTER_API_KEY_EMU not found in process.env');
@@ -701,9 +652,8 @@ ingressApp.post('/webhook', async (req: express.Request, res: express.Response) 
     }
 
     const provider = createOpenRouter({ apiKey });
-    let parsed: any;
+    let parsed: ParsedIncident | undefined;
     try {
-      // Log input validation
       console.log('[Webhook V2] === INPUT VALIDATION ===');
       console.log('[Webhook V2] Composed message:', composedMessage);
       console.log('[Webhook V2] Message length:', composedMessage.length);
@@ -713,7 +663,7 @@ ingressApp.post('/webhook', async (req: express.Request, res: express.Response) 
       
       const result = await generateObject({
         model: provider('anthropic/claude-3.5-sonnet'),
-        schema: v2IncidentSchema as any,
+        schema: v2IncidentSchema,
         prompt: `Extract incident data from: ${composedMessage}
 
 LOCATION (REQUIRED - Parse start of message):
@@ -754,17 +704,18 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
         temperature: 0.1,
         maxRetries: 2,
       });
-      // Log raw AI response
       console.log('[Webhook V2] === RAW AI RESPONSE ===');
       console.log('[Webhook V2] Full result object:', JSON.stringify(result, null, 2));
       
-      // Handle case where AI returns JSON with extra text - extract just the JSON
       parsed = result.object;
       
-      // If result.object doesn't exist, try to extract from text
-      if (!parsed && (result as any).text) {
+      function isGenerateObjectResult(result: unknown): result is GenerateObjectResult {
+        return typeof result === 'object' && result !== null;
+      }
+      
+      if (!parsed && isGenerateObjectResult(result) && result.text) {
         console.log('[Webhook V2] Attempting to extract JSON from text response');
-        const jsonMatch = (result as any).text.match(/\{[\s\S]*?\}(?=\n|$)/);
+        const jsonMatch = result.text.match(/\{[\s\S]*?\}(?=\n|$)/);
         if (jsonMatch) {
           try {
             parsed = JSON.parse(jsonMatch[0].trim());
@@ -780,7 +731,6 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
         throw new Error('No parsed object available from AI response');
       }
       
-      // Log parsed output validation
       console.log('[Webhook V2] === PARSED OUTPUT VALIDATION ===');
       console.log('[Webhook V2] Parsed object:', JSON.stringify(parsed, null, 2));
       console.log('[Webhook V2] Location extraction:');
@@ -791,15 +741,18 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
       console.log('[Webhook V2] Department codes:', parsed.departmentCodes || 'NULL');
       console.log('[Webhook V2] Fire department info:', parsed.fireDepartmentInfo || 'NULL');
       console.log('[Webhook V2] Incident ID:', parsed.incidentId || 'NULL');
-    } catch (aiError: any) {
-      console.error('[Webhook V2] AI extraction failed:', aiError?.message || aiError);
+    } catch (aiError: unknown) {
+      const errorMessage = aiError instanceof Error ? aiError.message : String(aiError);
+      console.error('[Webhook V2] AI extraction failed:', errorMessage);
       console.error('[Webhook V2] Full error:', JSON.stringify(aiError, null, 2));
       
-      // Try to extract JSON from error text if it contains valid JSON (AI sometimes adds notes after JSON)
-      if (aiError?.text || aiError?.cause?.text) {
+      function hasTextProperty(error: unknown): error is { text?: string; cause?: { text?: string } } {
+        return typeof error === 'object' && error !== null;
+      }
+      
+      if (hasTextProperty(aiError) && (aiError.text || aiError.cause?.text)) {
         const errorText = aiError.text || aiError.cause?.text || '';
         console.log('[Webhook V2] Attempting to extract JSON from error text');
-        // Match JSON object (starts with {, ends with }, may have newlines)
         const jsonMatch = errorText.match(/\{[\s\S]*?\}(?=\n|$)/);
         if (jsonMatch) {
           try {
@@ -816,18 +769,17 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
         } else {
           return res.status(500).json({ 
             error: 'AI extraction failed', 
-            message: aiError?.message || 'Could not parse incident data from notification' 
+            message: errorMessage || 'Could not parse incident data from notification' 
           });
         }
       } else {
         return res.status(500).json({ 
           error: 'AI extraction failed', 
-          message: aiError?.message || 'Could not parse incident data from notification' 
+          message: errorMessage || 'Could not parse incident data from notification' 
         });
       }
     }
     
-    // Ensure parsed is defined before proceeding
     if (!parsed) {
       console.error('[Webhook V2] parsed is undefined after all extraction attempts');
       return res.status(500).json({ 
@@ -836,7 +788,6 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
       });
     }
 
-    // Map to Firestore shape - only create location object if we have address data
     const locationObj = (parsed.address || parsed.city || parsed.state) ? {
       address: parsed.address || null,
       city: parsed.city || null,
@@ -852,7 +803,6 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
         : undefined;
     const activityTimestamp = receivedAtMs ? Timestamp.fromMillis(receivedAtMs) : Timestamp.now();
 
-    // Use incidentId as document ID
     const preferredId = parsed.incidentId ? String(parsed.incidentId) : (receivedAtMs ? String(receivedAtMs) : undefined);
 
     let ref;
@@ -862,20 +812,26 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
       ref = getDb().collection('incidents').doc(preferredId);
       const snap = await ref.get();
       if (snap.exists) {
-        const existing = snap.data() as any;
+        const existing = snap.data();
         
-        // Append new description to existing description with bullet separator
+        function isExistingIncidentData(data: DocumentData | undefined): data is ExistingIncidentData {
+          return data !== undefined;
+        }
+        
+        if (!isExistingIncidentData(existing)) {
+          return res.status(500).json({ error: 'Invalid existing data' });
+        }
+        
         const existingDescription = existing.description || '';
         const newDescription = parsed.description || '';
         const appendedDescription = existingDescription 
           ? `${existingDescription} • ${newDescription}`
           : newDescription;
         
-        // Extract date and time from the received timestamp
         const alertDate = activityTimestamp.toDate().toLocaleDateString();
         const alertTime = activityTimestamp.toDate().toLocaleTimeString();
         
-        const updateData: any = {
+        const updateData: Record<string, unknown> = {
           incidentId: parsed.incidentId ?? preferredId,
           state: parsed.state || existing.state || null,
           county: parsed.county || existing.county || null,
@@ -884,10 +840,10 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
           zipCode: parsed.zipCode || existing.zipCode || null,
           country: parsed.country || existing.country || 'USA',
           type: parsed.type || existing.type || null,
-          description: appendedDescription, // Append instead of overwrite
-          alertType: parsed.type || existing.alertType || null, // Store current alert type
-          alertDate: alertDate, // Store alert date
-          alertTime: alertTime, // Store alert time
+          description: appendedDescription,
+          alertType: parsed.type || existing.alertType || null,
+          alertDate: alertDate,
+          alertTime: alertTime,
           severity: parsed.severity || existing.severity || null,
           originalText: composedMessage,
           fireDepartmentInfo: parsed.fireDepartmentInfo || existing.fireDepartmentInfo || null,
@@ -911,11 +867,10 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
         await ref.set(updateData, { merge: true });
         updated = true;
       } else {
-        // Extract date and time from the received timestamp
         const alertDate = activityTimestamp.toDate().toLocaleDateString();
         const alertTime = activityTimestamp.toDate().toLocaleTimeString();
         
-        const createData: any = {
+        const createData: Record<string, unknown> = {
           incidentId: parsed.incidentId ?? preferredId,
           state: parsed.state || null,
           county: parsed.county || null,
@@ -925,9 +880,9 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
           country: parsed.country || 'USA',
           type: parsed.type || null,
           description: parsed.description,
-          alertType: parsed.type || null, // Store alert type
-          alertDate: alertDate, // Store alert date
-          alertTime: alertTime, // Store alert time
+          alertType: parsed.type || null,
+          alertDate: alertDate,
+          alertTime: alertTime,
           severity: parsed.severity || null,
           originalText: composedMessage,
           fireDepartmentInfo: parsed.fireDepartmentInfo || null,
@@ -947,7 +902,7 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
       }
     } else {
       ref = getDb().collection('incidents').doc();
-      const fallbackData: any = {
+      const fallbackData: Record<string, unknown> = {
         state: parsed.state || null,
         county: parsed.county || null,
         city: parsed.city || null,
@@ -975,19 +930,21 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
     }
 
     return res.status(200).json({ id: ref.id, updated });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error('[Webhook V2] Error:', e);
-    if (e?.errors) return res.status(400).json({ error: 'Validation failed', details: e.errors });
-    return res.status(500).json({ error: 'Internal error', message: e?.message || 'unknown' });
+    function hasErrors(error: unknown): error is { errors: unknown } {
+      return typeof error === 'object' && error !== null && 'errors' in error;
+    }
+    if (hasErrors(e)) return res.status(400).json({ error: 'Validation failed', details: e.errors });
+    const errorMessage = e instanceof Error ? e.message : 'unknown';
+    return res.status(500).json({ error: 'Internal error', message: errorMessage });
   }
 });
 
-// Route handler for all other paths (old ingress handler)
-ingressApp.post('*', async (req: express.Request, res: express.Response) => {
+ingressApp.post('*', async (req: RequestWithRawBody, res: express.Response) => {
   return ingressHandler(req, res);
 });
 
-// Secret is now available in Secret Manager with name OPENROUTER_API_KEY_EMU
 export const ingress = onRequest(
   {
     cors: true,
