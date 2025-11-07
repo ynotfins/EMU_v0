@@ -215,10 +215,10 @@ async function ingressHandler(request: RequestWithRawBody, response: express.Res
 
       const notification = notificationSchema.parse(body);
 
-      const authHeader = request.headers.authorization;
-      const webhookToken = Array.isArray(request.headers['x-webhook-token']) 
-        ? request.headers['x-webhook-token'][0] 
-        : request.headers['x-webhook-token'];
+      const authHeaderValue = request.headers.authorization;
+      const authHeader = Array.isArray(authHeaderValue) ? authHeaderValue[0] : authHeaderValue;
+      const webhookTokenValue = request.headers['x-webhook-token'];
+      const webhookToken = Array.isArray(webhookTokenValue) ? webhookTokenValue[0] : webhookTokenValue;
       const isAuthenticated = await authenticateRequest(authHeader, webhookToken, notification.authToken);
       
       if (!isAuthenticated) {
@@ -702,7 +702,7 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
       
       parsed = result.object;
       
-      if (!parsed && isGenerateObjectResult(result) && result.text) {
+      if (!parsed && isGenerateObjectResult(result) && 'text' in result && typeof result.text === 'string') {
         console.log('[Webhook V2] Attempting to extract JSON from text response');
         const jsonMatch = result.text.match(/\{[\s\S]*?\}(?=\n|$)/);
         if (jsonMatch) {

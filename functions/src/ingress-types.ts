@@ -65,7 +65,7 @@ export function isExistingIncidentData(data: DocumentData | undefined): data is 
 }
 
 export function isGenerateObjectResult(result: unknown): result is GenerateObjectResult {
-  return typeof result === 'object' && result !== null;
+  return typeof result === 'object' && result !== null && ('object' in result || 'text' in result);
 }
 
 export function isErrorWithStatus(error: unknown): error is ErrorWithStatus {
