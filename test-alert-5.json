@@ -1,0 +1,11 @@
+{
+  "appName": "BNN",
+  "title": "New Incident",
+  "message": "PA, Chester, East Fallowfield Township - Working Fire Dispatch at 921 Buck Run Rd. Command is adding stations 24 and 25. nj179/pas4795 #1836126",
+  "ticker": "Working Fire Dispatch",
+  "subText": "921 Buck Run Rd",
+  "infoText": "Command is adding stations 24 and 25",
+  "receivedAtEpoch": 1730925000000,
+  "source": "BNN_Test"
+}
+

@@ -681,14 +681,14 @@ ingressApp.post('/webhook', async (req: express.Request, res: express.Response) 
       return res.status(400).json({ error: 'Missing message string' });
     }
 
-    // V2 schema with department codes
+    // V2 schema with department codes - location fields are critical
     const v2IncidentSchema = z.object({
       incidentId: z.string().optional(),
       source: z.string().optional(),
-      state: z.string().optional(),
-      county: z.string().optional(),
-      city: z.string().optional(),
-      address: z.string().optional(),
+      state: z.string().describe('State abbreviation extracted from message (e.g., "PA", "NJ", "NY")').optional(),
+      county: z.string().describe('County name with "County" suffix (e.g., "Chester County", "Hudson County")').optional(),
+      city: z.string().describe('City or township name (e.g., "East Fallowfield Township", "Kearny")').optional(),
+      address: z.string().describe('Street address or intersection (e.g., "921 Buck Run Rd", "County Rd 508")').optional(),
       zipCode: z.string().optional(),
       country: z.string().optional().default('USA'),
       type: z.enum(['fire', 'flood', 'storm', 'accident', 'hazard', 'medical', 'other']).optional(),
@@ -699,29 +699,20 @@ ingressApp.post('/webhook', async (req: express.Request, res: express.Response) 
     });
 
     // AI extraction with Claude 3.5 Sonnet
-    // Try to get API key from environment or Secret Manager
-    let apiKey = process.env.OPENROUTER_API_KEY;
+    // API key is injected from Secret Manager via function config
+    const apiKey = process.env.OPENROUTER_API_KEY_EMU;
     if (!apiKey) {
-      try {
-        const projectId = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT;
-        if (projectId) {
-          const secretName = `projects/${projectId}/secrets/OPENROUTER_API_KEY/versions/latest`;
-          const [version] = await secretManagerClient.accessSecretVersion({ name: secretName });
-          apiKey = version.payload?.data?.toString() || '';
-        }
-      } catch (error) {
-        console.error('[Webhook V2] Failed to retrieve OPENROUTER_API_KEY from Secret Manager:', error);
-      }
-    }
-    if (!apiKey) {
-      return res.status(500).json({ error: 'OPENROUTER_API_KEY not configured' });
+      console.error('[Webhook V2] OPENROUTER_API_KEY_EMU not found in process.env');
+      return res.status(500).json({ error: 'OPENROUTER_API_KEY_EMU not configured' });
     }
 
     const provider = createOpenRouter({ apiKey });
-    const { object: parsed } = await generateObject({
-      model: provider('anthropic/claude-3.5-sonnet'),
-      schema: v2IncidentSchema as any,
-      prompt: `Extract normalized incident fields from the notification below and return valid JSON.
+    let parsed: any;
+    try {
+      const result = await generateObject({
+        model: provider('anthropic/claude-3.5-sonnet'),
+        schema: v2IncidentSchema as any,
+        prompt: `Extract normalized incident fields from the notification below and return valid JSON.
 
 Notification:
 ${composedMessage}
@@ -738,6 +729,23 @@ Extract all available information from the message. The message may contain:
 • Timestamp or time information
 • Department codes at the end (e.g., "nj179/pas4795", "nj179/njn3979")
 
+LOCATION EXTRACTION (MANDATORY - Extract from message start):
+The message typically starts with location in format: "STATE, COUNTY, CITY - [incident] at ADDRESS"
+
+EXAMPLES - Parse these patterns:
+• Message: "PA, Chester, East Fallowfield Township - Working Fire Dispatch at 921 Buck Run Rd"
+  Extract: state="PA", county="Chester County", city="East Fallowfield Township", address="921 Buck Run Rd"
+
+• Message: "NJ, Hudson, Kearny - Water Main Break on County Rd 508"  
+  Extract: state="NJ", county="Hudson County", city="Kearny", address="County Rd 508"
+
+• Message: "NY, Westchester, Yonkers - 2nd Alarm Fire at Lockwood Ave & Clarendon Ave"
+  Extract: state="NY", county="Westchester County", city="Yonkers", address="Lockwood Ave & Clarendon Ave"
+
+CRITICAL: The location information is ALWAYS at the start of the message before the dash (-). 
+Parse the pattern: "STATE, COUNTY, CITY" → extract all three fields.
+Then find the address after "at" or "on" keywords.
+
 FORMATTING REQUIREMENTS (CRITICAL - ALL FIELDS MUST BE BEAUTIFULLY FORMATTED):
 
 1. **Type Field**:
@@ -746,11 +754,21 @@ FORMATTING REQUIREMENTS (CRITICAL - ALL FIELDS MUST BE BEAUTIFULLY FORMATTED):
    - Example: "Water Main Break" → "hazard"
    - Example: "Apparatus Accident" → "accident"
 
-2. **Location Fields**:
-   - State: Keep as abbreviation (e.g., "NJ", "NY", "CA")
-   - County: Proper title case with "County" suffix (e.g., "Monmouth County", "Hudson County")
-   - City: Proper title case (e.g., "Fair Haven", "Union City")
-   - Address: Clean formatting (e.g., "19 Highland Ave", "132 41st St")
+2. **Location Fields** (CRITICAL - Extract from message):
+   - State: Extract state abbreviation from message (e.g., "NJ", "NY", "PA", "CA")
+     • Look for patterns like "NJ, Hudson" → state is "NJ"
+     • Look for patterns like "PA, Chester" → state is "PA"
+     • Look for patterns like "NY, Westchester" → state is "NY"
+   - County: Extract county name from message, add "County" suffix if not present
+     • Examples: "Hudson" → "Hudson County", "Chester" → "Chester County", "Westchester" → "Westchester County"
+     • Look for patterns like "NJ, Hudson, Kearny" → county is "Hudson County"
+   - City: Extract city name from message, use proper title case
+     • Examples: "Kearny", "East Fallowfield Township", "Yonkers"
+     • Look for patterns like "NJ, Hudson, Kearny" → city is "Kearny"
+   - Address: Extract street address or intersection from message
+     • Examples: "County Rd 508", "921 Buck Run Rd", "Lockwood Ave & Clarendon Ave"
+     • Look for patterns like "at 921 Buck Run Rd" → address is "921 Buck Run Rd"
+     • Look for patterns like "on County Rd 508" → address is "County Rd 508"
    - ZIP: Extract if present, otherwise omit
 
 3. **Description Field**:
@@ -804,17 +822,25 @@ OUTPUT REQUIREMENTS:
 - Format all text to be professional and easy to read
 
 Now parse and format the message according to these requirements.`,
-      temperature: 0.1,
-    });
+        temperature: 0.1,
+      });
+      parsed = result.object;
+    } catch (aiError: any) {
+      console.error('[Webhook V2] AI extraction failed:', aiError?.message || aiError);
+      return res.status(500).json({ 
+        error: 'AI extraction failed', 
+        message: aiError?.message || 'Could not parse incident data from notification' 
+      });
+    }
 
-    // Map to Firestore shape
+    // Map to Firestore shape - only create location object if we have address data
     const locationObj = (parsed.address || parsed.city || parsed.state) ? {
-      address: parsed.address,
-      city: parsed.city,
-      state: parsed.state,
-      zipCode: parsed.zipCode,
+      address: parsed.address || null,
+      city: parsed.city || null,
+      state: parsed.state || null,
+      zipCode: parsed.zipCode || null,
       country: parsed.country || 'USA',
-    } : undefined;
+    } : null;
 
     const bodySource: string | undefined = (typeof body === 'object' && body?.source) ? String(body.source) : undefined;
     const receivedAtMs: number | undefined =
@@ -834,21 +860,20 @@ Now parse and format the message according to these requirements.`,
       const snap = await ref.get();
       if (snap.exists) {
         const existing = snap.data() as any;
-        await ref.set({
+        const updateData: any = {
           incidentId: parsed.incidentId ?? preferredId,
-          location: locationObj,
-          state: parsed.state,
-          county: parsed.county,
-          city: parsed.city,
-          address: parsed.address,
-          zipCode: parsed.zipCode,
+          state: parsed.state || null,
+          county: parsed.county || null,
+          city: parsed.city || null,
+          address: parsed.address || null,
+          zipCode: parsed.zipCode || null,
           country: parsed.country || 'USA',
-          type: parsed.type,
+          type: parsed.type || null,
           description: parsed.description,
-          severity: parsed.severity,
+          severity: parsed.severity || null,
           originalText: composedMessage,
-          fireDepartmentInfo: parsed.fireDepartmentInfo,
-          departmentCodes: parsed.departmentCodes,
+          fireDepartmentInfo: parsed.fireDepartmentInfo || null,
+          departmentCodes: parsed.departmentCodes || null,
           createdAt: existing.createdAt ?? Timestamp.now(),
           updatedAt: Timestamp.now(),
           activity: [
@@ -861,24 +886,27 @@ Now parse and format the message according to these requirements.`,
               source: parsed.source ?? bodySource ?? 'webhook-v2',
             },
           ],
-        }, { merge: true });
+        };
+        if (locationObj) {
+          updateData.location = locationObj;
+        }
+        await ref.set(updateData, { merge: true });
         updated = true;
       } else {
-        await ref.set({
+        const createData: any = {
           incidentId: parsed.incidentId ?? preferredId,
-          location: locationObj,
-          state: parsed.state,
-          county: parsed.county,
-          city: parsed.city,
-          address: parsed.address,
-          zipCode: parsed.zipCode,
+          state: parsed.state || null,
+          county: parsed.county || null,
+          city: parsed.city || null,
+          address: parsed.address || null,
+          zipCode: parsed.zipCode || null,
           country: parsed.country || 'USA',
-          type: parsed.type,
+          type: parsed.type || null,
           description: parsed.description,
-          severity: parsed.severity,
+          severity: parsed.severity || null,
           originalText: composedMessage,
-          fireDepartmentInfo: parsed.fireDepartmentInfo,
-          departmentCodes: parsed.departmentCodes,
+          fireDepartmentInfo: parsed.fireDepartmentInfo || null,
+          departmentCodes: parsed.departmentCodes || null,
           createdAt: Timestamp.now(),
           updatedAt: Timestamp.now(),
           activity: [{
@@ -888,24 +916,25 @@ Now parse and format the message according to these requirements.`,
             timestamp: activityTimestamp,
             source: parsed.source ?? bodySource ?? 'webhook-v2',
           }],
-        });
+        };
+        if (locationObj) createData.location = locationObj;
+        await ref.set(createData);
       }
     } else {
       ref = getDb().collection('incidents').doc();
-      await ref.set({
-        location: locationObj,
-        state: parsed.state,
-        county: parsed.county,
-        city: parsed.city,
-        address: parsed.address,
-        zipCode: parsed.zipCode,
+      const fallbackData: any = {
+        state: parsed.state || null,
+        county: parsed.county || null,
+        city: parsed.city || null,
+        address: parsed.address || null,
+        zipCode: parsed.zipCode || null,
         country: parsed.country || 'USA',
-        type: parsed.type,
+        type: parsed.type || null,
         description: parsed.description,
-        severity: parsed.severity,
+        severity: parsed.severity || null,
         originalText: composedMessage,
-        fireDepartmentInfo: parsed.fireDepartmentInfo,
-        departmentCodes: parsed.departmentCodes,
+        fireDepartmentInfo: parsed.fireDepartmentInfo || null,
+        departmentCodes: parsed.departmentCodes || null,
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
         activity: [{
@@ -915,7 +944,9 @@ Now parse and format the message according to these requirements.`,
           timestamp: activityTimestamp,
           source: parsed.source ?? bodySource ?? 'webhook-v2',
         }],
-      });
+      };
+      if (locationObj) fallbackData.location = locationObj;
+      await ref.set(fallbackData);
     }
 
     return res.status(200).json({ id: ref.id, updated });
@@ -931,12 +962,13 @@ ingressApp.post('*', async (req: express.Request, res: express.Response) => {
   return ingressHandler(req, res);
 });
 
-// Secret retrieved via Secret Manager API (not in function config to avoid deployment validation errors)
+// Secret is now available in Secret Manager with name OPENROUTER_API_KEY_EMU
 export const ingress = onRequest(
   {
     cors: true,
     memory: '512MiB',
     timeoutSeconds: 60,
+    secrets: ['OPENROUTER_API_KEY_EMU'],
     region: 'us-central1',
   },
   ingressApp
