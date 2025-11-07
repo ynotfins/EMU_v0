@@ -22,6 +22,10 @@ const incidentSchema = z.object({
   type: z.enum(['fire', 'flood', 'storm', 'accident', 'hazard', 'medical', 'other']).optional(),
   description: z.string(), // Full alert text, expanded abbreviations
   severity: z.enum(['low', 'medium', 'high', 'critical']).optional(),
+  // Fire department info (for Supe app only)
+  fireDepartmentInfo: z.string().optional(), // Extracted fire department status/details
+  // Department codes (e.g., "nj179/pas4795", "nj179/njn3979")
+  departmentCodes: z.array(z.string()).optional(), // Array of department codes found at end of alert
 });
 
 type Incident = z.infer<typeof incidentSchema>;
@@ -38,17 +42,21 @@ const firestoreIncidentSchema = z.object({
     zipCode: z.string().optional(),
     country: z.string().optional().default('USA'),
   }).optional(),
-  // Direct fields for backward compatibility and easier querying
+  // Direct fields for backward compatibility and easier querying (also needed for geocoding trigger)
   state: z.string().optional(),
   county: z.string().optional(),
   city: z.string().optional(),
-  address: z.string().optional(),
+  address: z.string().optional(), // Must be at root for geocoding trigger
   zipCode: z.string().optional(),
   country: z.string().optional().default('USA'),
   // Incident details
   type: z.string().optional(),
   description: z.string(),
   severity: z.string().optional(),
+  // Additional fields
+  originalText: z.string().optional(), // Original notification text for analysis
+  fireDepartmentInfo: z.string().optional(), // Fire department info (Supe app only)
+  departmentCodes: z.array(z.string()).optional(), // Department codes (e.g., ["nj179/pas4795", "nj179/njn3979"])
   createdAt: z.any().optional(),
   updatedAt: z.any().optional(),
   activity: z.array(z.object({
@@ -168,6 +176,28 @@ FORMATTING REQUIREMENTS (CRITICAL - ALL FIELDS MUST BE BEAUTIFULLY FORMATTED):
    - Extract numeric ID, remove # symbol if present
    - Format as plain string: "1835340" (not "#1835340")
 
+6. **Fire Department Info**:
+   - Extract any fire department status, response details, or apparatus information
+   - Examples: "FD O/S" → "Fire Department on scene", "Engine 5 responding" → "Engine 5 responding"
+   - Include any fire department units, apparatus, or response status mentioned
+   - This field is for Supe app display only
+   - If no fire department info is present, omit this field
+
+7. **Department Codes** (CRITICAL):
+   - Extract ALL department codes found at the end of alerts
+   - Department codes typically appear at the very end of the message
+   - Format: Usually lowercase state abbreviation + numbers, often separated by "/" or spaces
+   - Examples: "nj179/pas4795", "nj179/njn3979", "nj179 pas4795", "nj179 njn3979"
+   - Patterns to look for:
+     • State abbreviation (nj, ny, pa, etc.) followed by numbers
+     • Codes separated by "/" (e.g., "nj179/pas4795")
+     • Codes separated by spaces (e.g., "nj179 pas4795")
+     • May include additional codes after "/" (e.g., "pas4795", "njn3979")
+   - Return as array of strings: ["nj179/pas4795", "nj179/njn3979"] or ["nj179", "pas4795", "njn3979"]
+   - If codes are separated by "/", include both the full string AND individual parts
+   - Example: "nj179/pas4795" → ["nj179/pas4795", "nj179", "pas4795"]
+   - If no department codes found, return empty array or omit field
+
 OUTPUT REQUIREMENTS:
 - All fields must be beautifully formatted and ready for display
 - Use proper grammar, punctuation, and capitalization throughout
@@ -184,13 +214,14 @@ Now parse and format the message according to these requirements.`,
     // NOTE: Geocoding (lat/lng) happens automatically via Firebase Cloud Function trigger
     // The `autoGeocodeIncident` function in functions/src/index.ts runs onCreate and geocodes
     // addresses using Google Maps API. This happens asynchronously after document creation.
+    // IMPORTANT: Geocoding only happens on CREATE (onCreate trigger), not on updates.
     const locationObj = (parsed.address || parsed.city || parsed.state) ? {
       address: parsed.address,
       city: parsed.city,
       state: parsed.state,
       zipCode: parsed.zipCode,
       country: parsed.country || 'USA',
-      // lat/lng will be added by autoGeocodeIncident Firebase function trigger
+      // lat/lng will be added by autoGeocodeIncident Firebase function trigger (onCreate only)
     } : undefined;
 
     const mapped: FirestoreIncident = {
@@ -198,16 +229,21 @@ Now parse and format the message according to these requirements.`,
       // Location object for Firebase Location interface
       location: locationObj,
       // Individual fields for easier querying and display
+      // Address at root level is required for geocoding trigger
       state: parsed.state,
       county: parsed.county,
       city: parsed.city,
-      address: parsed.address,
+      address: parsed.address, // Must be at root for geocoding trigger to find it
       zipCode: parsed.zipCode,
       country: parsed.country || 'USA',
       // Incident details
       type: parsed.type,
       description: parsed.description,
       severity: parsed.severity,
+      // Additional fields
+      originalText: composedMessage, // Store original text for analysis
+      fireDepartmentInfo: parsed.fireDepartmentInfo, // Fire department info for Supe app
+      departmentCodes: parsed.departmentCodes, // Department codes array
     };
     const data = firestoreIncidentSchema.parse(mapped);
 

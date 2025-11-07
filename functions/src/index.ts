@@ -89,15 +89,20 @@ export const autoGeocodeIncident = onDocumentCreated('incidents/{incidentId}', a
     return;
   }
   
+  // Check for address at root level or in location object
+  const address = data.address || data.location?.address;
+  const city = data.city || data.location?.city;
+  const state = data.state || data.location?.state;
+  
   // Skip if no address
-  if (!data.address) {
+  if (!address) {
     console.warn('[Geocode] No address provided for incident:', incidentId);
     return;
   }
   
   try {
-    // Build full address
-    const fullAddress = `${data.address}, ${data.city || ''}, ${data.state || ''}`.trim();
+    // Build full address from root fields or location object
+    const fullAddress = `${address}, ${city || ''}, ${state || ''}`.trim();
     console.log('[Geocode] Geocoding address:', fullAddress);
     
     // Geocode using Google Maps API
@@ -122,12 +127,30 @@ export const autoGeocodeIncident = onDocumentCreated('incidents/{incidentId}', a
     const location = response.data.results[0].geometry.location;
     console.log('[Geocode] Success:', { lat: location.lat, lng: location.lng });
     
-    // Update incident with coordinates
-    await snapshot.ref.update({
+    // Update incident with coordinates at root and in location object
+    const updateData: any = {
       lat: location.lat,
       lng: location.lng,
       geocodedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+    };
+    
+    // Also update location object if it exists
+    if (data.location) {
+      updateData['location.lat'] = location.lat;
+      updateData['location.lng'] = location.lng;
+    } else {
+      // Create location object if it doesn't exist
+      updateData.location = {
+        lat: location.lat,
+        lng: location.lng,
+        address: address,
+        city: city,
+        state: state,
+        country: data.country || 'USA',
+      };
+    }
+    
+    await snapshot.ref.update(updateData);
     
     console.log('[Geocode] Updated incident with coordinates');
     
