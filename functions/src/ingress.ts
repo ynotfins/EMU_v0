@@ -11,6 +11,7 @@ import { fetchWeatherForLocation } from './ingress-utils/weather';
 import { Client } from '@googlemaps/google-maps-services-js';
 import express from 'express';
 import type { CounterData, RequestWithRawBody, ExistingIncidentData, ParsedIncident, GenerateObjectResult, ErrorWithStatus } from './ingress-types';
+import { isExistingIncidentData, isGenerateObjectResult, isErrorWithStatus } from './ingress-types';
 import { trackDepartmentCodes } from './utils/track-department-codes';
 
 let db: ReturnType<typeof getFirestore> | null = null;
@@ -813,7 +814,7 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
       if (snap.exists) {
         const existing = snap.data();
         
-        if (!isExistingIncidentData(existing)) {
+        if (!existing || !isExistingIncidentData(existing)) {
           return res.status(500).json({ error: 'Invalid existing data' });
         }
         

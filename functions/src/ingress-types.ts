@@ -61,7 +61,10 @@ export interface ErrorWithStatus extends Error {
 }
 
 export function isExistingIncidentData(data: DocumentData | undefined): data is ExistingIncidentData {
-  return data !== undefined;
+  if (data === undefined) {
+    return false;
+  }
+  return typeof data === 'object' && data !== null;
 }
 
 export function isGenerateObjectResult(result: unknown): result is GenerateObjectResult {
