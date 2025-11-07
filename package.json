@@ -24,7 +24,9 @@
     "precommit": "tsx scripts/pre-build-check.ts",
     "deploy:preview": "vercel",
     "deploy:prod": "vercel --prod",
-    "test:login": "tsx scripts/e2e-login.ts"
+    "test:login": "tsx scripts/e2e-login.ts",
+    "import:fire-departments": "tsx scripts/import-fire-departments.ts",
+    "crossref:fire-departments": "tsx scripts/crossref-fire-departments.ts"
   },
   "dependencies": {
     "@google-cloud/secret-manager": "^6.1.1",
@@ -118,6 +120,7 @@
     "tw-animate-css": "1.3.3",
     "typescript": "^5",
     "vercel": "^48.8.2",
-    "yaml": "^2.6.0"
+    "yaml": "^2.6.0",
+    "csv-parse": "^5.5.6"
   }
 }

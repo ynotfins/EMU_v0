@@ -1,0 +1,15 @@
+[
+  {
+    "fdid": "00001",
+    "name": "Example Fire Department",
+    "state": "NJ",
+    "county": "Monmouth County",
+    "city": "Example City",
+    "address": "123 Main St",
+    "zipCode": "07701",
+    "phone": "(555) 123-4567",
+    "website": "https://example.com",
+    "notes": "Template entry - replace with your actual data"
+  }
+]
+
