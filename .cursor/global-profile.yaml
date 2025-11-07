@@ -283,3 +283,159 @@ integration_status:
   verified_by: "Cursor AI Assistant"
   verification_method: "Tool execution tests"
 
+---
+# Update 2025-01-07T12:00:00Z
+# [id]: prof_20250107_120000_emu_stack
+# [source]: human
+# [reason]: Add complete tech stack documentation for EMU Alerts/EMU Incidents project
+# [status]: active
+
+# EMU Alerts / EMU Incidents - Technology Stack
+
+emu_alerts_incidents:
+  project_name: "EMU Alerts / EMU Incidents"
+  project_type: "Emergency Management & Response System"
+  repository: "https://github.com/ynotfins/EMU_v0"
+  production_url: "https://rebuild.4axe.com"
+  development_branch: "proper-architecture-Tony"
+  
+  tech_stack:
+    frontend:
+      framework: "Next.js 16.0.1"
+      features:
+        - "App Router"
+        - "Server Components"
+        - "Server Actions"
+        - "Turbopack (build tool)"
+      ui_library: "React 19.2.0"
+      language: "TypeScript 5"
+      styling:
+        framework: "Tailwind CSS 4.1.17"
+        components: "Radix UI primitives + Shadcn UI (54 components)"
+        icons: "Lucide React"
+      forms:
+        library: "React Hook Form 7.66.0"
+        validation: "Zod 4.1.12"
+      state_management:
+        client: "Zustand 5.0.8"
+        server: "Server Actions"
+        realtime: "Firestore onSnapshot hooks"
+      date_handling: "date-fns 4.1.0"
+      package_manager: "pnpm 10.15.0"
+    
+    backend:
+      database: "Firebase Firestore (NoSQL)"
+      authentication: "Firebase Auth"
+      realtime: "Firestore real-time listeners"
+      storage: "Firebase Storage (planned)"
+      messaging: "Firebase Cloud Messaging (planned)"
+      type_safety: "Typesaurus 10.7.0"
+    
+    cloud_functions:
+      runtime: "Node.js 20"
+      framework: "Firebase Functions v2 (2nd Gen)"
+      functions:
+        - name: "autoGeocodeIncident"
+          trigger: "onCreate /incidents"
+          purpose: "Auto-geocoding on incident creation"
+        - name: "scheduleGeocodeMissing"
+          trigger: "Scheduled every 15 minutes"
+          purpose: "Geocode missing addresses"
+        - name: "ingress"
+          trigger: "HTTP onRequest"
+          purpose: "AI-powered webhook for incident parsing"
+      dependencies:
+        - "firebase-admin@^12.0.0"
+        - "firebase-functions@^6.0.0"
+        - "@googlemaps/google-maps-services-js@^3.3.47"
+        - "ai@^5.0.87"
+        - "@openrouter/ai-sdk-provider@^1.2.0"
+        - "zod@^3.23.8"
+    
+    webhook_service:
+      location: "server_v2/"
+      runtime: "Node.js 20"
+      framework: "Express 4.21.2"
+      ai: "AI SDK 5.0.87 + @openrouter/ai-sdk-provider@^1.2.0"
+      validation: "Zod 3.23.8"
+      cors: "cors@^2.8.5"
+      deployment: "Cloud Run (via Firebase Functions ingress)"
+    
+    maps_location:
+      client: "@googlemaps/js-api-loader@^2.0.2"
+      server: "@googlemaps/google-maps-services-js@^3.3.47"
+      geocoding: "Server-side via Cloud Functions"
+    
+    development_tools:
+      package_manager: "pnpm 10.15.0"
+      build_tool: "Turbopack (Next.js)"
+      linting: "ESLint 9 + eslint-config-next"
+      type_checking: "TypeScript 5 (strict mode)"
+      script_runner: "tsx 4.20.6"
+    
+    deployment:
+      frontend: "Vercel (rebuild.4axe.com)"
+      backend: "Firebase Cloud Functions (us-central1)"
+      webhook: "Cloud Run (via Firebase Functions ingress)"
+      cicd: "GitHub Actions"
+    
+    additional_services:
+      secret_management: "Google Cloud Secret Manager"
+      ai_provider: "OpenRouter API (Claude 3.5 Sonnet)"
+      analytics: "Vercel Analytics (planned)"
+  
+  architecture_pattern:
+    style: "Simplified architecture (no repository pattern)"
+    database_access: "Direct Firebase SDK usage"
+    api_endpoints: "Server Actions"
+    realtime: "Real-time subscriptions via React hooks"
+    type_safety: "End-to-end type safety with TypeScript + Zod"
+  
+  key_features:
+    - "Real-time incident updates"
+    - "AI-powered incident parsing"
+    - "Automatic geocoding"
+    - "Role-based access (Chaser/Supe/Admin)"
+    - "Mobile-responsive UI"
+    - "Type-safe throughout"
+  
+  project_structure:
+    frontend_app: "emu-alerts-new/"
+    cloud_functions: "functions/"
+    webhook_service: "server_v2/"
+    firebase_rules: "firebase-rules/"
+    documentation: "docs/memory-bank/"
+  
+  environment_variables:
+    firebase_admin:
+      - "FIREBASE_ADMIN_PROJECT_ID"
+      - "FIREBASE_ADMIN_CLIENT_EMAIL"
+      - "FIREBASE_ADMIN_PRIVATE_KEY"
+    firebase_client:
+      - "NEXT_PUBLIC_FIREBASE_API_KEY"
+      - "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN"
+      - "NEXT_PUBLIC_FIREBASE_PROJECT_ID"
+      - "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET"
+      - "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID"
+      - "NEXT_PUBLIC_FIREBASE_APP_ID"
+      - "NEXT_PUBLIC_FIREBASE_DATABASE_URL"
+    app_config:
+      - "NEXT_PUBLIC_APP_URL"
+      - "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY"
+    secrets:
+      - "OPENROUTER_API_KEY_EMU (Secret Manager)"
+      - "GOOGLE_MAPS_API_KEY (Secret Manager)"
+  
+  deployment_info:
+    vercel_config: "vercel.json"
+    build_command: "cd emu-alerts-new && pnpm build"
+    output_directory: "emu-alerts-new/.next"
+    region: "iad1"
+  
+  notes:
+    - "Modern, type-safe stack using Next.js, Firebase, and TypeScript"
+    - "Monorepo structure with separate frontend app and cloud functions"
+    - "AI-enhanced webhook for parsing emergency notifications"
+    - "Real-time updates via Firestore subscriptions"
+    - "Mobile-first design for field responders"
+
