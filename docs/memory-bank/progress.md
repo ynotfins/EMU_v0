@@ -1,99 +1,56 @@
-# Progress: Clean Architecture Implementation
+# Progress: EMU Alerts Development
 
-## Overall Status: 75% Complete → 100% Compliance Plan Active
+## Overall Status: Core Features Complete, Fire Department System Operational
 
-### 🎯 Current Focus: 100% Compliance & Modular Architecture
-**Status**: Plan created, Phase 1.1 starting  
-**Target**: 100% Best Practices + Modular Architecture compliance  
-**Timeline**: 12-16 hours across 5 phases
+### 🎯 Current Focus: Fire Department Encryption Policy Tracking
+**Status**: System complete, ready for data import  
+**Target**: Cross-reference all BNN codes with fire departments  
+**Timeline**: Ongoing as alerts come in
 
-### ✅ Phase 1: Domain Layer (100%)
-- Value Objects: Email, Location, Role, Timestamp, ID with branded types
-- Entities: User, Incident with rich business logic
-- Repository Interfaces: Defined contracts for data access
-- Error Handling: Either monad for functional error flow
-- **Files**: `src/core/domain/**`
+### ✅ Core Application (100%)
+- **Frontend**: Next.js 16 App Router application (`emu-alerts-new/`)
+- **Authentication**: Firebase Auth with session cookies
+- **Database**: Firestore with Typesaurus type safety
+- **Real-time**: Firestore subscriptions for live updates
+- **UI Components**: shadcn/ui with Tailwind CSS
+- **Pages**: Incidents list, detail, favorites, profile, fire departments
 
-### ✅ Phase 2: Application Layer (100%)
-- Use Cases: SignIn, SignUp, SignOut, GetCurrentUser, CreateIncident, GetIncidents
-- Service Interfaces: IAuthService, ISessionService, IEventBus, INotificationService
-- DTOs: Request/Response objects for each use case
-- Dependency Injection: Tokens defined
-- **Files**: `src/core/application/**`
+### ✅ Webhook Service (100%)
+- **AI Extraction**: OpenRouter/Claude 3.5 Sonnet
+- **Data Processing**: Extracts incident ID, location, type, codes
+- **Message Handling**: Appends updates, tracks alert fields
+- **Code Tracking**: Automatic department code tracking
+- **Geocoding**: Cloud Function triggers on incident creation
 
-### ✅ Phase 3: Infrastructure Layer (90%)
-#### Completed
-- Firebase Configuration (Client & Admin SDKs)
-- User Repository with location queries
-- Incident Repository with geospatial support
-- Authentication Service
-- Session Management with httpOnly cookies
-- Email Service with templates
-- Push Notification Service
-- Event Bus implementation
-- DI Container bindings
+### ✅ Fire Department System (100%)
+- **Schema**: FireDepartment and FireDepartmentMapping collections
+- **Management UI**: Full CRUD operations for Supe users
+- **Google Sheets**: Import from URL or CSV
+- **Cross-Reference**: Script matches codes to departments
+- **Encryption Policy**: 4 types tracked (all_unencrypted, first_unencrypted_then_encrypted, all_encrypted, unknown)
+- **Automation**: Google Apps Script for data validation
 
-#### Remaining (10%)
-- Storage Service for file uploads
-- Location Service for Google Maps
-- Chat Repository
-- Logger Service
-- Cache Service
-
-**Files**: `src/infrastructure/**`
-
-### 🔄 Phase 4: Presentation Layer (70%)
-#### Completed
-- ✅ Server Actions for authentication
-- ✅ Server Actions for incidents
-- ✅ React hooks (useAuth, useIncidents, useLocation)
-- ✅ Zustand stores (Auth, Incidents, UI)
-- ✅ Authentication middleware
-- ✅ Error boundaries (global, chaser, supe)
-
-#### In Progress
-- 🚧 UI component integration
-- 🚧 App Router page updates
-
-**Files**: `src/presentation/**`
-
-### ⏳ Phase 5: Feature Implementation (0%)
-- Complete incident lifecycle
-- Chat functionality
-- Document management
-- E-signatures
-- Offline support
-
-### ⏳ Phase 6: Testing (0%)
-- Unit tests for domain logic
-- Integration tests for use cases
-- E2E tests for critical flows
-- Performance testing
-
-**Note**: Testing infrastructure planned in Phase 3 of compliance plan
-
-### ⏳ Phase 7: Production Readiness (0%)
-- Security audit
-- Performance optimization
-- Monitoring setup
-- Documentation
-- Deployment configuration
+### 🔄 Data Population (In Progress)
+- Importing fire department data from Google Sheets
+- Populating encryption policies
+- Cross-referencing BNN codes with departments
+- Building code-to-department confidence levels
 
 ## Current Sprint Focus
 
 ### Immediate Tasks
-1. Complete UI component integration with new hooks
-2. Update App Router pages to use Server Actions
-3. Implement loading and error boundaries
-4. Add remaining infrastructure services
+1. Run Google Apps Script to set up spreadsheet automation
+2. Import fire department data from Google Sheets
+3. Populate encryption policies from column Z notes
+4. Run cross-reference script to match codes
 
 ### Blockers
 - None currently
 
 ### Decisions Needed
-1. Approach for migrating existing UI components
-2. Strategy for gradual rollout vs big bang
-3. Testing strategy prioritization
+1. Service area scraping approach for automatic department identification
+2. Alert filtering strategy based on encryption policy
+3. Analytics dashboard requirements
 
 ## Key Achievements
 

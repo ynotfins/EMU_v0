@@ -1,32 +1,32 @@
 # Technical Context: Implementation Details
 
-## Clean Architecture Layers
+## Application Structure
 
-### 1. Domain Layer (`src/core/domain/`)
-- **Entities**: User, Incident (rich domain models)
-- **Value Objects**: Email, Location, Role, Timestamp, ID
-- **Repository Interfaces**: IUserRepository, IIncidentRepository
-- **Domain Errors**: Custom error classes
-- **Either Monad**: Functional error handling
+### Frontend (`emu-alerts-new/`)
+- **Pages**: Next.js App Router (`app/` directory)
+- **Components**: React components (`components/ui/`)
+- **Hooks**: Custom React hooks (`hooks/`)
+- **Actions**: Server actions (`actions/`)
+- **Firebase**: Client SDK config (`firebase/config/client.ts`)
+- **Schema**: Typesaurus schema (`firebase/schema.ts`)
 
-### 2. Application Layer (`src/core/application/`)
-- **Use Cases**: SignIn, SignUp, CreateIncident, GetIncidents
-- **DTOs**: Request/Response objects
-- **Service Interfaces**: IAuthService, ISessionService, IEventBus
-- **Application Errors**: UseCaseError, ExternalServiceError
+### Backend Services
 
-### 3. Infrastructure Layer (`src/infrastructure/`)
-- **Firebase**: Admin SDK for server, Client SDK for real-time
-- **Repositories**: FirebaseUserRepository, FirebaseIncidentRepository
-- **Services**: EmailService, NotificationService, AuthService
-- **Event Bus**: Domain event publishing
-- **DI Container**: InversifyJS configuration
+#### Webhook Service (`server_v2/`)
+- **Runtime**: Node.js 20
+- **Framework**: Express
+- **AI**: OpenRouter API (Claude 3.5 Sonnet)
+- **Database**: Firebase Admin SDK → Firestore
+- **Deployment**: Google Cloud Run
 
-### 4. Presentation Layer (`src/presentation/`)
-- **Server Actions**: Type-safe API endpoints
-- **React Hooks**: useAuth, useIncidents, useLocation
-- **Zustand Stores**: Auth, Incidents, UI state
-- **Components**: UI components (to be integrated)
+#### Cloud Functions (`functions/`)
+- **Runtime**: Node.js 20
+- **API**: Firebase Functions v2
+- **Functions**:
+  - `ingress`: Main webhook endpoint, AI processing
+  - `autoGeocodeIncident`: Auto-geocode on incident creation
+  - `scheduleGeocodeMissing`: Scheduled geocoding fallback
+- **Dependencies**: Firebase Admin, Google Maps API, OpenRouter AI SDK
 
 ## Key Technologies
 
@@ -128,44 +128,41 @@ pnpm lint        # Run ESLint
 - Input validation with value objects
 - Firebase Security Rules
 
-### Update 2025-01-05T01:45:00Z
+### Update 2025-01-07T00:00:00Z
 [status]: active
-[id]: u_20250105_014500_tech1
+[id]: u_20250107_000000_tech1
 [source]: action
-[reason]: Adding current technical implementation details
+[reason]: Current technical implementation
 
-**Cloud Functions** (Created, Deployment In Progress):
+**Cloud Functions** (Deployed):
 - Runtime: Node.js 20
 - API: Firebase Functions v2 (2nd Gen)
 - Functions:
+  - `ingress`: Main webhook endpoint with AI processing
   - `autoGeocodeIncident`: onCreate trigger for /incidents
   - `scheduleGeocodeMissing`: Scheduled every 15 minutes
-- Dependencies:
-  - firebase-admin@^12.0.0
-  - firebase-functions@^5.0.0
-  - @googlemaps/google-maps-services-js@^3.3.42
+- Secrets: OPENROUTER_API_KEY_EMU, GOOGLE_MAPS_API_KEY (Secret Manager)
+
+**AI Integration**:
+- Provider: OpenRouter API
+- Model: Claude 3.5 Sonnet
+- Purpose: Extract structured data from alert messages
+- Fields Extracted: incidentId, location, type, description, departmentCodes, fireDepartmentInfo
 
 **Google Maps Integration**:
 - Client-side: @googlemaps/js-api-loader@2.0.2
-- Server-side: @googlemaps/google-maps-services-js@3.3.42  
-- Geocoding: Server-side via Cloud Functions (prevents duplicate geocoding)
-- Map Display: GoogleMapLive component with Loader API
-- Embed Maps: iframe embeds on detail pages (zoom 12)
+- Server-side: @googlemaps/google-maps-services-js@3.3.42
+- Geocoding: Server-side via Cloud Functions (prevents duplicates)
+- API Key: Stored in Secret Manager, accessed via environment
 
-**Architecture Issues Identified**:
-- Duplicate page implementations (/chaser/* and /supe/* are separate)
-- Should be using shared components with role-based rendering
-- Consolidation plan created in ARCHITECTURE_CONSOLIDATION_PLAN.md
-- Maintenance burden due to code duplication
+**Fire Department System**:
+- Google Sheets: Master data source (columns A-AB protected, AC-AH editable)
+- Firestore: `fireDepartments` and `fireDepartmentMappings` collections
+- Import: CSV or Google Sheets URL
+- Automation: Google Apps Script for data validation
 
 **Build Status**:
-- TypeScript errors: 429 (ignoreBuildErrors: true enabled)
-- ESLint: Circular reference error in config (known issue)
-- Deployment: Working on rebuild.4axe.com via Vercel
-- Cloud Functions: Pending deployment (waiting for user)
-
-**Development Environment**:
-- Primary IDE: VS Code with custom profile
-- Extensions: Optimized for Next.js/Firebase development
+- TypeScript: 0 errors (after refactoring)
+- ESLint: Configured and passing
+- Deployment: Vercel (frontend), Cloud Run (webhook), Firebase Functions
 - Package Manager: pnpm v10.15.0
-- Git Branch: rebuild-proper-architecture

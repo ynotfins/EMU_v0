@@ -145,32 +145,38 @@
 - Customer satisfaction
 - Team utilization
 
-### Update 2025-01-05T01:40:00Z
+### Update 2025-01-07T00:00:00Z
 [status]: active
-[id]: u_20250105_014000_prod1
+[id]: u_20250107_000000_prod1
 [source]: action
-[reason]: Adding specific implementation details and current state
+[reason]: Current implementation details for EMU Alerts
 
 **Current Implementation Details**:
 
-**Bottom Navigation** (4 tabs, not 5):
-- Home (Incidents list) - Landing page after login
-- Favorites (4 sub-tabs: Favorites, Bookmarks, Notes, Responses)
-- Chat (Incident chats + Direct messages)
-- Profile (Settings + Live Team Map for Supes)
+**Bottom Navigation** (4 tabs):
+- Incidents (Home) - List of alerts grouped by incidentId
+- Favorites - User's favorited/bookmarked incidents
+- Chat - Incident chats and direct messages
+- Profile - User settings, fire department management (Supe only)
 
-**Chat System Specifics**:
-- Incident Chat: Automatically adds ALL Supes when Chaser opens chat
-- Direct Messages: Chaser↔Supe and Chaser↔Chaser private messaging
-- Uses Firebase Realtime Database for real-time sync
+**Home Page Display Format**:
+- Groups incidents by `incidentId`, shows most recent
+- 6-line format: Date/Time/Distance | State/County/City/Address | Alert Type/Alert
+- Bullet-separated messages if multiple alerts for same ID
 
-**Maps Implementation**:
-- Map #1 (Detail): Google Maps Embed iframe, zoom 12, on incident detail page
-- Map #2 (Live Alerts): GoogleMapLive component via @googlemaps/js-api-loader, shows last 10 incidents from past 4 hours
-- Map #3 (Team): Supe profile page only, shows Chaser GPS locations updated < 5 minutes
+**Detail Page Display Format**:
+- Shows all alerts for incident ID
+- Date/Time | Alert Type/Alert Message
+- Supe users see fire department codes
+
+**Fire Department Management**:
+- Supe users can manage fire departments at `/fire-departments`
+- Track encryption policies (all_unencrypted, first_unencrypted_then_encrypted, all_encrypted, unknown)
+- Import from Google Sheets or CSV
+- Cross-reference BNN codes with departments
 
 **Current Deployment Status**:
-- Production (4axe.com): Original architecture, stable
-- Rebuild (rebuild.4axe.com): Clean Architecture, active development
-- Both use same Firebase project
-- TypeScript: 429 errors exist, ignoreBuildErrors enabled temporarily
+- Frontend: Vercel (auto-deploy from GitHub)
+- Webhook: Google Cloud Run (server_v2)
+- Functions: Firebase Cloud Functions (ingress, geocoding)
+- Database: Firestore

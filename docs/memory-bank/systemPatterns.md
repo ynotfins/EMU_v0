@@ -1,88 +1,75 @@
 # System Patterns: Architecture & Design Patterns
 
-## Clean Architecture Structure
+## Application Architecture
 
-### Layer Dependencies
+### Monorepo Structure
 ```
-Presentation → Application → Domain ← Infrastructure
-     ↓             ↓                      ↑
-     └─────────────┴──────────────────────┘
+EMU_v0/
+├── emu-alerts-new/          # Next.js frontend application
+├── functions/               # Firebase Cloud Functions
+├── server_v2/               # Standalone webhook service
+├── data/fire-departments/   # Reference data and scripts
+└── scripts/                 # Utility scripts
 ```
 
 ### Key Principles
-1. **Dependency Rule**: Dependencies point inward
-2. **Domain Independence**: Business logic has no external dependencies
-3. **Interface Segregation**: Use interfaces, not concrete implementations
-4. **Single Responsibility**: Each module has one reason to change
+1. **Type Safety**: End-to-end TypeScript with Zod validation
+2. **Real-time Updates**: Firestore subscriptions for live data
+3. **AI Integration**: OpenRouter API for text extraction
+4. **Modular Design**: Separate concerns (webhook, frontend, functions)
 
 ## Core Design Patterns
 
-### 1. Repository Pattern
+### 1. Webhook Processing Pattern
 ```typescript
-// Domain defines interface
-interface IUserRepository {
-  findById(id: UserId): Promise<Either<Error, User>>;
-  save(user: User): Promise<Either<Error, void>>;
-}
+// Incoming alert → AI extraction → Firestore storage
+POST /webhook → AI Extract → Validate → Store → Geocode
+```
 
-// Infrastructure implements
-class FirebaseUserRepository implements IUserRepository {
-  // Concrete Firebase implementation
+### 2. Real-time Subscription Pattern
+```typescript
+// Firestore → React Hook → UI Update
+onSnapshot(query) → useIncidents() → Component Re-render
+```
+
+### 3. Type Guard Pattern
+```typescript
+// Runtime type validation
+function isFireDepartment(data: unknown): data is FireDepartment {
+  return typeof data === 'object' && data !== null && 'fdid' in data;
 }
 ```
 
-### 2. Use Case Pattern
+### 4. Server Action Pattern
 ```typescript
-// Single responsibility use case
-class SignInUseCase {
-  execute(request: SignInRequest): Promise<Either<Error, SignInResponse>> {
-    // Orchestrates domain logic
-  }
-}
-```
-
-### 3. Value Object Pattern
-```typescript
-// Self-validating, immutable values
-class Email extends ValueObject<{ value: string }> {
-  static create(email: string): Either<InvalidEmailError, Email> {
-    // Validation logic
-  }
-}
-```
-
-### 4. Either Monad Pattern
-```typescript
-// Explicit error handling
-const result = await createIncident(data);
-if (result.isLeft()) {
-  handleError(result.value);
-} else {
-  handleSuccess(result.value);
+// Type-safe server-side operations
+'use server'
+export async function createFireDepartment(data: FireDepartmentInput) {
+  // Server-side validation and Firestore write
 }
 ```
 
 ## Data Flow Patterns
 
-### Server Action Flow
+### Alert Processing Flow
 ```
-Client Component → Server Action → Use Case → Repository → Database
-                         ↓              ↓           ↓
-                    Session Check   Domain Logic  Mapping
+MacroDroid → Webhook → AI Extract → Firestore → Geocode → Display
+                ↓           ↓            ↓          ↓
+          JSON Payload  Structured   Incident   lat/lng
 ```
 
 ### Real-time Subscription Flow
 ```
-Firestore → onSnapshot → React Hook → Zustand Store → UI Component
+Firestore → onSnapshot → React Hook → Component Re-render
                ↓             ↓              ↓
-          Data Transform  State Update  Re-render
+          Query Change   State Update   UI Update
 ```
 
-### Authentication Flow
+### Fire Department Code Tracking Flow
 ```
-Login Form → Server Action → Auth Service → Session Cookie
-                 ↓               ↓               ↓
-            Validation    Firebase Auth    httpOnly Cookie
+Alert → Extract Codes → Track Address → Cross-Reference → Link Department → Encryption Policy
+  ↓          ↓              ↓                ↓                  ↓                  ↓
+BNN      departmentCodes  Mapping      Address Match      FireDepartment    Policy Type
 ```
 
 ## State Management Patterns
