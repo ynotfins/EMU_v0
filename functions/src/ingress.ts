@@ -681,6 +681,10 @@ ingressApp.post('/webhook', async (req: express.Request, res: express.Response) 
       return res.status(400).json({ error: 'Missing message string' });
     }
 
+    // Log the composed message for debugging
+    console.log('[Webhook V2] Composed message:', composedMessage);
+    console.log('[Webhook V2] Message length:', composedMessage.length);
+
     // V2 schema with department codes - location fields are critical
     const v2IncidentSchema = z.object({
       incidentId: z.string().optional(),
@@ -709,6 +713,14 @@ ingressApp.post('/webhook', async (req: express.Request, res: express.Response) 
     const provider = createOpenRouter({ apiKey });
     let parsed: any;
     try {
+      // Log input validation
+      console.log('[Webhook V2] === INPUT VALIDATION ===');
+      console.log('[Webhook V2] Composed message:', composedMessage);
+      console.log('[Webhook V2] Message length:', composedMessage.length);
+      console.log('[Webhook V2] Has "at" keyword:', composedMessage.includes(' at '));
+      console.log('[Webhook V2] Has "on" keyword:', composedMessage.includes(' on '));
+      console.log('[Webhook V2] Ends with department code pattern:', /[a-z]{2}\d+\/[a-z]+\d+/.test(composedMessage) || /[a-z]{2}\d+\s+[a-z]+\d+/.test(composedMessage));
+      
       const result = await generateObject({
         model: provider('anthropic/claude-3.5-sonnet'),
         schema: v2IncidentSchema as any,
@@ -731,18 +743,106 @@ FIELDS:
 6. type: Map to: fire, flood, storm, accident, hazard, medical, other
 7. description: Expand abbreviations, full readable text
 8. severity: low/medium/high/critical (default: medium)
-9. fireDepartmentInfo: FD status/apparatus info (optional)
+9. fireDepartmentInfo: Extract FD status/apparatus/command info (e.g., "Command is adding stations 24 and 25" → "Additional stations 24 and 25 requested by Command")
 10. departmentCodes: Array of codes at end (e.g., "nj179/pas4795" → ["nj179/pas4795", "nj179", "pas4795"])
 
-OUTPUT: Valid JSON with all extracted fields.`,
+OUTPUT: Return ONLY a valid JSON object matching this exact structure:
+{
+  "incidentId": "1836125",
+  "state": "PA",
+  "county": "Chester County",
+  "city": "East Fallowfield Township",
+  "address": "921 Buck Run Rd",
+  "type": "fire",
+  "description": "Working fire dispatch reported...",
+  "severity": "medium",
+  "fireDepartmentInfo": "Additional stations requested",
+  "departmentCodes": ["nj179/pas4795", "nj179", "pas4795"]
+}
+
+CRITICAL: Return ONLY valid JSON, no explanations or text.`,
         temperature: 0.1,
+        maxRetries: 2,
       });
+      // Log raw AI response
+      console.log('[Webhook V2] === RAW AI RESPONSE ===');
+      console.log('[Webhook V2] Full result object:', JSON.stringify(result, null, 2));
+      
+      // Handle case where AI returns JSON with extra text - extract just the JSON
       parsed = result.object;
+      
+      // If result.object doesn't exist, try to extract from text
+      if (!parsed && (result as any).text) {
+        console.log('[Webhook V2] Attempting to extract JSON from text response');
+        const jsonMatch = (result as any).text.match(/\{[\s\S]*?\}(?=\n|$)/);
+        if (jsonMatch) {
+          try {
+            parsed = JSON.parse(jsonMatch[0].trim());
+            console.log('[Webhook V2] Successfully extracted JSON from text');
+          } catch (e) {
+            console.error('[Webhook V2] Failed to parse extracted JSON:', e);
+            throw new Error('Could not parse JSON from AI response');
+          }
+        }
+      }
+      
+      if (!parsed) {
+        throw new Error('No parsed object available from AI response');
+      }
+      
+      // Log parsed output validation
+      console.log('[Webhook V2] === PARSED OUTPUT VALIDATION ===');
+      console.log('[Webhook V2] Parsed object:', JSON.stringify(parsed, null, 2));
+      console.log('[Webhook V2] Location extraction:');
+      console.log('  - state:', parsed.state || 'NULL');
+      console.log('  - county:', parsed.county || 'NULL');
+      console.log('  - city:', parsed.city || 'NULL');
+      console.log('  - address:', parsed.address || 'NULL');
+      console.log('[Webhook V2] Department codes:', parsed.departmentCodes || 'NULL');
+      console.log('[Webhook V2] Fire department info:', parsed.fireDepartmentInfo || 'NULL');
+      console.log('[Webhook V2] Incident ID:', parsed.incidentId || 'NULL');
     } catch (aiError: any) {
       console.error('[Webhook V2] AI extraction failed:', aiError?.message || aiError);
+      console.error('[Webhook V2] Full error:', JSON.stringify(aiError, null, 2));
+      
+      // Try to extract JSON from error text if it contains valid JSON (AI sometimes adds notes after JSON)
+      if (aiError?.text || aiError?.cause?.text) {
+        const errorText = aiError.text || aiError.cause?.text || '';
+        console.log('[Webhook V2] Attempting to extract JSON from error text');
+        // Match JSON object (starts with {, ends with }, may have newlines)
+        const jsonMatch = errorText.match(/\{[\s\S]*?\}(?=\n|$)/);
+        if (jsonMatch) {
+          try {
+            const extracted = JSON.parse(jsonMatch[0].trim());
+            console.log('[Webhook V2] Successfully extracted JSON from error text:', JSON.stringify(extracted, null, 2));
+            parsed = extracted;
+          } catch (e) {
+            console.error('[Webhook V2] Failed to parse extracted JSON:', e);
+            return res.status(500).json({ 
+              error: 'AI extraction failed', 
+              message: 'Could not parse JSON from AI response' 
+            });
+          }
+        } else {
+          return res.status(500).json({ 
+            error: 'AI extraction failed', 
+            message: aiError?.message || 'Could not parse incident data from notification' 
+          });
+        }
+      } else {
+        return res.status(500).json({ 
+          error: 'AI extraction failed', 
+          message: aiError?.message || 'Could not parse incident data from notification' 
+        });
+      }
+    }
+    
+    // Ensure parsed is defined before proceeding
+    if (!parsed) {
+      console.error('[Webhook V2] parsed is undefined after all extraction attempts');
       return res.status(500).json({ 
         error: 'AI extraction failed', 
-        message: aiError?.message || 'Could not parse incident data from notification' 
+        message: 'Could not extract incident data from AI response' 
       });
     }
 

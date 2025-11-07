@@ -71,7 +71,12 @@ async function getOrCreateIncidentIdForExternal(externalId: string): Promise<str
  * - Skips if lat/lng already exist
  * - Skips if no address provided
  */
-export const autoGeocodeIncident = onDocumentCreated('incidents/{incidentId}', async (event) => {
+export const autoGeocodeIncident = onDocumentCreated(
+  {
+    document: 'incidents/{incidentId}',
+    secrets: ['GOOGLE_MAPS_API_KEY'],
+  },
+  async (event) => {
   const snapshot = event.data;
   if (!snapshot) {
     console.log('[Geocode] No data in snapshot');
@@ -235,7 +240,12 @@ async function createOrUpdateContact(
  * Runs every 15 minutes to catch any incidents that weren't geocoded on creation.
  * This is a fallback in case the onCreate trigger fails or is disabled.
  */
-export const scheduleGeocodeMissing = onSchedule('every 15 minutes', async (event) => {
+export const scheduleGeocodeMissing = onSchedule(
+  {
+    secrets: ['GOOGLE_MAPS_API_KEY'],
+    schedule: 'every 15 minutes',
+  },
+  async (event) => {
   console.log('[Scheduled Geocode] Running...');
   
   const snapshot = await db.collection('incidents')
