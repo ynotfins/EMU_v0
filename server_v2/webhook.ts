@@ -338,6 +338,17 @@ Now parse and format the message according to these requirements.`,
           ],
         }, { merge: true });
         updated = true;
+        
+        if (parsed.departmentCodes && parsed.departmentCodes.length > 0 && parsed.address && parsed.city && parsed.state) {
+          await trackDepartmentCodes(
+            db,
+            data.incidentId ?? preferredId,
+            parsed.departmentCodes,
+            parsed.address,
+            parsed.city,
+            parsed.state
+          );
+        }
       } else {
         await ref.set({
           ...data,
