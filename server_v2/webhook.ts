@@ -420,7 +420,9 @@ Now parse and format the message according to these requirements.`,
           parsed.departmentCodes,
           parsed.address,
           parsed.city,
-          parsed.state
+          parsed.state,
+          parsed.county,
+          parsed.type
         );
       }
     }
