@@ -6,33 +6,26 @@ import { z } from 'zod';
 import { generateObject } from 'ai';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 
-// === Domain schemas ===
-// Schema matches Firebase Incident structure for proper display formatting
 const incidentSchema = z.object({
   incidentId: z.string().optional(),
   source: z.string().optional(),
-  // Location fields (required for display)
-  state: z.string().optional(), // State abbreviation (e.g., "NJ", "NY", "CA")
-  county: z.string().optional(), // County name (e.g., "Monmouth County")
-  city: z.string().optional(), // City name (e.g., "Fair Haven")
-  address: z.string().optional(), // Street address (e.g., "19 Highland Ave")
-  zipCode: z.string().optional(), // ZIP code
-  country: z.string().optional().default('USA'), // Default to USA
-  // Incident details
+  state: z.string().optional(),
+  county: z.string().optional(),
+  city: z.string().optional(),
+  address: z.string().optional(),
+  zipCode: z.string().optional(),
+  country: z.string().optional().default('USA'),
   type: z.enum(['fire', 'flood', 'storm', 'accident', 'hazard', 'medical', 'other']).optional(),
-  description: z.string(), // Full alert text, expanded abbreviations
+  description: z.string(),
   severity: z.enum(['low', 'medium', 'high', 'critical']).optional(),
-  // Fire department info (for Supe app only)
-  fireDepartmentInfo: z.string().optional(), // Extracted fire department status/details
-  // Department codes (e.g., "nj179/pas4795", "nj179/njn3979")
-  departmentCodes: z.array(z.string()).optional(), // Array of department codes found at end of alert
+  fireDepartmentInfo: z.string().optional(),
+  departmentCodes: z.array(z.string()).optional(),
 });
 
 type Incident = z.infer<typeof incidentSchema>;
 
 const firestoreIncidentSchema = z.object({
   incidentId: z.string().optional(),
-  // Location object matching Firebase Location interface
   location: z.object({
     lat: z.number().optional(),
     lng: z.number().optional(),
@@ -42,54 +35,47 @@ const firestoreIncidentSchema = z.object({
     zipCode: z.string().optional(),
     country: z.string().optional().default('USA'),
   }).optional(),
-  // Direct fields for backward compatibility and easier querying (also needed for geocoding trigger)
   state: z.string().optional(),
   county: z.string().optional(),
   city: z.string().optional(),
-  address: z.string().optional(), // Must be at root for geocoding trigger
+  address: z.string().optional(),
   zipCode: z.string().optional(),
   country: z.string().optional().default('USA'),
-  // Incident details
   type: z.string().optional(),
   description: z.string(),
   severity: z.string().optional(),
-  // Additional fields
-  originalText: z.string().optional(), // Original notification text for analysis
-  fireDepartmentInfo: z.string().optional(), // Fire department info (Supe app only)
-  departmentCodes: z.array(z.string()).optional(), // Department codes (e.g., ["nj179/pas4795", "nj179/njn3979"])
-  createdAt: z.any().optional(),
-  updatedAt: z.any().optional(),
+  originalText: z.string().optional(),
+  fireDepartmentInfo: z.string().optional(),
+  departmentCodes: z.array(z.string()).optional(),
+  createdAt: z.union([z.instanceof(Timestamp), z.string(), z.number()]).optional(),
+  updatedAt: z.union([z.instanceof(Timestamp), z.string(), z.number()]).optional(),
   activity: z.array(z.object({
     id: z.string(),
     type: z.enum(['create','update']),
     description: z.string(),
-    timestamp: z.any(),
+    timestamp: z.union([z.instanceof(Timestamp), z.string(), z.number()]),
     source: z.string().optional(),
   })).optional(),
 });
 
 type FirestoreIncident = z.infer<typeof firestoreIncidentSchema>;
 
-// === Firebase Admin init ===
 if (getApps().length === 0) {
   initializeApp({ credential: applicationDefault() });
 }
 const db = getFirestore();
 
-// === App setup ===
 const app = express();
 app.use(cors({ origin: true }));
 app.use(express.json({ limit: '1mb' }));
 
 app.get('/healthz', (_req, res) => res.status(200).send('ok'));
 
-// === AI-enhanced webhook ===
 app.post('/webhook', async (req, res) => {
   try {
     const body = req.body ?? {};
-    // Accept either simple { message } or a richer MacroDroid-style payload
     const bodyMessage: unknown = typeof body === 'string' ? body : body?.message;
-    const isSimple = typeof bodyMessage === 'string' && Object.keys(body ?? {}).length <= 2; // message + maybe source
+    const isSimple = typeof bodyMessage === 'string' && Object.keys(body ?? {}).length <= 2;
     const composedMessage =
       typeof bodyMessage === 'string'
         ? isSimple
@@ -111,15 +97,13 @@ app.post('/webhook', async (req, res) => {
       return res.status(400).json({ error: 'Missing message string' });
     }
 
-    // AI extraction with detailed prompt for display formatting
     const provider = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY! });
     if (!process.env.OPENROUTER_API_KEY) {
       console.warn('[Webhook] OPENROUTER_API_KEY not set, AI extraction will fail');
     }
     const { object: parsed } = await generateObject({
       model: provider('anthropic/claude-3.5-sonnet'),
-      // Cast to reduce TS generic depth issues
-      schema: incidentSchema as any,
+      schema: incidentSchema,
       prompt: `Extract normalized incident fields from the notification below and return valid JSON.
 
 Notification:
@@ -210,44 +194,32 @@ Now parse and format the message according to these requirements.`,
       temperature: 0.1,
     });
 
-    // Map to Firestore shape with Location object and individual fields
-    // NOTE: Geocoding (lat/lng) happens automatically via Firebase Cloud Function trigger
-    // The `autoGeocodeIncident` function in functions/src/index.ts runs onCreate and geocodes
-    // addresses using Google Maps API. This happens asynchronously after document creation.
-    // IMPORTANT: Geocoding only happens on CREATE (onCreate trigger), not on updates.
     const locationObj = (parsed.address || parsed.city || parsed.state) ? {
       address: parsed.address,
       city: parsed.city,
       state: parsed.state,
       zipCode: parsed.zipCode,
       country: parsed.country || 'USA',
-      // lat/lng will be added by autoGeocodeIncident Firebase function trigger (onCreate only)
     } : undefined;
 
     const mapped: FirestoreIncident = {
       incidentId: parsed.incidentId,
-      // Location object for Firebase Location interface
       location: locationObj,
-      // Individual fields for easier querying and display
-      // Address at root level is required for geocoding trigger
       state: parsed.state,
       county: parsed.county,
       city: parsed.city,
-      address: parsed.address, // Must be at root for geocoding trigger to find it
+      address: parsed.address,
       zipCode: parsed.zipCode,
       country: parsed.country || 'USA',
-      // Incident details
       type: parsed.type,
       description: parsed.description,
       severity: parsed.severity,
-      // Additional fields
-      originalText: composedMessage, // Store original text for analysis
-      fireDepartmentInfo: parsed.fireDepartmentInfo, // Fire department info for Supe app
-      departmentCodes: parsed.departmentCodes, // Department codes array
+      originalText: composedMessage,
+      fireDepartmentInfo: parsed.fireDepartmentInfo,
+      departmentCodes: parsed.departmentCodes,
     };
     const data = firestoreIncidentSchema.parse(mapped);
 
-    // Upsert by explicit document id preference
     let ref;
     let updated = false;
     const bodySource: string | undefined = (typeof body === 'object' && body?.source) ? String(body.source) : undefined;
@@ -257,7 +229,6 @@ Now parse and format the message according to these requirements.`,
         : undefined;
     const activityTimestamp = receivedAtMs ? Timestamp.fromMillis(receivedAtMs) : Timestamp.now();
 
-    // Prefer explicit incidentId, fallback to receivedAtEpoch string, else auto id
     const preferredId =
       (data.incidentId && String(data.incidentId)) ||
       (receivedAtMs ? String(receivedAtMs) : undefined);
@@ -266,7 +237,16 @@ Now parse and format the message according to these requirements.`,
       ref = db.collection('incidents').doc(preferredId);
       const snap = await ref.get();
       if (snap.exists) {
-        const existing = snap.data() as any;
+        const existing = snap.data();
+        
+        function isExistingData(data: unknown): data is { createdAt?: unknown; activity?: unknown[] } {
+          return typeof data === 'object' && data !== null;
+        }
+        
+        if (!isExistingData(existing)) {
+          return res.status(500).json({ error: 'Invalid existing data' });
+        }
+        
         await ref.set({
           ...data,
           incidentId: data.incidentId ?? preferredId,
@@ -316,9 +296,13 @@ Now parse and format the message according to these requirements.`,
     }
 
     return res.status(200).json({ id: ref.id, updated });
-  } catch (e: any) {
-    if (e?.errors) return res.status(400).json({ error: 'Validation failed', details: e.errors });
-    return res.status(500).json({ error: 'Internal error', message: e?.message || 'unknown' });
+  } catch (e: unknown) {
+    function hasErrors(error: unknown): error is { errors: unknown } {
+      return typeof error === 'object' && error !== null && 'errors' in error;
+    }
+    if (hasErrors(e)) return res.status(400).json({ error: 'Validation failed', details: e.errors });
+    const errorMessage = e instanceof Error ? e.message : 'unknown';
+    return res.status(500).json({ error: 'Internal error', message: errorMessage });
   }
 });
 

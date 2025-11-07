@@ -245,7 +245,6 @@ async function ingressHandler(request: RequestWithRawBody, response: express.Res
 
       const model = openrouter('meta-llama/llama-3.2-3b-instruct');
 
-      // @ts-ignore - Type instantiation is excessively deep (TS2589) - known issue with OpenRouter provider types
       const result = await generateObject({
         model,
         schema: incidentSchema,
@@ -325,7 +324,6 @@ Now parse and format the message according to these requirements.`,
 
       const parsedIncident = result.object;
       
-      // Geocode address if lat/lng not provided
       let lat = parsedIncident.latitude;
       let lng = parsedIncident.longitude;
       
