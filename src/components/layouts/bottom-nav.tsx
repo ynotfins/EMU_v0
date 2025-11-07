@@ -1,7 +1,6 @@
 ﻿"use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Home, Heart, MessageSquare, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -11,6 +10,7 @@ interface BottomNavProps {
 
 export function BottomNav({ role }: BottomNavProps) {
   const pathname = usePathname();
+  const router = useRouter();
 
   // Check if user is actively in Super Admin mode
   // For super_admin users, check localStorage for active role
@@ -84,17 +84,18 @@ export function BottomNav({ role }: BottomNavProps) {
         {navItems.map((item) => {
           const Icon = item.icon;
           return (
-            <Link
+            <button
               key={item.href}
-              href={item.href as any}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                router.push(item.href);
+              }}
               className={cn(
-                "flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors pointer-events-auto cursor-pointer",
+                "flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors pointer-events-auto cursor-pointer touch-manipulation",
                 item.active ? "text-[#007AFF]" : "text-[#6B7280]"
               )}
-              onClick={(e) => {
-                // Ensure navigation works
-                e.stopPropagation();
-              }}
             >
               {item.label === "Favorites" ? (
                 item.active ? (
@@ -106,7 +107,7 @@ export function BottomNav({ role }: BottomNavProps) {
                 <Icon className="h-6 w-6" />
               )}
               <span className="text-xs font-medium">{item.label}</span>
-            </Link>
+            </button>
           );
         })}
       </div>
