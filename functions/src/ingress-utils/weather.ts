@@ -11,10 +11,6 @@ export interface WeatherInfo {
   fetchedAt?: Timestamp;
 }
 
-/**
- * Fetch weather conditions for a location using OpenWeatherMap API
- * Falls back gracefully if API key is not configured
- */
 export async function fetchWeatherForLocation(
   lat: number,
   lng: number,
@@ -41,7 +37,6 @@ export async function fetchWeatherForLocation(
     
     const data = await response.json();
     
-    // Map OpenWeatherMap response to our schema
     const weatherInfo: WeatherInfo = {
       temperature: data.main?.temp ? Math.round(data.main.temp) : undefined,
       conditions: data.weather?.[0]?.description 
@@ -50,7 +45,7 @@ export async function fetchWeatherForLocation(
       windSpeed: data.wind?.speed ? Math.round(data.wind.speed * 10) / 10 : undefined,
       windDirection: data.wind?.deg ? getWindDirection(data.wind.deg) : undefined,
       humidity: data.main?.humidity,
-      visibility: data.visibility ? Math.round(data.visibility / 1609.34 * 10) / 10 : undefined, // Convert meters to miles
+      visibility: data.visibility ? Math.round(data.visibility / 1609.34 * 10) / 10 : undefined,
       pressure: data.main?.pressure,
       fetchedAt: Timestamp.now(),
     };
@@ -64,9 +59,6 @@ export async function fetchWeatherForLocation(
   }
 }
 
-/**
- * Convert wind direction degrees to cardinal direction
- */
 function getWindDirection(degrees: number): string {
   const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
   return directions[Math.round(degrees / 22.5) % 16];

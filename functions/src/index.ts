@@ -269,14 +269,9 @@ export const xIngest = onRequest({ cors: true, region: 'us-central1', invoker: '
       return;
     }
 
-    interface RequestWithRawBody extends admin.Request {
-      rawBody?: Buffer;
-    }
-
     let payload: Record<string, unknown> = req.body;
     if (!payload || Object.keys(payload).length === 0) {
-      const reqWithRaw = req as RequestWithRawBody;
-      const raw = reqWithRaw.rawBody ? reqWithRaw.rawBody.toString('utf8') : '';
+      const raw = (req as { rawBody?: Buffer }).rawBody?.toString('utf8') || '';
       try { payload = JSON.parse(raw); } catch {}
     }
 

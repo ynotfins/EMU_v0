@@ -53,9 +53,22 @@ export interface ParsedIncident {
 export interface GenerateObjectResult {
   object?: ParsedIncident;
   text?: string;
+  [key: string]: unknown;
 }
 
 export interface ErrorWithStatus extends Error {
   status?: number;
+}
+
+export function isExistingIncidentData(data: DocumentData | undefined): data is ExistingIncidentData {
+  return data !== undefined;
+}
+
+export function isGenerateObjectResult(result: unknown): result is GenerateObjectResult {
+  return typeof result === 'object' && result !== null;
+}
+
+export function isErrorWithStatus(error: unknown): error is ErrorWithStatus {
+  return error instanceof SyntaxError && 'status' in error && 'body' in error;
 }
 

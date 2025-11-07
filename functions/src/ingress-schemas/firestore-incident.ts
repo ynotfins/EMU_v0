@@ -30,8 +30,8 @@ export const firestoreIncidentSchema = z.object({
   type: z.string(),
   description: z.string(),
   emergencyServicesStatus: z.string().optional(),
-  incidentId: z.string().optional(), // MacroDroid ID (used as document ID)
-  incidentNumber: z.number().optional(), // Display number (starts at 7000000, shown as #NFA-7000000)
+  incidentId: z.string().optional(),
+  incidentNumber: z.number().optional(),
   source: z.string().optional(),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
@@ -41,15 +41,14 @@ export const firestoreIncidentSchema = z.object({
   respondedAt: z.any().optional(),
   activity: z.array(activitySchema).optional(),
   weatherConditions: weatherInfoSchema.optional(),
-  // Additional fields for main incident document
-  id: z.string().optional(), // MacroDroid ID (also stored in id field)
+  id: z.string().optional(),
   lastMessage: z.string().optional(),
   lastTitle: z.string().optional(),
   lastType: z.string().optional(),
   lastTS: z.any().optional(),
   lat: z.number().optional(),
   lng: z.number().optional(),
-  stage: z.string().optional(), // 'create' or 'update'
+  stage: z.string().optional(),
   updateCount: z.number().optional(),
 });
 

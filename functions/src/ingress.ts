@@ -11,6 +11,7 @@ import { fetchWeatherForLocation } from './ingress-utils/weather';
 import { Client } from '@googlemaps/google-maps-services-js';
 import express from 'express';
 import type { CounterData, RequestWithRawBody, ExistingIncidentData, ParsedIncident, GenerateObjectResult, ErrorWithStatus } from './ingress-types';
+import { isExistingIncidentData, isGenerateObjectResult, isErrorWithStatus } from './ingress-types';
 
 let db: ReturnType<typeof getFirestore> | null = null;
 const getDb = () => {
@@ -215,7 +216,9 @@ async function ingressHandler(request: RequestWithRawBody, response: express.Res
       const notification = notificationSchema.parse(body);
 
       const authHeader = request.headers.authorization;
-      const webhookToken = request.headers['x-webhook-token'];
+      const webhookToken = Array.isArray(request.headers['x-webhook-token']) 
+        ? request.headers['x-webhook-token'][0] 
+        : request.headers['x-webhook-token'];
       const isAuthenticated = await authenticateRequest(authHeader, webhookToken, notification.authToken);
       
       if (!isAuthenticated) {
@@ -399,10 +402,6 @@ Now parse and format the message according to these requirements.`,
           isUpdate = true;
           const existingData = existingDoc.data();
           
-          function isExistingIncidentData(data: DocumentData | undefined): data is ExistingIncidentData {
-            return data !== undefined;
-          }
-          
           displayNumber = isExistingIncidentData(existingData) && typeof existingData.incidentNumber === 'number'
             ? existingData.incidentNumber
             : await allocateNextDisplayNumber();
@@ -561,10 +560,6 @@ ingressApp.use(express.json({
   },
 }));
 
-function isErrorWithStatus(error: unknown): error is ErrorWithStatus {
-  return error instanceof SyntaxError && 'status' in error && 'body' in error;
-}
-
 ingressApp.use((error: unknown, req: RequestWithRawBody, res: express.Response, next: express.NextFunction) => {
   if (isErrorWithStatus(error) && error.status === 400) {
     console.warn('[Ingress] JSON parsing error from body-parser, attempting recovery:', error.message);
@@ -707,10 +702,6 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
       
       parsed = result.object;
       
-      function isGenerateObjectResult(result: unknown): result is GenerateObjectResult {
-        return typeof result === 'object' && result !== null;
-      }
-      
       if (!parsed && isGenerateObjectResult(result) && result.text) {
         console.log('[Webhook V2] Attempting to extract JSON from text response');
         const jsonMatch = result.text.match(/\{[\s\S]*?\}(?=\n|$)/);
@@ -811,10 +802,6 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
       const snap = await ref.get();
       if (snap.exists) {
         const existing = snap.data();
-        
-        function isExistingIncidentData(data: DocumentData | undefined): data is ExistingIncidentData {
-          return data !== undefined;
-        }
         
         if (!isExistingIncidentData(existing)) {
           return res.status(500).json({ error: 'Invalid existing data' });
