@@ -65,7 +65,11 @@ export interface FireDepartmentMapping {
     address: string;
     city: string;
     state: string;
+    county?: string;               // NEW: County information
+    alertType?: string;             // NEW: Alert type(s)
     incidentCount: number;
+    firstSeen?: string;            // NEW: First occurrence timestamp
+    lastSeen?: string;             // NEW: Most recent occurrence timestamp
   }>;
   createdAt: string;
   updatedAt: string;
@@ -87,8 +91,10 @@ BNN Alert → Webhook → Extract Department Codes → Track Codes → Cross-Ref
    - Stores in `fireDepartmentMappings` collection
 
 2. **Code Tracking** (`functions/src/utils/track-department-codes.ts`)
-   - Tracks each code occurrence with address/city/state
+   - Tracks each code occurrence with address/city/state/county/alertType
    - Updates incident count per address
+   - Records firstSeen and lastSeen timestamps
+   - Accumulates alert types when multiple types occur at same address
    - Links codes to potential departments
 
 3. **Cross-Reference Script** (`scripts/crossref-fire-departments.ts`)
@@ -162,17 +168,40 @@ The webhook AI extracts department codes from alert messages:
 
 Every alert automatically:
 1. Extracts codes from message
-2. Tracks code + address association
+2. Tracks code + address + county + alertType association
 3. Updates `fireDepartmentMappings` collection
 4. Increments incident count per address
+5. Records firstSeen and lastSeen timestamps
+6. Accumulates alert types if multiple types occur at same address
+
+**Data Collected Per Alert:**
+- Department codes (all codes from alert)
+- Full address (street, city, state, county)
+- Alert type (fire, medical, etc.)
+- Incident count (increments with each occurrence)
+- Timestamps (first seen, last seen)
+
+**Pattern Analysis:**
+After collecting data over days/thousands of alerts:
+- Identify which codes appear together (code clusters)
+- Map service areas (which addresses/cities/counties each code covers)
+- Determine departments (match codes to departments based on geographic patterns)
+- Analyze response patterns (what types of incidents each code handles)
 
 ### Address Matching Logic
 
-Cross-reference uses fuzzy matching:
-- Exact city match → `confirmed`
-- County match → `likely`
+Cross-reference uses enhanced matching:
+- Exact city + county match → `confirmed`
+- City match (no county) → `likely`
+- County match only → `likely`
 - State only → `unknown`
 - No match → `unknown`
+
+**Enhanced Matching:**
+- County information enables more precise geographic matching
+- Alert type tracking shows response patterns
+- Timestamps help identify service area boundaries
+- Multiple alert types at same address indicate multi-purpose departments
 
 ## Google Sheets Structure
 
