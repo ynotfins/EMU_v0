@@ -712,116 +712,29 @@ ingressApp.post('/webhook', async (req: express.Request, res: express.Response) 
       const result = await generateObject({
         model: provider('anthropic/claude-3.5-sonnet'),
         schema: v2IncidentSchema as any,
-        prompt: `Extract normalized incident fields from the notification below and return valid JSON.
+        prompt: `Extract incident data from: ${composedMessage}
 
-Notification:
-${composedMessage}
+LOCATION (REQUIRED - Parse start of message):
+Format: "STATE, COUNTY, CITY - [incident] at ADDRESS"
+Examples:
+- "PA, Chester, East Fallowfield Township - Working Fire Dispatch at 921 Buck Run Rd"
+  → state="PA", county="Chester County", city="East Fallowfield Township", address="921 Buck Run Rd"
+- "NJ, Hudson, Kearny - Water Main Break on County Rd 508"
+  → state="NJ", county="Hudson County", city="Kearny", address="County Rd 508"
 
-EXTRACTION REQUIREMENTS:
-Extract all available information from the message. The message may contain:
-• Incident type (e.g., Fall Victim, Proximity Alert, Apparatus Accident, Fire, Medical Emergency, Flood, Storm, Hazard)
-• Location details: state (abbreviation like "NJ", "NY", "CA"), county (full name like "Monmouth County"), city (proper case), and street address
-• ZIP code if mentioned
-• Detailed description of what happened
-• Emergency services status (often abbreviated)
-• Incident ID (may include # symbol - extract just the number)
-• Source/reference information
-• Timestamp or time information
-• Department codes at the end (e.g., "nj179/pas4795", "nj179/njn3979")
+FIELDS:
+1. incidentId: Extract number, remove # (e.g., "#1836125" → "1836125")
+2. state: State abbreviation from start (PA, NJ, NY, etc.)
+3. county: County name + "County" suffix (e.g., "Chester" → "Chester County")
+4. city: City/township name (proper case)
+5. address: Street address after "at" or "on" keywords
+6. type: Map to: fire, flood, storm, accident, hazard, medical, other
+7. description: Expand abbreviations, full readable text
+8. severity: low/medium/high/critical (default: medium)
+9. fireDepartmentInfo: FD status/apparatus info (optional)
+10. departmentCodes: Array of codes at end (e.g., "nj179/pas4795" → ["nj179/pas4795", "nj179", "pas4795"])
 
-LOCATION EXTRACTION (MANDATORY - Extract from message start):
-The message typically starts with location in format: "STATE, COUNTY, CITY - [incident] at ADDRESS"
-
-EXAMPLES - Parse these patterns:
-• Message: "PA, Chester, East Fallowfield Township - Working Fire Dispatch at 921 Buck Run Rd"
-  Extract: state="PA", county="Chester County", city="East Fallowfield Township", address="921 Buck Run Rd"
-
-• Message: "NJ, Hudson, Kearny - Water Main Break on County Rd 508"  
-  Extract: state="NJ", county="Hudson County", city="Kearny", address="County Rd 508"
-
-• Message: "NY, Westchester, Yonkers - 2nd Alarm Fire at Lockwood Ave & Clarendon Ave"
-  Extract: state="NY", county="Westchester County", city="Yonkers", address="Lockwood Ave & Clarendon Ave"
-
-CRITICAL: The location information is ALWAYS at the start of the message before the dash (-). 
-Parse the pattern: "STATE, COUNTY, CITY" → extract all three fields.
-Then find the address after "at" or "on" keywords.
-
-FORMATTING REQUIREMENTS (CRITICAL - ALL FIELDS MUST BE BEAUTIFULLY FORMATTED):
-
-1. **Type Field**:
-   - Map to one of: fire, flood, storm, accident, hazard, medical, other
-   - Example: "Working Fire Dispatch" → "fire"
-   - Example: "Water Main Break" → "hazard"
-   - Example: "Apparatus Accident" → "accident"
-
-2. **Location Fields** (CRITICAL - Extract from message):
-   - State: Extract state abbreviation from message (e.g., "NJ", "NY", "PA", "CA")
-     • Look for patterns like "NJ, Hudson" → state is "NJ"
-     • Look for patterns like "PA, Chester" → state is "PA"
-     • Look for patterns like "NY, Westchester" → state is "NY"
-   - County: Extract county name from message, add "County" suffix if not present
-     • Examples: "Hudson" → "Hudson County", "Chester" → "Chester County", "Westchester" → "Westchester County"
-     • Look for patterns like "NJ, Hudson, Kearny" → county is "Hudson County"
-   - City: Extract city name from message, use proper title case
-     • Examples: "Kearny", "East Fallowfield Township", "Yonkers"
-     • Look for patterns like "NJ, Hudson, Kearny" → city is "Kearny"
-   - Address: Extract street address or intersection from message
-     • Examples: "County Rd 508", "921 Buck Run Rd", "Lockwood Ave & Clarendon Ave"
-     • Look for patterns like "at 921 Buck Run Rd" → address is "921 Buck Run Rd"
-     • Look for patterns like "on County Rd 508" → address is "County Rd 508"
-   - ZIP: Extract if present, otherwise omit
-
-3. **Description Field**:
-   - Expand all abbreviations to full, readable text
-   - Use proper grammar, punctuation, and capitalization
-   - Make it flow naturally as a complete sentence
-   - Common abbreviations to expand:
-     • "PD O/S" → "Police Department on scene"
-     • "FD O/S" → "Fire Department on scene"
-     • "EMS O/S" → "Emergency Medical Services on scene"
-     • "O/S" → "on scene"
-     • "PD off" → "Police Department cleared"
-     • "25-30 feet" → "25 to 30 feet"
-
-4. **Severity**:
-   - Infer from keywords: "critical", "urgent", "emergency" = "critical" or "high"
-   - "routine", "minor" = "low"
-   - Default to "medium" if unclear
-
-5. **Incident ID**:
-   - Extract numeric ID, remove # symbol if present
-   - Format as plain string: "1836125" (not "#1836125")
-
-6. **Fire Department Info**:
-   - Extract any fire department status, response details, or apparatus information
-   - Examples: "FD O/S" → "Fire Department on scene", "Engine 5 responding" → "Engine 5 responding"
-   - Include any fire department units, apparatus, or response status mentioned
-   - If no fire department info is present, omit this field
-
-7. **Department Codes** (CRITICAL):
-   - Extract ALL department codes found at the end of alerts
-   - Department codes typically appear at the very end of the message
-   - Format: Usually lowercase state abbreviation + numbers, often separated by "/" or spaces
-   - Examples: "nj179/pas4795", "nj179/njn3979", "nj179 pas4795", "nj179 njn3979"
-   - Patterns to look for:
-     • State abbreviation (nj, ny, pa, etc.) followed by numbers
-     • Codes separated by "/" (e.g., "nj179/pas4795")
-     • Codes separated by spaces (e.g., "nj179 pas4795")
-     • May include additional codes after "/" (e.g., "pas4795", "njn3979")
-   - Return as array of strings: ["nj179/pas4795", "nj179/njn3979"] or ["nj179", "pas4795", "njn3979"]
-   - If codes are separated by "/", include both the full string AND individual parts
-   - Example: "nj179/pas4795" → ["nj179/pas4795", "nj179", "pas4795"]
-   - If no department codes found, return empty array or omit field
-
-OUTPUT REQUIREMENTS:
-- All fields must be beautifully formatted and ready for display
-- Use proper grammar, punctuation, and capitalization throughout
-- Expand abbreviations naturally into full, readable text
-- If a field is not present in the message, omit it (use optional fields)
-- Maintain accuracy - don't add information that isn't in the message
-- Format all text to be professional and easy to read
-
-Now parse and format the message according to these requirements.`,
+OUTPUT: Valid JSON with all extracted fields.`,
         temperature: 0.1,
       });
       parsed = result.object;
