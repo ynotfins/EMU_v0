@@ -12,11 +12,14 @@ async function trackDepartmentCodes(
   codes: string[],
   address: string,
   city: string,
-  state: string
+  state: string,
+  county?: string,
+  alertType?: string
 ): Promise<void> {
   if (!codes || codes.length === 0 || !address || !city || !state) return;
 
   const batch = db.batch();
+  const now = new Date().toISOString();
 
   for (const code of codes) {
     const mappingRef = db.collection('fireDepartmentMappings').doc(code);
@@ -28,10 +31,11 @@ async function trackDepartmentCodes(
 
       const addressAssociations = existing.addressAssociations || [];
       const addressExists = addressAssociations.some(
-        (a: { address: string; city: string; state: string }) =>
+        (a: { address: string; city: string; state: string; county?: string }) =>
           a.address.toLowerCase() === address.toLowerCase() &&
           a.city.toLowerCase() === city.toLowerCase() &&
-          a.state.toLowerCase() === state.toLowerCase()
+          a.state.toLowerCase() === state.toLowerCase() &&
+          (a.county || '').toLowerCase() === (county || '').toLowerCase()
       );
 
       if (!addressExists) {
@@ -39,23 +43,34 @@ async function trackDepartmentCodes(
           address,
           city,
           state,
+          county: county || undefined,
+          alertType: alertType || undefined,
           incidentCount: 1,
+          firstSeen: now,
+          lastSeen: now,
         });
       } else {
         const assoc = addressAssociations.find(
-          (a: { address: string; city: string; state: string }) =>
+          (a: { address: string; city: string; state: string; county?: string }) =>
             a.address.toLowerCase() === address.toLowerCase() &&
             a.city.toLowerCase() === city.toLowerCase() &&
-            a.state.toLowerCase() === state.toLowerCase()
+            a.state.toLowerCase() === state.toLowerCase() &&
+            (a.county || '').toLowerCase() === (county || '').toLowerCase()
         );
         if (assoc) {
           assoc.incidentCount = (assoc.incidentCount || 0) + 1;
+          assoc.lastSeen = now;
+          if (alertType && !assoc.alertType) {
+            assoc.alertType = alertType;
+          } else if (alertType && assoc.alertType !== alertType) {
+            assoc.alertType = `${assoc.alertType}, ${alertType}`;
+          }
         }
       }
 
       batch.update(mappingRef, {
         addressAssociations,
-        updatedAt: new Date().toISOString(),
+        updatedAt: now,
       });
     } else {
       const stateMatch = code.match(/^([a-z]{2})\d+/i);
@@ -68,10 +83,14 @@ async function trackDepartmentCodes(
           address,
           city,
           state,
+          county: county || undefined,
+          alertType: alertType || undefined,
           incidentCount: 1,
+          firstSeen: now,
+          lastSeen: now,
         }],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: now,
+        updatedAt: now,
       };
       batch.set(mappingRef, newMapping);
     }
@@ -346,7 +365,9 @@ Now parse and format the message according to these requirements.`,
             parsed.departmentCodes,
             parsed.address,
             parsed.city,
-            parsed.state
+            parsed.state,
+            parsed.county,
+            parsed.type
           );
         }
       } else {
@@ -371,7 +392,9 @@ Now parse and format the message according to these requirements.`,
             parsed.departmentCodes,
             parsed.address,
             parsed.city,
-            parsed.state
+            parsed.state,
+            parsed.county,
+            parsed.type
           );
         }
       }

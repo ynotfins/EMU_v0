@@ -10,23 +10,33 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
-export async function trackDepartmentCodes(incidentId: string, codes: string[], address: string, city: string, state: string): Promise<void> {
-  if (!codes || codes.length === 0) return;
+export async function trackDepartmentCodes(
+  incidentId: string,
+  codes: string[],
+  address: string,
+  city: string,
+  state: string,
+  county?: string,
+  alertType?: string
+): Promise<void> {
+  if (!codes || codes.length === 0 || !address || !city || !state) return;
 
   const batch = db.batch();
+  const now = new Date().toISOString();
 
   for (const code of codes) {
     const mappingRef = db.collection('fireDepartmentMappings').doc(code);
     const mappingSnap = await mappingRef.get();
 
-    const addressKey = `${address.toLowerCase()}|${city.toLowerCase()}|${state.toLowerCase()}`;
-    
     if (mappingSnap.exists) {
       const existing = mappingSnap.data() as CodeMapping;
+      const addressKey = `${address.toLowerCase()}|${city.toLowerCase()}|${state.toLowerCase()}|${(county || '').toLowerCase()}`;
+      
       const addressExists = existing.addressAssociations.some(
         (a) => a.address.toLowerCase() === address.toLowerCase() &&
               a.city.toLowerCase() === city.toLowerCase() &&
-              a.state.toLowerCase() === state.toLowerCase()
+              a.state.toLowerCase() === state.toLowerCase() &&
+              (a.county || '').toLowerCase() === (county || '').toLowerCase()
       );
 
       if (!addressExists) {
@@ -34,35 +44,51 @@ export async function trackDepartmentCodes(incidentId: string, codes: string[], 
           address,
           city,
           state,
+          county: county || undefined,
+          alertType: alertType || undefined,
           incidentCount: 1,
+          firstSeen: now,
+          lastSeen: now,
         });
       } else {
         const assoc = existing.addressAssociations.find(
           (a) => a.address.toLowerCase() === address.toLowerCase() &&
                 a.city.toLowerCase() === city.toLowerCase() &&
-                a.state.toLowerCase() === state.toLowerCase()
+                a.state.toLowerCase() === state.toLowerCase() &&
+                (a.county || '').toLowerCase() === (county || '').toLowerCase()
         );
         if (assoc) {
           assoc.incidentCount++;
+          assoc.lastSeen = now;
+          if (alertType && !assoc.alertType) {
+            assoc.alertType = alertType;
+          } else if (alertType && assoc.alertType !== alertType) {
+            assoc.alertType = `${assoc.alertType}, ${alertType}`;
+          }
         }
       }
 
-      existing.updatedAt = new Date().toISOString();
+      existing.updatedAt = now;
       batch.update(mappingRef, existing);
     } else {
+      const stateMatch = code.match(/^([a-z]{2})\d+/i);
       const newMapping: CodeMapping = {
         code,
-        state: code.match(/^([a-z]{2})\d+/i)?.[1].toUpperCase(),
+        state: stateMatch ? stateMatch[1].toUpperCase() : undefined,
         confidence: 'unknown',
         source: 'crossref',
         addressAssociations: [{
           address,
           city,
           state,
+          county: county || undefined,
+          alertType: alertType || undefined,
           incidentCount: 1,
+          firstSeen: now,
+          lastSeen: now,
         }],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: now,
+        updatedAt: now,
       };
       batch.set(mappingRef, newMapping);
     }

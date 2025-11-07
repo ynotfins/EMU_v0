@@ -57,7 +57,11 @@ export interface CodeMapping {
     address: string;
     city: string;
     state: string;
+    county?: string;
+    alertType?: string;
     incidentCount: number;
+    firstSeen?: string;
+    lastSeen?: string;
   }>;
   confidence: 'confirmed' | 'likely' | 'unknown';
   source: 'manual' | 'crossref' | 'scraped';

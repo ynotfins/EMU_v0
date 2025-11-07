@@ -889,7 +889,9 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
             parsed.departmentCodes,
             parsed.address,
             parsed.city,
-            parsed.state
+            parsed.state,
+            parsed.county,
+            parsed.type || parsed.alertType
           );
         }
       } else {
@@ -944,7 +946,9 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
             parsed.departmentCodes,
             parsed.address,
             parsed.city,
-            parsed.state
+            parsed.state,
+            parsed.county,
+            parsed.type || parsed.alertType
           );
         }
       }
