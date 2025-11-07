@@ -439,3 +439,87 @@ emu_alerts_incidents:
     - "Real-time updates via Firestore subscriptions"
     - "Mobile-first design for field responders"
 
+---
+# Update 2025-01-07T18:00:00Z
+# [id]: prof_20250107_180000_display_rules
+# [source]: human
+# [reason]: Add display format rules for home page and detail page
+# [status]: active
+
+# EMU Alerts / EMU Incidents - Display Format Rules
+
+display_format_rules:
+  home_page:
+    grouping:
+      - "Group incidents by incidentId"
+      - "Show only the most recent alert for each incidentId"
+      - "Sort by alertDate (most recent first)"
+    
+    format:
+      line_1:
+        content: "Date, Time, Distance (right justified for chasers)"
+        example: "11/06/2025 11:54 PM                   2.3 mi"
+      
+      line_2:
+        content: "State | County | City | Address"
+        example: "PA | Chester County | East Fallowfield Township | 921 Buck Run Rd"
+      
+      lines_3_6:
+        content: "Alert Type | Alert (with bullet-separated messages)"
+        rules:
+          - "First message: Alert Type | Alert Message"
+          - "If more messages exist and total lines < 6, add previous alerts with bullet separator"
+          - "Format: • Previous Alert Message"
+          - "Maximum 6 lines total (including date/time and location)"
+        example:
+          - "fire | Working fire dispatch reported"
+          - "• Additional stations 24 and 25 requested"
+          - "• Command is adding resources"
+    
+    incident_id_display:
+      location: "Blue header box"
+      format: "incidentId || incidentNumber || id"
+  
+  detail_page:
+    purpose: "Show all alerts for the same incidentId"
+    
+    format:
+      for_each_alert:
+        line_1:
+          content: "Date of Alert, Time of Alert"
+          example: "11/06/2025 11:54 PM"
+        
+        line_2:
+          content: "Alert type, Alert message"
+          example: "fire | Working fire dispatch reported"
+      
+      supe_only_fields:
+        - "Fire Department Info (if available)"
+        - "Department Codes (if available)"
+    
+    sorting:
+      - "Sort by alertDate descending (most recent first)"
+  
+  data_fields:
+    required:
+      - "incidentId (from webhook)"
+      - "alertDate (date alert came in)"
+      - "alertTime (time alert came in)"
+      - "alertType (type of alert)"
+      - "description (alert message, may contain bullet-separated messages)"
+      - "state, county, city, address (location fields)"
+      - "distance (calculated for chasers)"
+    
+    optional:
+      - "fireDepartmentInfo (Supe app only)"
+      - "departmentCodes (Supe app only)"
+      - "originalText (full original notification)"
+  
+  parsing_notes:
+    - "Alert messages are separated by ' • ' (bullet separator)"
+    - "Home page shows up to 6 lines total"
+    - "If first alert takes less than 6 lines, append previous alerts with bullets"
+    - "Detail page shows ALL alerts for the incidentId"
+    - "Detail page has no line limit"
+    - "Fire department info and codes only visible to Supe role users"
+
