@@ -340,9 +340,28 @@ Now parse and format the message according to these requirements.`,
           return res.status(500).json({ error: 'Invalid existing data' });
         }
         
+        const existingDescription = (existing as { description?: string }).description || '';
+        const newDescription = parsed.description || '';
+        const appendedDescription = existingDescription 
+          ? `${existingDescription} • ${newDescription}`
+          : newDescription;
+        
+        const existingOriginalText = (existing as { originalText?: string }).originalText || '';
+        const appendedOriginalText = existingOriginalText
+          ? `${existingOriginalText}\n\n---\n\n${composedMessage}`
+          : composedMessage;
+        
+        const alertDate = activityTimestamp.toDate().toLocaleDateString();
+        const alertTime = activityTimestamp.toDate().toLocaleTimeString();
+        
         await ref.set({
           ...data,
           incidentId: data.incidentId ?? preferredId,
+          description: appendedDescription,
+          originalText: appendedOriginalText,
+          alertType: parsed.type || (existing as { alertType?: string }).alertType || null,
+          alertDate: alertDate,
+          alertTime: alertTime,
           createdAt: existing.createdAt ?? Timestamp.now(),
           updatedAt: Timestamp.now(),
           activity: [

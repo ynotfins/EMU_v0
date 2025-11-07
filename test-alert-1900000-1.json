@@ -1,0 +1,11 @@
+{
+  "appName": "BNN",
+  "title": "New Incident",
+  "message": "NJ, Ocean County, Toms River - Medical Emergency Dispatch at 123 Main St. Ambulance responding. nj179/pas4795 #1900000",
+  "ticker": "Medical Emergency Dispatch",
+  "subText": "123 Main St",
+  "infoText": "Ambulance responding",
+  "receivedAtEpoch": 1736301000000,
+  "source": "BNN_Test"
+}
+

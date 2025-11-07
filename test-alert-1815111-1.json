@@ -1,0 +1,11 @@
+{
+  "appName": "BNN",
+  "title": "New Incident",
+  "message": "NJ, Monmouth County, Fair Haven - Structure Fire Dispatch at 19 Highland Ave. Engine 1 responding. nj179/pas4795 #1815111",
+  "ticker": "Structure Fire Dispatch",
+  "subText": "19 Highland Ave",
+  "infoText": "Engine 1 responding",
+  "receivedAtEpoch": 1736300000000,
+  "source": "BNN_Test"
+}
+

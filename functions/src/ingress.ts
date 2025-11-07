@@ -824,6 +824,11 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
           ? `${existingDescription} • ${newDescription}`
           : newDescription;
         
+        const existingOriginalText = existing.originalText || '';
+        const appendedOriginalText = existingOriginalText
+          ? `${existingOriginalText}\n\n---\n\n${composedMessage}`
+          : composedMessage;
+        
         const alertDate = activityTimestamp.toDate().toLocaleDateString();
         const alertTime = activityTimestamp.toDate().toLocaleTimeString();
         
@@ -841,7 +846,7 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
           alertDate: alertDate,
           alertTime: alertTime,
           severity: parsed.severity || existing.severity || null,
-          originalText: composedMessage,
+          originalText: appendedOriginalText,
           fireDepartmentInfo: parsed.fireDepartmentInfo || existing.fireDepartmentInfo || null,
           departmentCodes: parsed.departmentCodes || existing.departmentCodes || null,
           createdAt: existing.createdAt ?? Timestamp.now(),
