@@ -79,8 +79,8 @@ export function BottomNav({ role }: BottomNavProps) {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] safe-area-inset-bottom z-[100] pointer-events-auto">
-      <div className="flex items-center justify-around h-16 max-w-screen-xl mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E5E7EB] safe-area-inset-bottom z-[1000] pointer-events-auto" style={{ touchAction: 'manipulation' }}>
+      <div className="flex items-center justify-around h-16 max-w-screen-xl mx-auto pointer-events-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -90,6 +90,7 @@ export function BottomNav({ role }: BottomNavProps) {
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
+                console.log('[BottomNav] Navigating to:', item.href);
                 router.push(item.href);
               }}
               className={cn(
