@@ -6,6 +6,80 @@ import { z } from 'zod';
 import { generateObject } from 'ai';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 
+async function trackDepartmentCodes(
+  db: ReturnType<typeof getFirestore>,
+  incidentId: string,
+  codes: string[],
+  address: string,
+  city: string,
+  state: string
+): Promise<void> {
+  if (!codes || codes.length === 0 || !address || !city || !state) return;
+
+  const batch = db.batch();
+
+  for (const code of codes) {
+    const mappingRef = db.collection('fireDepartmentMappings').doc(code);
+    const mappingSnap = await mappingRef.get();
+
+    if (mappingSnap.exists) {
+      const existing = mappingSnap.data();
+      if (!existing) continue;
+
+      const addressAssociations = existing.addressAssociations || [];
+      const addressExists = addressAssociations.some(
+        (a: { address: string; city: string; state: string }) =>
+          a.address.toLowerCase() === address.toLowerCase() &&
+          a.city.toLowerCase() === city.toLowerCase() &&
+          a.state.toLowerCase() === state.toLowerCase()
+      );
+
+      if (!addressExists) {
+        addressAssociations.push({
+          address,
+          city,
+          state,
+          incidentCount: 1,
+        });
+      } else {
+        const assoc = addressAssociations.find(
+          (a: { address: string; city: string; state: string }) =>
+            a.address.toLowerCase() === address.toLowerCase() &&
+            a.city.toLowerCase() === city.toLowerCase() &&
+            a.state.toLowerCase() === state.toLowerCase()
+        );
+        if (assoc) {
+          assoc.incidentCount = (assoc.incidentCount || 0) + 1;
+        }
+      }
+
+      batch.update(mappingRef, {
+        addressAssociations,
+        updatedAt: new Date().toISOString(),
+      });
+    } else {
+      const stateMatch = code.match(/^([a-z]{2})\d+/i);
+      const newMapping = {
+        code,
+        state: stateMatch ? stateMatch[1].toUpperCase() : undefined,
+        confidence: 'unknown',
+        source: 'crossref',
+        addressAssociations: [{
+          address,
+          city,
+          state,
+          incidentCount: 1,
+        }],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      batch.set(mappingRef, newMapping);
+    }
+  }
+
+  await batch.commit();
+}
+
 const incidentSchema = z.object({
   incidentId: z.string().optional(),
   source: z.string().optional(),
@@ -278,6 +352,17 @@ Now parse and format the message according to these requirements.`,
             source: parsed.source ?? bodySource ?? 'webhook-v2',
           }],
         });
+        
+        if (parsed.departmentCodes && parsed.departmentCodes.length > 0 && parsed.address && parsed.city && parsed.state) {
+          await trackDepartmentCodes(
+            db,
+            data.incidentId ?? preferredId,
+            parsed.departmentCodes,
+            parsed.address,
+            parsed.city,
+            parsed.state
+          );
+        }
       }
     } else {
       ref = db.collection('incidents').doc();
@@ -293,6 +378,17 @@ Now parse and format the message according to these requirements.`,
           source: parsed.source ?? bodySource ?? 'webhook-v2',
         }],
       });
+      
+      if (parsed.departmentCodes && parsed.departmentCodes.length > 0 && parsed.address && parsed.city && parsed.state) {
+        await trackDepartmentCodes(
+          db,
+          ref.id,
+          parsed.departmentCodes,
+          parsed.address,
+          parsed.city,
+          parsed.state
+        );
+      }
     }
 
     return res.status(200).json({ id: ref.id, updated });
