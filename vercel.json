@@ -1,7 +1,7 @@
 {
-  "buildCommand": "pnpm build",
+  "buildCommand": "cd emu-alerts-new && pnpm build",
   "installCommand": "pnpm install",
-  "outputDirectory": ".next",
+  "outputDirectory": "emu-alerts-new/.next",
   "framework": "nextjs",
   "regions": ["iad1"],
   "rewrites": [
