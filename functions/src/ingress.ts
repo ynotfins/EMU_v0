@@ -783,7 +783,17 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
       state: parsed.state || null,
       zipCode: parsed.zipCode || null,
       country: parsed.country || 'USA',
-    } : null;
+      lat: 0,
+      lng: 0,
+    } : {
+      address: null,
+      city: null,
+      state: null,
+      zipCode: null,
+      country: 'USA',
+      lat: 0,
+      lng: 0,
+    };
 
     const bodySource: string | undefined = (typeof body === 'object' && body?.source) ? String(body.source) : undefined;
     const receivedAtMs: number | undefined =
@@ -849,11 +859,15 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
         if (locationObj) {
           updateData.location = {
             ...locationObj,
-            lat: existing.location?.lat || null,
-            lng: existing.location?.lng || null,
+            lat: existing.location?.lat ?? 0,
+            lng: existing.location?.lng ?? 0,
           };
         } else if (existing.location) {
-          updateData.location = existing.location;
+          updateData.location = {
+            ...existing.location,
+            lat: existing.location.lat ?? 0,
+            lng: existing.location.lng ?? 0,
+          };
         } else {
           updateData.location = {
             address: parsed.address || existing.address || null,
@@ -861,8 +875,8 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
             state: parsed.state || existing.state || null,
             zipCode: parsed.zipCode || existing.zipCode || null,
             country: parsed.country || existing.country || 'USA',
-            lat: null,
-            lng: null,
+            lat: 0,
+            lng: 0,
           };
         }
         await ref.set(updateData, { merge: true });
@@ -909,11 +923,7 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
           }],
         };
         if (locationObj) {
-          createData.location = {
-            ...locationObj,
-            lat: null,
-            lng: null,
-          };
+          createData.location = locationObj;
         } else {
           createData.location = {
             address: parsed.address || null,
@@ -921,8 +931,8 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
             state: parsed.state || null,
             zipCode: parsed.zipCode || null,
             country: parsed.country || 'USA',
-            lat: null,
-            lng: null,
+            lat: 0,
+            lng: 0,
           };
         }
         await ref.set(createData);
@@ -963,11 +973,7 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
         }],
       };
       if (locationObj) {
-        fallbackData.location = {
-          ...locationObj,
-          lat: null,
-          lng: null,
-        };
+        fallbackData.location = locationObj;
       } else {
         fallbackData.location = {
           address: parsed.address || null,
@@ -975,8 +981,8 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
           state: parsed.state || null,
           zipCode: parsed.zipCode || null,
           country: parsed.country || 'USA',
-          lat: null,
-          lng: null,
+          lat: 0,
+          lng: 0,
         };
       }
       await ref.set(fallbackData);

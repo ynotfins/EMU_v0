@@ -25,13 +25,14 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "EMU Alerts",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false, // Prevent zoom on company phones
-  },
   themeColor: "#007AFF",
+}
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 export default function RootLayout({
