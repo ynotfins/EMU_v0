@@ -1,4 +1,4 @@
-import { getFirestore, Timestamp } from 'firebase-admin/firestore';
+import { getFirestore, Timestamp, DocumentData } from 'firebase-admin/firestore';
 import { onRequest } from 'firebase-functions/v2/https';
 import { generateObject } from 'ai';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
@@ -10,9 +10,8 @@ import { mapIncidentToFirestore } from './ingress-utils/mappers';
 import { fetchWeatherForLocation } from './ingress-utils/weather';
 import { Client } from '@googlemaps/google-maps-services-js';
 import express from 'express';
+import type { CounterData, RequestWithRawBody, ExistingIncidentData, ParsedIncident, GenerateObjectResult, ErrorWithStatus } from './ingress-types';
 
-// Firebase Admin is initialized in index.ts, reuse the existing instance
-// Lazy initialization to avoid issues during module load
 let db: ReturnType<typeof getFirestore> | null = null;
 const getDb = () => {
   if (!db) db = getFirestore();
@@ -21,21 +20,24 @@ const getDb = () => {
 const mapsClient = new Client({});
 const secretManagerClient = new SecretManagerServiceClient();
 
-/**
- * Allocate the next sequential display number starting from 7000000.
- * This is the number shown to users (e.g., #NFA-7000000).
- */
+function isCounterData(data: DocumentData | undefined): data is CounterData {
+  return data !== undefined && typeof data.next === 'number';
+}
+
 async function allocateNextDisplayNumber(): Promise<number> {
   const counterRef = getDb().collection('_counters').doc('incident-display-numbers');
-  let newNumber: number = 0;
+  let newNumber = 0;
   await getDb().runTransaction(async (tx) => {
     const counterSnap = await tx.get(counterRef);
-    const startFrom = 7000000; // Start at 7000000 as requested
-    if (counterSnap.exists && typeof (counterSnap.data() as any).next === 'number') {
-      const currentNext = Number((counterSnap.data() as any).next);
-      newNumber = currentNext + 1;
+    const startFrom = 7000000;
+    if (counterSnap.exists) {
+      const data = counterSnap.data();
+      if (isCounterData(data)) {
+        newNumber = data.next + 1;
+      } else {
+        newNumber = startFrom;
+      }
     } else {
-      // First allocation uses the start value directly
       newNumber = startFrom;
     }
     tx.set(counterRef, { next: newNumber, updatedAt: Timestamp.now() }, { merge: true });
@@ -43,16 +45,11 @@ async function allocateNextDisplayNumber(): Promise<number> {
   return newNumber;
 }
 
-// Cache for webhook secret
 let cachedWebhookSecret: string | null = null;
-let secretCacheExpiry: number = 0;
-const SECRET_CACHE_TTL = 60 * 60 * 1000; // 1 hour cache
+let secretCacheExpiry = 0;
+const SECRET_CACHE_TTL = 60 * 60 * 1000;
 
-/**
- * Retrieve webhook secret from Google Cloud Secret Manager
- */
 async function getWebhookSecret(): Promise<string> {
-  // Check cache first
   if (cachedWebhookSecret && Date.now() < secretCacheExpiry) {
     return cachedWebhookSecret;
   }
@@ -76,7 +73,6 @@ async function getWebhookSecret(): Promise<string> {
       throw new Error(`Secret ${secretName} is empty`);
     }
 
-    // Cache the secret
     cachedWebhookSecret = secretValue.trim();
     secretCacheExpiry = Date.now() + SECRET_CACHE_TTL;
 
@@ -88,14 +84,10 @@ async function getWebhookSecret(): Promise<string> {
   }
 }
 
-/**
- * Authenticate incoming webhook request
- */
 async function authenticateRequest(authHeader?: string, webhookToken?: string, bodyAuthToken?: string): Promise<boolean> {
   try {
     const expectedSecret = await getWebhookSecret();
 
-    // Check Authorization header (Bearer token)
     if (authHeader) {
       const token = authHeader.replace(/^Bearer\s+/i, '').trim();
       if (token === expectedSecret) {
@@ -103,12 +95,10 @@ async function authenticateRequest(authHeader?: string, webhookToken?: string, b
       }
     }
 
-    // Check X-Webhook-Token header
     if (webhookToken && webhookToken.trim() === expectedSecret) {
       return true;
     }
 
-    // Check request body authToken if provided
     if (bodyAuthToken && bodyAuthToken.trim() === expectedSecret) {
       return true;
     }
