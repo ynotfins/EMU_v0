@@ -1,0 +1,11 @@
+{
+  "appName": "BNN",
+  "title": "New Incident",
+  "message": "NY, Westchester, Yonkers - 2nd Alarm Fire at Lockwood Ave & Clarendon Ave. Fire is being knocked down. nj179/njn3979 #1836120",
+  "ticker": "2nd Alarm Fire",
+  "subText": "Lockwood Ave & Clarendon Ave",
+  "infoText": "Fire is being knocked down",
+  "receivedAtEpoch": 1730922000000,
+  "source": "BNN_Test"
+}
+

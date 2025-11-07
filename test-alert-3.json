@@ -1,0 +1,11 @@
+{
+  "appName": "BNN",
+  "title": "New Incident",
+  "message": "NJ, Hudson, Kearny - Water Main Break on County Rd 508. CR 508 is closed in both directions between I-280 and NJ 7. Heavy delays on surrounding roads. Advises using alternate routes. nj179/njn3979 #1836120",
+  "ticker": "Water Main Break",
+  "subText": "County Rd 508",
+  "infoText": "CR 508 is closed in both directions",
+  "receivedAtEpoch": 1730923000000,
+  "source": "BNN_Test"
+}
+

@@ -12,7 +12,12 @@ import { Client } from '@googlemaps/google-maps-services-js';
 import express from 'express';
 
 // Firebase Admin is initialized in index.ts, reuse the existing instance
-const db = getFirestore();
+// Lazy initialization to avoid issues during module load
+let db: ReturnType<typeof getFirestore> | null = null;
+const getDb = () => {
+  if (!db) db = getFirestore();
+  return db;
+};
 const mapsClient = new Client({});
 const secretManagerClient = new SecretManagerServiceClient();
 
@@ -21,9 +26,9 @@ const secretManagerClient = new SecretManagerServiceClient();
  * This is the number shown to users (e.g., #NFA-7000000).
  */
 async function allocateNextDisplayNumber(): Promise<number> {
-  const counterRef = db.collection('_counters').doc('incident-display-numbers');
+  const counterRef = getDb().collection('_counters').doc('incident-display-numbers');
   let newNumber: number = 0;
-  await db.runTransaction(async (tx) => {
+  await getDb().runTransaction(async (tx) => {
     const counterSnap = await tx.get(counterRef);
     const startFrom = 7000000; // Start at 7000000 as requested
     if (counterSnap.exists && typeof (counterSnap.data() as any).next === 'number') {
@@ -430,7 +435,7 @@ Now parse and format the message according to these requirements.`,
         incidentDocId = macroDroidId;
 
         // Check if document already exists
-        const incidentRef = db.collection('incidents').doc(incidentDocId);
+        const incidentRef = getDb().collection('incidents').doc(incidentDocId);
         const existingDoc = await incidentRef.get();
 
         if (existingDoc.exists) {
@@ -560,7 +565,7 @@ Now parse and format the message according to these requirements.`,
           updatedAt: now,
         };
 
-        const docRef = await db.collection('incidents').add(incidentData);
+        const docRef = await getDb().collection('incidents').add(incidentData);
         incidentDocId = docRef.id;
       }
 
@@ -694,7 +699,20 @@ ingressApp.post('/webhook', async (req: express.Request, res: express.Response) 
     });
 
     // AI extraction with Claude 3.5 Sonnet
-    const apiKey = process.env.OPENROUTER_API_KEY;
+    // Try to get API key from environment or Secret Manager
+    let apiKey = process.env.OPENROUTER_API_KEY;
+    if (!apiKey) {
+      try {
+        const projectId = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT;
+        if (projectId) {
+          const secretName = `projects/${projectId}/secrets/OPENROUTER_API_KEY/versions/latest`;
+          const [version] = await secretManagerClient.accessSecretVersion({ name: secretName });
+          apiKey = version.payload?.data?.toString() || '';
+        }
+      } catch (error) {
+        console.error('[Webhook V2] Failed to retrieve OPENROUTER_API_KEY from Secret Manager:', error);
+      }
+    }
     if (!apiKey) {
       return res.status(500).json({ error: 'OPENROUTER_API_KEY not configured' });
     }
@@ -812,7 +830,7 @@ Now parse and format the message according to these requirements.`,
     let updated = false;
 
     if (preferredId) {
-      ref = db.collection('incidents').doc(preferredId);
+      ref = getDb().collection('incidents').doc(preferredId);
       const snap = await ref.get();
       if (snap.exists) {
         const existing = snap.data() as any;
@@ -873,7 +891,7 @@ Now parse and format the message according to these requirements.`,
         });
       }
     } else {
-      ref = db.collection('incidents').doc();
+      ref = getDb().collection('incidents').doc();
       await ref.set({
         location: locationObj,
         state: parsed.state,
@@ -913,12 +931,12 @@ ingressApp.post('*', async (req: express.Request, res: express.Response) => {
   return ingressHandler(req, res);
 });
 
+// Secret retrieved via Secret Manager API (not in function config to avoid deployment validation errors)
 export const ingress = onRequest(
   {
     cors: true,
     memory: '512MiB',
     timeoutSeconds: 60,
-    secrets: ['OPENROUTER_API_KEY', 'GOOGLE_MAPS_API_KEY', 'OPENWEATHER_API_KEY'],
     region: 'us-central1',
   },
   ingressApp
