@@ -1,3 +1,9 @@
+export type EncryptionPolicy = 
+  | 'all_unencrypted' 
+  | 'first_unencrypted_then_encrypted' 
+  | 'all_encrypted'
+  | 'unknown';
+
 export interface FireDepartment {
   fdid: string;
   name: string;
@@ -9,7 +15,10 @@ export interface FireDepartment {
   phone?: string;
   website?: string;
   serviceArea?: string[];
+  encryptionPolicy?: EncryptionPolicy;
   notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface DepartmentCode {
