@@ -11,7 +11,7 @@ import { fetchWeatherForLocation } from './ingress-utils/weather';
 import { Client } from '@googlemaps/google-maps-services-js';
 import express from 'express';
 import type { CounterData, RequestWithRawBody, ExistingIncidentData, ParsedIncident, GenerateObjectResult, ErrorWithStatus } from './ingress-types';
-import { isExistingIncidentData, isGenerateObjectResult, isErrorWithStatus } from './ingress-types';
+import { trackDepartmentCodes } from './utils/track-department-codes';
 
 let db: ReturnType<typeof getFirestore> | null = null;
 const getDb = () => {
@@ -851,6 +851,16 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
         }
         await ref.set(updateData, { merge: true });
         updated = true;
+        
+        if (parsed.departmentCodes && parsed.departmentCodes.length > 0 && parsed.address && parsed.city && parsed.state) {
+          await trackDepartmentCodes(
+            parsed.incidentId || preferredId,
+            parsed.departmentCodes,
+            parsed.address,
+            parsed.city,
+            parsed.state
+          );
+        }
       } else {
         const alertDate = activityTimestamp.toDate().toLocaleDateString();
         const alertTime = activityTimestamp.toDate().toLocaleTimeString();
@@ -884,6 +894,16 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
         };
         if (locationObj) createData.location = locationObj;
         await ref.set(createData);
+        
+        if (parsed.departmentCodes && parsed.departmentCodes.length > 0 && parsed.address && parsed.city && parsed.state) {
+          await trackDepartmentCodes(
+            parsed.incidentId || preferredId,
+            parsed.departmentCodes,
+            parsed.address,
+            parsed.city,
+            parsed.state
+          );
+        }
       }
     } else {
       ref = getDb().collection('incidents').doc();
@@ -912,6 +932,16 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
       };
       if (locationObj) fallbackData.location = locationObj;
       await ref.set(fallbackData);
+      
+      if (parsed.departmentCodes && parsed.departmentCodes.length > 0 && parsed.address && parsed.city && parsed.state) {
+        await trackDepartmentCodes(
+          parsed.incidentId || ref.id,
+          parsed.departmentCodes,
+          parsed.address,
+          parsed.city,
+          parsed.state
+        );
+      }
     }
 
     return res.status(200).json({ id: ref.id, updated });
