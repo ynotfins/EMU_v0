@@ -847,7 +847,23 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
           ],
         };
         if (locationObj) {
-          updateData.location = locationObj;
+          updateData.location = {
+            ...locationObj,
+            lat: existing.location?.lat || null,
+            lng: existing.location?.lng || null,
+          };
+        } else if (existing.location) {
+          updateData.location = existing.location;
+        } else {
+          updateData.location = {
+            address: parsed.address || existing.address || null,
+            city: parsed.city || existing.city || null,
+            state: parsed.state || existing.state || null,
+            zipCode: parsed.zipCode || existing.zipCode || null,
+            country: parsed.country || existing.country || 'USA',
+            lat: null,
+            lng: null,
+          };
         }
         await ref.set(updateData, { merge: true });
         updated = true;
@@ -892,7 +908,23 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
             source: parsed.source ?? bodySource ?? 'webhook-v2',
           }],
         };
-        if (locationObj) createData.location = locationObj;
+        if (locationObj) {
+          createData.location = {
+            ...locationObj,
+            lat: null,
+            lng: null,
+          };
+        } else {
+          createData.location = {
+            address: parsed.address || null,
+            city: parsed.city || null,
+            state: parsed.state || null,
+            zipCode: parsed.zipCode || null,
+            country: parsed.country || 'USA',
+            lat: null,
+            lng: null,
+          };
+        }
         await ref.set(createData);
         
         if (parsed.departmentCodes && parsed.departmentCodes.length > 0 && parsed.address && parsed.city && parsed.state) {
@@ -930,7 +962,23 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
           source: parsed.source ?? bodySource ?? 'webhook-v2',
         }],
       };
-      if (locationObj) fallbackData.location = locationObj;
+      if (locationObj) {
+        fallbackData.location = {
+          ...locationObj,
+          lat: null,
+          lng: null,
+        };
+      } else {
+        fallbackData.location = {
+          address: parsed.address || null,
+          city: parsed.city || null,
+          state: parsed.state || null,
+          zipCode: parsed.zipCode || null,
+          country: parsed.country || 'USA',
+          lat: null,
+          lng: null,
+        };
+      }
       await ref.set(fallbackData);
       
       if (parsed.departmentCodes && parsed.departmentCodes.length > 0 && parsed.address && parsed.city && parsed.state) {
