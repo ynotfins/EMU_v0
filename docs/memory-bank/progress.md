@@ -29,12 +29,16 @@
 - **Cross-Reference**: Script matches codes to departments
 - **Encryption Policy**: 4 types tracked (all_unencrypted, first_unencrypted_then_encrypted, all_encrypted, unknown)
 - **Automation**: Google Apps Script for data validation
+- **Comprehensive Tracking**: Records every address with every code, including county and alert type
+- **Pattern Analysis**: After collecting data, can identify code-to-department relationships
 
 ### 🔄 Data Population (In Progress)
 - Importing fire department data from Google Sheets
 - Populating encryption policies
 - Cross-referencing BNN codes with departments
 - Building code-to-department confidence levels
+- **Collecting address-code associations**: Every alert automatically tracked with address, county, alert type
+- **Pattern Building**: As data accumulates, patterns emerge showing which codes belong to which departments
 
 ## Current Sprint Focus
 

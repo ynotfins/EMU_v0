@@ -67,10 +67,17 @@ Firestore → onSnapshot → React Hook → Component Re-render
 
 ### Fire Department Code Tracking Flow
 ```
-Alert → Extract Codes → Track Address → Cross-Reference → Link Department → Encryption Policy
-  ↓          ↓              ↓                ↓                  ↓                  ↓
-BNN      departmentCodes  Mapping      Address Match      FireDepartment    Policy Type
+Alert → Extract Codes → Track Address/County/Type → Store Association → Pattern Analysis → Link Department → Encryption Policy
+  ↓          ↓                    ↓                        ↓                    ↓                  ↓                  ↓
+BNN      departmentCodes    addressAssociations      fireDepartmentMappings  Pattern Match   FireDepartment    Policy Type
 ```
+
+**Enhanced Tracking:**
+- Records every address associated with every code
+- Includes county for geographic precision
+- Tracks alert types to understand response patterns
+- Maintains incident count and timestamps
+- Enables pattern analysis after data collection
 
 ## State Management Patterns
 

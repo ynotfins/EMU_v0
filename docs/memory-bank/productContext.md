@@ -174,6 +174,8 @@
 - Track encryption policies (all_unencrypted, first_unencrypted_then_encrypted, all_encrypted, unknown)
 - Import from Google Sheets or CSV
 - Cross-reference BNN codes with departments
+- **Comprehensive Code Tracking**: Every alert automatically records address, county, and alert type with each department code
+- **Pattern Analysis**: After collecting data, system can identify which codes belong to which departments based on geographic patterns
 
 **Current Deployment Status**:
 - Frontend: Vercel (auto-deploy from GitHub)

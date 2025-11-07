@@ -147,7 +147,8 @@ pnpm lint        # Run ESLint
 - Provider: OpenRouter API
 - Model: Claude 3.5 Sonnet
 - Purpose: Extract structured data from alert messages
-- Fields Extracted: incidentId, location, type, description, departmentCodes, fireDepartmentInfo
+- Fields Extracted: incidentId, location, type, description, departmentCodes, fireDepartmentInfo, county, alertType
+- **Tracking**: Automatically tracks department codes with full address details (address, city, state, county, alert type)
 
 **Google Maps Integration**:
 - Client-side: @googlemaps/js-api-loader@2.0.2
@@ -160,6 +161,8 @@ pnpm lint        # Run ESLint
 - Firestore: `fireDepartments` and `fireDepartmentMappings` collections
 - Import: CSV or Google Sheets URL
 - Automation: Google Apps Script for data validation
+- **Comprehensive Tracking**: Every alert address tracked with county and alert type
+- **Pattern Analysis**: Address-code associations build over time to identify departments
 
 **Build Status**:
 - TypeScript: 0 errors (after refactoring)
