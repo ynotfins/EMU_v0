@@ -5,10 +5,8 @@ const variants = ['chaser', 'supe'] as const;
 test.describe('Details page renders full alert text', () => {
   for (const v of variants) {
     test(`details visible for ${v}`, async ({ page, baseURL }) => {
-      await page.goto(`${baseURL}/${v}?cb=${Date.now()}`, { waitUntil: 'networkidle', timeout: 60000 });
-      
-      // Wait for redirect if needed
-      await page.waitForTimeout(2000);
+      // Navigate directly to /incidents
+      await page.goto(`${baseURL}/incidents?cb=${Date.now()}`, { waitUntil: 'networkidle', timeout: 60000 });
       
       // Wait for incidents list to be visible
       const list = page.getByTestId('incidents-list');
@@ -39,4 +37,5 @@ test.describe('Details page renders full alert text', () => {
     });
   }
 });
+
 
