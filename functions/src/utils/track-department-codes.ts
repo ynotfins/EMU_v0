@@ -2,6 +2,7 @@ import * as admin from 'firebase-admin';
 
 interface CodeMapping {
   code: string;
+  originalCode?: string; // Original code before sanitization
   fdid?: string;
   departmentName?: string;
   state?: string;
@@ -43,7 +44,9 @@ export async function trackDepartmentCodes(
   const now = new Date().toISOString();
 
   for (const code of codes) {
-    const mappingRef = db.collection('fireDepartmentMappings').doc(code);
+    // Sanitize code: replace slashes with underscores for Firestore document ID
+    const sanitizedCode = code.replace(/\//g, '_');
+    const mappingRef = db.collection('fireDepartmentMappings').doc(sanitizedCode);
     const mappingSnap = await mappingRef.get();
 
     if (mappingSnap.exists) {
@@ -90,7 +93,8 @@ export async function trackDepartmentCodes(
     } else {
       const stateMatch = code.match(/^([a-z]{2})\d+/i);
       const newMapping: CodeMapping = {
-        code,
+        code: sanitizedCode, // Store sanitized code
+        originalCode: code, // Keep original for reference
         state: stateMatch ? stateMatch[1].toUpperCase() : undefined,
         confidence: 'unknown',
         source: 'crossref',

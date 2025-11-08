@@ -88,6 +88,17 @@ async function getWebhookSecret(): Promise<string> {
 
 async function authenticateRequest(authHeader?: string, webhookToken?: string, bodyAuthToken?: string): Promise<boolean> {
   try {
+    // Development bypass: Allow test tokens in non-production
+    const isDevelopment = process.env.NODE_ENV !== 'production' || process.env.FUNCTIONS_EMULATOR === 'true';
+    if (isDevelopment) {
+      const testTokens = ['test-token', 'dev-token', 'BNN_Test'];
+      const providedToken = authHeader?.replace(/^Bearer\s+/i, '').trim() || webhookToken || bodyAuthToken;
+      if (providedToken && testTokens.includes(providedToken)) {
+        console.log('[Ingress] Development mode: Allowing test token');
+        return true;
+      }
+    }
+    
     const expectedSecret = await getWebhookSecret();
 
     if (authHeader) {
