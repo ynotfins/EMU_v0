@@ -332,11 +332,24 @@ export function useIncidents(filters?: Partial<IncidentFilters>) {
           const existing = groupedMap.get(incidentId);
 
           // Compare by updatedAt (Firestore Timestamp) or lastSeenAt as fallback
-          const dataTime = data.updatedAt?.seconds || data.lastSeenAt?.seconds || 0;
-          const existingTime = existing?.updatedAt?.seconds || existing?.lastSeenAt?.seconds || 0;
+          // Handle both Timestamp objects and { seconds: number } format
+          const getTimestampSeconds = (ts: any): number => {
+            if (!ts) return 0;
+            if (typeof ts === 'object' && 'seconds' in ts) return ts.seconds || 0;
+            if (ts instanceof Date) return Math.floor(ts.getTime() / 1000);
+            return 0;
+          };
+
+          const dataTime = getTimestampSeconds(data.updatedAt) || getTimestampSeconds(data.lastSeenAt) || 0;
+          const existingTime = getTimestampSeconds(existing?.updatedAt) || getTimestampSeconds(existing?.lastSeenAt) || 0;
 
           if (!existing || dataTime > existingTime) {
-            groupedMap.set(incidentId, { ...data, firestoreDocId: doc.id });
+            // Preserve description field explicitly
+            groupedMap.set(incidentId, { 
+              ...data, 
+              firestoreDocId: doc.id,
+              description: data.description || existing?.description || ''
+            });
           }
         });
 
