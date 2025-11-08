@@ -637,4 +637,94 @@ webhook_endpoints:
       issue: "originalText being overwritten on updates"
       solution: "Append originalText with separator instead of overwriting"
       status: "fixed"
+    - fix_date: "2025-01-08T03:30:00Z"
+      issue: "Alert messages not displaying on incidents page"
+      solution: "Updated formatListLines to use description field and split bullet-separated messages, added description to FirestoreIncidentData interface"
+      status: "fixed"
+
+---
+# Update 2025-01-08T03:30:00Z
+# [id]: prof_20250108_033000_project_stack_update
+# [source]: human_request
+# [reason]: Add comprehensive project and technology stack information
+# [status]: active
+
+project_info:
+  name: "EMU Alerts / EMU Incidents"
+  description: "Real-time emergency incident management system for fire departments"
+  repository: "ynotfins/EMU_v0"
+  branch: "proper-architecture-Tony"
+  production_url: "https://rebuild.4axe.com"
+  
+  technology_stack:
+    frontend:
+      framework: "Next.js 16.0.0 (App Router)"
+      runtime: "React 19.2.0"
+      language: "TypeScript 5"
+      styling:
+        framework: "Tailwind CSS 4.1.9"
+        components: "Radix UI primitives + Shadcn UI (54+ components)"
+        icons: "Lucide React 0.454.0"
+      forms:
+        library: "React Hook Form 7.60.0"
+        validation: "Zod 3.x"
+      state_management:
+        client: "Zustand 5.0.8"
+        server: "Next.js Server Actions"
+        realtime: "Firestore onSnapshot hooks"
+      date_handling: "date-fns 4.1.0"
+      package_manager: "pnpm 10.15.0"
+      pwa: "Next.js PWA (service worker, offline support)"
+    
+    backend:
+      database: "Firebase Firestore (NoSQL)"
+      authentication: "Firebase Auth"
+      realtime: "Firestore real-time listeners"
+      storage: "Firebase Storage"
+      messaging: "Firebase Cloud Messaging"
+      type_safety: "Typesaurus 10.7.0 (Firestore)"
+      admin_sdk: "Firebase Admin 13.x"
+    
+    cloud_functions:
+      runtime: "Node.js 20"
+      framework: "Firebase Functions v2"
+      functions:
+        - "ingress: Main webhook endpoint with AI processing"
+        - "autoGeocodeIncident: Auto-geocode on incident creation"
+        - "scheduleGeocodeMissing: Scheduled geocoding fallback"
+      ai_integration:
+        provider: "OpenRouter API"
+        models:
+          - "Claude 3.5 Sonnet (primary)"
+          - "Llama 3.2-3b-instruct (fallback)"
+    
+    webhook_service:
+      runtime: "Node.js 20"
+      framework: "Express 4.21.2"
+      deployment: "Google Cloud Run"
+      ai_integration: "OpenRouter API (Claude 3.5 Sonnet)"
+      database: "Firebase Admin SDK → Firestore"
+    
+    deployment:
+      frontend: "Vercel"
+      functions: "Firebase Cloud Functions"
+      webhook: "Google Cloud Run"
+      database: "Firebase Firestore"
+    
+    development_tools:
+      build_tool: "Turbopack (Next.js)"
+      linting: "ESLint 8.57.1"
+      testing: "Playwright 1.48.2"
+      type_checking: "TypeScript 5"
+      package_manager: "pnpm 10.15.0"
+    
+    key_features:
+      - "Real-time incident tracking"
+      - "AI-powered alert parsing (OpenRouter/Claude)"
+      - "Department code tracking and mapping"
+      - "Geocoding with Google Maps API"
+      - "Role-based access (Chaser/Supe/Admin)"
+      - "PWA with offline support"
+      - "Fire department encryption policy tracking"
+      - "Multi-alert aggregation by incidentId"
 

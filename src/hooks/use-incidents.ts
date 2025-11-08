@@ -331,11 +331,11 @@ export function useIncidents(filters?: Partial<IncidentFilters>) {
           const incidentId = data.incidentId || doc.id;
           const existing = groupedMap.get(incidentId);
 
-          if (
-            !existing ||
-            (data.lastSeenAt?.seconds || 0) >
-              (existing.lastSeenAt?.seconds || 0)
-          ) {
+          // Compare by updatedAt (Firestore Timestamp) or lastSeenAt as fallback
+          const dataTime = data.updatedAt?.seconds || data.lastSeenAt?.seconds || 0;
+          const existingTime = existing?.updatedAt?.seconds || existing?.lastSeenAt?.seconds || 0;
+
+          if (!existing || dataTime > existingTime) {
             groupedMap.set(incidentId, { ...data, firestoreDocId: doc.id });
           }
         });
