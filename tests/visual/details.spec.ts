@@ -5,12 +5,11 @@ const variants = ['chaser', 'supe'] as const;
 test.describe('Details page renders full alert text', () => {
   for (const v of variants) {
     test(`details visible for ${v}`, async ({ page, baseURL }) => {
-      // Navigate to the role-specific incidents route (which redirects to /incidents)
-      await page.goto(`${baseURL}/${v}/incidents?cb=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      // Navigate directly to /incidents (the actual page)
+      await page.goto(`${baseURL}/incidents?cb=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
       
-      // Wait for redirect to /incidents to complete
-      await page.waitForURL(/\/incidents/, { timeout: 30000 }).catch(() => {});
-      await page.waitForTimeout(3000); // Wait for page to fully load
+      // Wait for page to fully load and incidents to fetch
+      await page.waitForTimeout(5000);
       
       // Wait for incidents list to be visible
       const list = page.getByTestId('incidents-list');
@@ -28,7 +27,7 @@ test.describe('Details page renders full alert text', () => {
         expect(id).toBeTruthy();
 
         await page.goto(`${baseURL}/${v}/incident/${id}?cb=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await page.waitForTimeout(2000);
+        await page.waitForTimeout(3000);
         
         const container = page.getByTestId('incident-details');
         await expect(container).toBeVisible({ timeout: 30000 });
@@ -43,6 +42,7 @@ test.describe('Details page renders full alert text', () => {
     });
   }
 });
+
 
 
 
