@@ -235,10 +235,26 @@ export function formatListLines(incident: IncidentLite) {
 
   // Use description field (contains bullet-separated messages) instead of message
   const alertText = incident.description || incident.message || '';
-  const l3 = `${incident.type} | ${alertText}`.replace(
-    /\s+\|\s+\|/g,
-    " |"
-  );
+  
+  // Split bullet-separated messages and format for display
+  const messages = alertText.split(' • ').filter(Boolean);
+  let l3: string;
+  
+  if (messages.length === 0) {
+    l3 = `${incident.type}`.replace(/\s+\|\s+\|/g, " |");
+  } else {
+    // First message: "type | first message"
+    const firstLine = `${incident.type} | ${messages[0]}`.replace(/\s+\|\s+\|/g, " |");
+    
+    // Additional messages: "• message" (up to 5 total lines)
+    const additionalLines: string[] = [];
+    for (let i = 1; i < messages.length && additionalLines.length < 4; i++) {
+      additionalLines.push(`• ${messages[i]}`);
+    }
+    
+    // Join all lines with newlines for proper display
+    l3 = [firstLine, ...additionalLines].join('\n');
+  }
 
   return { l1, l2, l3 };
 }
