@@ -1,7 +1,6 @@
 ﻿import type React from "react"
 import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
-import { Analytics } from "@vercel/analytics/react"
 import { FavoritesProvider } from "@/lib/context/favorites-context"
 import { PWARegistration } from "@/components/features/pwa-registration"
 import { InstallPWAPrompt } from "@/components/features/install-pwa-prompt"
@@ -46,7 +45,6 @@ export default function RootLayout({
           <PWARegistration />
           <InstallPWAPrompt />
         </FavoritesProvider>
-        <Analytics />
       </body>
     </html>
   )
