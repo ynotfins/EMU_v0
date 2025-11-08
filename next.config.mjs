@@ -8,6 +8,11 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '2mb',
     },
+    turbo: {
+      resolveAlias: {
+        process: false,
+      },
+    },
   },
   typedRoutes: true,
   images: {
@@ -21,18 +26,6 @@ const nextConfig = {
         hostname: 'maps.googleapis.com',
       },
     ],
-  },
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-        process: false,
-      }
-    }
-    return config
   },
   async headers() {
     return [
