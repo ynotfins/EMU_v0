@@ -1,113 +1,67 @@
-﻿import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
-import { getAuth, type Auth, setPersistence, browserLocalPersistence, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, type Firestore } from "firebase/firestore";
+﻿import { initializeApp, getApps } from "firebase/app";
+import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged } from "firebase/auth";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import { getMessaging, type Messaging } from "firebase/messaging";
+import { getMessaging } from "firebase/messaging";
 import { saveAuthState } from "./auth-persistence";
 
-// Firebase configuration - defined at module level to avoid HMR issues
-// Using object spread to capture env vars at initialization time
 const firebaseConfig = {
-  apiKey: String(process.env.NEXT_PUBLIC_FIREBASE_API_KEY || ""),
-  authDomain: String(process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || ""),
-  projectId: String(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || ""),
-  storageBucket: String(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || ""),
-  messagingSenderId: String(process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || ""),
-  appId: String(process.env.NEXT_PUBLIC_FIREBASE_APP_ID_WEB || ""),
-} as const;
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID_WEB,
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+};
 
-let app: FirebaseApp;
-if (!getApps().length) {
-  app = initializeApp(firebaseConfig);
-} else {
-  app = getApps()[0];
-}
+export const app = getApps().length > 0 ? getApps()[0] : initializeApp(firebaseConfig);
 
-export const auth: Auth = getAuth(app);
+export const auth = getAuth(app);
+
 export const storage = getStorage(app);
 
-let firestoreInstance: Firestore | null = null;
-
-export const db: Firestore = (() => {
-  if (firestoreInstance) return firestoreInstance;
-  
-  if (typeof window !== "undefined") {
-    try {
-      firestoreInstance = initializeFirestore(app, {
-        localCache: persistentLocalCache({
-          tabManager: persistentMultipleTabManager(),
-        }),
-      });
-      console.log("[Firestore] [OK] Offline persistence enabled (multi-tab support)");
-      console.log("[Firestore] [MOBILE] App will work offline with cached data!");
-    } catch (error) {
-      firestoreInstance = getFirestore(app);
-      console.warn("[Firestore] [WARN] Using default Firestore (persistence may already be initialized)");
-    }
-  } else {
-    firestoreInstance = getFirestore(app);
-  }
-  
-  return firestoreInstance;
-})();
-
-if (typeof window !== "undefined") {
-  setPersistence(auth, browserLocalPersistence)
-    .then(() => {
-      console.log("[Firebase] [OK] Auth persistence set to LOCAL - users stay signed in FOREVER");
-      console.log("[Firebase] [LOCKED] Users will ONLY be signed out if they manually click 'Sign Out'");
-    })
-    .catch((error) => {
-      console.error("[Firebase] [X] CRITICAL: Failed to set persistence:", error);
-      console.error("[Firebase] [WARN] Users may be signed out unexpectedly!");
-    });
-  
-  // Additional check: Verify persistence is actually set
-  setTimeout(() => {
-    if (auth.currentUser) {
-      console.log("[Firebase] [OK] User still authenticated after persistence check");
-    } else {
-      console.warn("[Firebase] [WARN] No user found after setting persistence - check browser settings");
-    }
-  }, 1000);
-
-  // BULLETPROOF FALLBACK: Save auth state to multiple locations
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      // User is signed in - save their info to localStorage, sessionStorage, AND cookies
-      saveAuthState(user.uid, user.email || '');
-      console.log("[Firebase] [LOCKED] Auth state saved to 3 locations for maximum persistence");
-    }
-  });
-}
-
-// Messaging only available in browser context AND if browser supports it
-export const messaging: Messaging | null = (() => {
-  if (typeof window === "undefined") return null;
-  
+function createFirestore() {
   try {
-    // Check if browser supports service workers (required for FCM)
-    if (!("serviceWorker" in navigator)) {
-      console.warn("[Firebase] [WARN] Service Worker not supported - Push notifications disabled");
-      return null;
-    }
-    
-    return getMessaging(app);
+    return initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+      }),
+    });
   } catch (error) {
-    console.warn("[Firebase] [WARN] Messaging not supported on this browser:", error);
-    return null;
+    // Persistence already initialized, return existing instance
+    return getFirestore(app);
   }
-})();
-
-// Log authentication state changes (for debugging)
-if (typeof window !== "undefined") {
-  auth.onAuthStateChanged((user) => {
-    if (user) {
-      console.log("[Firebase] [OK] User authenticated:", user.email || user.uid);
-    } else {
-      console.log("[Firebase] [WARN]  No user authenticated - redirecting to login");
-    }
-  });
 }
+
+export const db = createFirestore();
+
+// Setup auth persistence (client-side only)
+setPersistence(auth, browserLocalPersistence)
+  .then(() => console.log("✅ Firebase Auth: Persistence enabled"))
+  .catch((error) => console.error("❌ Firebase Auth: Persistence failed", error));
+
+// Monitor auth state and save to multiple storage locations for reliability
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    saveAuthState(user.uid, user.email || "");
+    console.log("✅ Firebase Auth: User session saved", user.email);
+  } else {
+    console.log("ℹ️  Firebase Auth: No active session");
+  }
+});
+
+// Initialize Messaging (optional, only if supported)
+let messagingInstance = null;
+try {
+  if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+    messagingInstance = getMessaging(app);
+    console.log("✅ Firebase Messaging: Initialized");
+  }
+} catch (error) {
+  console.log("ℹ️  Firebase Messaging: Not available");
+}
+
+export const messaging = messagingInstance;
 
 export default app;

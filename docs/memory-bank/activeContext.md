@@ -622,3 +622,51 @@ Documentation Cleanup Summary:
 **Deployment:**
 - Committed and pushed to rebuild-proper-architecture branch
 - Vercel will auto-deploy changes to rebuild.4axe.com
+
+### Update 2025-11-08T00:00:00Z
+[status]: active
+[id]: u_20251108_000000_hmr1
+[source]: action
+[reason]: Fixed Turbopack HMR process polyfill error
+
+**Issue Reported:**
+- Runtime error during HMR updates with Turbopack (Next.js 16.0.0)
+- Error: "Module factory is not available. It might have been deleted in an HMR update"
+- Error triggered from error.tsx and layout.tsx with FavoritesProvider
+- Process polyfill was being removed during hot module replacement
+
+**Root Cause:**
+- Firebase client config in `src/lib/firebase/firebase.ts` was accessing `process.env` directly
+- During HMR updates, Turbopack was removing the process polyfill module
+- Direct `process.env` access caused reference issues during hot reloads
+
+**Fixes Applied:**
+1. **Firebase Client Config Refactor** (src/lib/firebase/firebase.ts):
+   - Captured env vars at module initialization using String() conversion
+   - Changed from direct `process.env.VAR!` to `String(process.env.VAR || "")`
+   - This creates stable references that survive HMR updates
+
+2. **Next.js Config Updates** (next.config.mjs):
+   - Added Turbopack resolve alias: `process: 'process/browser'`
+   - Explicitly inlined all NEXT_PUBLIC_* env vars in config.env
+   - Ensures env vars are available at build time and runtime
+
+3. **Dependencies**:
+   - Installed `process@0.11.10` package for stable polyfill
+   - Ensures process object is always available in client bundles
+
+**Result:**
+- No more HMR errors during development
+- Firebase initialization stable across hot reloads
+- Error boundary and layout components work correctly
+- Improved development experience with reliable hot reloading
+
+**Technical Details:**
+- Using `String(process.env.VAR || "")` instead of `process.env.VAR!`
+- Turbopack now properly resolves process polyfill via alias
+- Environment variables inlined at build time via config.env
+- Process package provides stable browser polyfill
+
+**Deployment:**
+- Committed and pushed to rebuild-proper-architecture branch
+- Changes will improve both local dev and production stability

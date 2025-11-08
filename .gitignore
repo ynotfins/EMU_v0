@@ -26,8 +26,9 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# Firebase Admin SDK keys (NEVER commit these!)
+# Firebase keys and configs (NEVER commit these!)
 firebase-admin-key.json
+firebase-client-config.json
 *-firebase-adminsdk-*.json
 
 # Vercel
