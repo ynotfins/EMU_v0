@@ -385,7 +385,7 @@ export function useIncidents(filters?: Partial<IncidentFilters>) {
         (inc) =>
           (inc.address || '').toLowerCase().includes(keyword) ||
           inc.type.toLowerCase().includes(keyword) ||
-          (inc.message || '').toLowerCase().includes(keyword)
+          (inc.description || inc.message || '').toLowerCase().includes(keyword)
       );
     }
 
