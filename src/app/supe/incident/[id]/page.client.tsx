@@ -203,7 +203,7 @@ export default function Client({ id }: { id: string }) {
                       {incident.type}
                     </p>
                     <p className="text-gray-800 whitespace-pre-wrap wrap-break-word">
-                      {incident.message || incident.address}
+                      {incident.description || incident.message || incident.address}
                     </p>
                   </div>
                   <p className="text-xs text-gray-500 mt-2 italic">

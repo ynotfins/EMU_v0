@@ -129,8 +129,12 @@ function normalize(docId: string, data: FirestoreIncidentData): IncidentLite {
   const type = (validTypes.includes(cleanedType.toLowerCase() as any) 
     ? cleanedType.toLowerCase() 
     : 'other') as 'fire' | 'accident' | 'medical' | 'hazard' | 'other';
+  // Prioritize description field (used by new alerts) over legacy message fields
+  const rawDescription = (typeof data.description === 'string' ? data.description : '') || '';
   const rawMessage = data.message || data.lastMessage || data.alertMessage || "";
   const message = rawMessage.replace(/\bBNN\b/gi, "").trim().replace(/\s+/g, " ");
+  // Use description if available, otherwise fall back to message (backward compatibility)
+  const finalDescription = rawDescription || message;
 
   const normalized = {
     id: docId,
@@ -140,8 +144,8 @@ function normalize(docId: string, data: FirestoreIncidentData): IncidentLite {
       data.firestoreDocId ||
       parseInt(docId) ||
       0,
-    title: (typeof data.title === 'string' ? data.title : null) || message.substring(0, 50) || 'Incident',
-    description: message || (typeof data.description === 'string' ? data.description : '') || '',
+    title: (typeof data.title === 'string' ? data.title : null) || finalDescription.substring(0, 50) || 'Incident',
+    description: finalDescription,
     status: (data.status || 'active') as 'pending' | 'active' | 'resolved' | 'closed',
     priority: (data.priority || 'medium') as 'low' | 'medium' | 'high' | 'critical',
     location: {
@@ -229,7 +233,9 @@ export function formatListLines(incident: IncidentLite) {
     );
   const l2 = l2Left;
 
-  const l3 = `${incident.type} | ${incident.message}`.replace(
+  // Use description field (contains bullet-separated messages) instead of message
+  const alertText = incident.description || incident.message || '';
+  const l3 = `${incident.type} | ${alertText}`.replace(
     /\s+\|\s+\|/g,
     " |"
   );
