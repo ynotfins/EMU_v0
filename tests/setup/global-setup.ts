@@ -104,7 +104,27 @@ async function tryLogin(context: BrowserContext, baseURL: string) {
       } catch {}
     }
 
-    if (!emailField || !passwordField) {
+    // Check if we need to click "Sign in with Email" button first
+    const emailSignInButton = page.getByRole('button', { name: /sign in with email/i }).first();
+    const hasEmailButton = await emailSignInButton.isVisible({ timeout: 2000 }).catch(() => false);
+    
+    if (hasEmailButton) {
+      console.log('Clicking "Sign in with Email" button...');
+      await emailSignInButton.click();
+      await page.waitForTimeout(1000); // Wait for form to appear
+      
+      // Re-find fields after clicking
+      emailField = page.locator('input[type="email"]').first();
+      passwordField = page.locator('input[type="password"]').first();
+      
+      const hasEmail = await emailField.isVisible({ timeout: 2000 }).catch(() => false);
+      const hasPassword = await passwordField.isVisible({ timeout: 2000 }).catch(() => false);
+      
+      if (!hasEmail || !hasPassword) {
+        console.log(`Email/password form not found after clicking button on ${path}`);
+        continue;
+      }
+    } else if (!emailField || !passwordField) {
       console.log(`Login form not found on ${path}`);
       continue;
     }
