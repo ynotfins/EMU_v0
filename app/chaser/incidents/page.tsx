@@ -62,15 +62,14 @@ export default function ChaserIncidentsPage() {
     })
   }
 
-  if (!profile) {
-    return (
-      <RoleLayout role="chaser">
-        <div className="flex items-center justify-center h-screen">
-          <p className="text-[#6B7280]">Loading...</p>
-        </div>
-      </RoleLayout>
-    )
+  // Use default profile if not loaded yet
+  const defaultProfile = {
+    settings: {
+      highAlertSound: "train",
+      muted: false,
+    }
   }
+  const effectiveProfile = profile || defaultProfile
 
   // Null guards, filtering, and sorting logic
   const safeIncidents = Array.isArray(incidents)
