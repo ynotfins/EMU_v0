@@ -1,0 +1,27 @@
+{
+  "visitedUrls": [
+    "https://rebuild.4axe.com/login?cb=1736302100000",
+    "https://rebuild.4axe.com/chaser/incidents?cb=1736302101000",
+    "https://rebuild.4axe.com/chaser/incidents?cb=1736302200000",
+    "https://rebuild.4axe.com/chaser/incidents?cb=1736302300000",
+    "https://rebuild.4axe.com/chaser/incidents?cb=1736302400000"
+  ],
+  "checkedIds": [],
+  "errors": [
+    "Page stuck on 'Loading...' - incidents list not rendering despite incidents being loaded (64 incidents processed in console)",
+    "ProtectedRoute or RoleLayout may be blocking render",
+    "Build may not have updated yet - fixes pushed but page still showing old behavior"
+  ],
+  "consoleErrors": 0,
+  "hydrationWarnings": 0,
+  "fixesApplied": [
+    "fix(auth): prevent perpetual loading gate in ProtectedRoute",
+    "chore(testids): add selectors and fix message display for details page",
+    "fix(incidents): show loading only on initial load, not while calculating distances",
+    "fix(incidents): only show loading when isLoading is true",
+    "fix(incidents): remove loading check blocking render"
+  ],
+  "latestCommit": "14c3e01",
+  "status": "in_progress"
+}
+
