@@ -199,6 +199,7 @@ export const scheduleGeocodeMissing = onSchedule(
   {
     secrets: ['GOOGLE_MAPS_API_KEY'],
     schedule: 'every 15 minutes',
+    region: 'us-central1',
   },
   async (event) => {
   console.log('[Scheduled Geocode] Running...');

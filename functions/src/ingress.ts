@@ -235,10 +235,10 @@ async function ingressHandler(request: RequestWithRawBody, response: express.Res
 
       console.log('[Ingress] Authenticated request received from:', notification.source || 'unknown');
 
-      const apiKey = process.env.OPENROUTER_API_KEY;
+      const apiKey = process.env.OPENROUTER_API_KEY_EMU;
       if (!apiKey) {
         response.status(500).json({
-          error: 'OPENROUTER_API_KEY secret is not configured',
+          error: 'OPENROUTER_API_KEY_EMU secret is not configured',
         });
         return;
       }
