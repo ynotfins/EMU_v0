@@ -18,6 +18,7 @@ export default function ChaserIncidentsPage() {
   const { filters, setDistance, setTypes, setKeyword, setHighAlertOnly, setMinUpdates } = useFilters()
   const { 
     data: incidents, 
+    isLoading,
     locationPermissionGranted, 
     userLocation 
   } = useIncidentsWithDistance(filters)
@@ -101,6 +102,17 @@ export default function ChaserIncidentsPage() {
         return filtered;
       })()
     : []
+
+  // Show loading only if initial load, not while distance is calculating
+  if (isLoading && (!incidents || incidents.length === 0)) {
+    return (
+      <RoleLayout role="chaser">
+        <div className="flex items-center justify-center h-screen">
+          <p className="text-[#6B7280]">Loading...</p>
+        </div>
+      </RoleLayout>
+    )
+  }
 
   return (
     <RoleLayout role="chaser">
