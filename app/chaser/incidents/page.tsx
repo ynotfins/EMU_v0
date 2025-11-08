@@ -104,7 +104,8 @@ export default function ChaserIncidentsPage() {
     : []
 
   // Show loading only if initial load, not while distance is calculating
-  if (isLoading && (!incidents || incidents.length === 0)) {
+  // Don't block on empty incidents - they might be filtered or still calculating distances
+  if (isLoading) {
     return (
       <RoleLayout role="chaser">
         <div className="flex items-center justify-center h-screen">
