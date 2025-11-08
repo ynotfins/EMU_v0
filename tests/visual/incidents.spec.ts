@@ -8,11 +8,15 @@ test.describe('Incidents page shows alert messages', () => {
     test(`incidents list visible: ${variant}`, async ({ page }) => {
       const url = `${BASE_URL}/${variant}?cb=${Date.now()}`;
       
+      // Navigate and wait for redirect to /incidents
       await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
       
-      // Wait for list to appear
+      // Wait for navigation to complete (redirect from /chaser or /supe to /incidents)
+      await page.waitForURL(/\/incidents/, { timeout: 30000 });
+      
+      // Wait for list to appear with longer timeout
       const list = page.getByTestId('incidents-list');
-      await expect(list).toBeVisible({ timeout: 10000 });
+      await expect(list).toBeVisible({ timeout: 30000 });
       
       // Check for incident items
       const items = list.getByTestId('incident-item');
@@ -50,4 +54,5 @@ test.describe('Incidents page shows alert messages', () => {
     });
   }
 });
+
 

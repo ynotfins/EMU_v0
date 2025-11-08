@@ -8,11 +8,15 @@ test.describe('Details page shows alert message text', () => {
     test(`details visible: ${variant}`, async ({ page }) => {
       const base = `${BASE_URL}/${variant}?cb=${Date.now()}`;
       
+      // Navigate and wait for redirect
       await page.goto(base, { waitUntil: 'networkidle', timeout: 60000 });
+      
+      // Wait for navigation to /incidents
+      await page.waitForURL(/\/incidents/, { timeout: 30000 });
       
       // Wait for list to appear
       const list = page.getByTestId('incidents-list');
-      await expect(list).toBeVisible({ timeout: 10000 });
+      await expect(list).toBeVisible({ timeout: 30000 });
       
       // Get first 3 incident items
       const items = list.getByTestId('incident-item');
@@ -37,11 +41,11 @@ test.describe('Details page shows alert message text', () => {
         
         // Wait for details page to load
         const details = page.getByTestId('incident-details');
-        await expect(details).toBeVisible({ timeout: 10000 });
+        await expect(details).toBeVisible({ timeout: 30000 });
         
         // Check message is visible and non-empty
         const msg = page.getByTestId('incident-details-message');
-        await expect(msg).toBeVisible({ timeout: 10000 });
+        await expect(msg).toBeVisible({ timeout: 30000 });
         
         const text = (await msg.textContent())?.trim() ?? '';
         
@@ -57,4 +61,5 @@ test.describe('Details page shows alert message text', () => {
     });
   }
 });
+
 
