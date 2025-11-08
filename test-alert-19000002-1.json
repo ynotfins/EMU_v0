@@ -1,0 +1,11 @@
+{
+  "appName": "BNN",
+  "title": "New Incident",
+  "message": "NJ, Ocean County, Toms River - Fire Dispatch at 789 Test Ave. Engine 1 responding. nj179/pas4795 #19000002",
+  "ticker": "Fire Dispatch",
+  "subText": "789 Test Ave",
+  "infoText": "Engine 1 responding",
+  "receivedAtEpoch": "1736301400000",
+  "source": "BNN_Test"
+}
+

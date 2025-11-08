@@ -1,0 +1,11 @@
+{
+  "appName": "BNN",
+  "title": "Update",
+  "message": "NJ, Ocean County, Toms River - Fire Update at 789 Test Ave. Overhaul complete, units standing by. nj179/pas4795 #19000002",
+  "ticker": "Fire Update",
+  "subText": "789 Test Ave",
+  "infoText": "Overhaul complete",
+  "receivedAtEpoch": "1736301460000",
+  "source": "BNN_Test"
+}
+
