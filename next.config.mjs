@@ -8,14 +8,14 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '2mb',
     },
-    serverComponentsExternalPackages: [
-      'firebase-admin',
-      '@firebase/auth',
-      '@firebase/firestore',
-      '@firebase/database',
-      '@firebase/storage',
-    ],
   },
+  serverComponentsExternalPackages: [
+    'firebase-admin',
+    '@firebase/auth',
+    '@firebase/firestore',
+    '@firebase/database',
+    '@firebase/storage',
+  ],
   typedRoutes: true,
   images: {
     remotePatterns: [
