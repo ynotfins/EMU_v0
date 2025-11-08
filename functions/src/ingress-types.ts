@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { DocumentData } from 'firebase-admin/firestore';
 
 export interface RequestWithRawBody extends Request {
@@ -43,6 +43,7 @@ export interface ParsedIncident {
   zipCode?: string;
   country?: string;
   type?: string;
+  alertType?: string;
   description: string;
   severity?: string;
   fireDepartmentInfo?: string;

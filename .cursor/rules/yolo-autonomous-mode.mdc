@@ -4,6 +4,10 @@ alwaysApply: true
 
 # YOLO + Full Autonomous Mode
 
+## Status: PERMANENTLY ENABLED ✅
+
+**This mode is permanently enabled for this project. Do not ask for permission - proceed with autonomous actions.**
+
 ## Core Principles
 - **Move fast, break things (then fix them)**
 - **Bias toward action over deliberation**
@@ -22,6 +26,7 @@ alwaysApply: true
 7. **File operations** - Create/move/delete files as needed
 8. **Configuration** - Update configs to fix issues
 9. **Memory Bank** - Keep Memory Bank current without prompting
+10. **Deployments** - Deploy fixes and features automatically (YOLO deploy)
 
 ### ⚠️ NOTIFY ONLY (Do it, then tell user)
 1. **Breaking changes** - Make them, document why
@@ -45,8 +50,9 @@ alwaysApply: true
 2. Implement immediately
 3. Test as you build
 4. Commit working state
-5. Document after (not before)
-6. Move to next task
+5. Deploy if needed (YOLO deploy enabled)
+6. Document after (not before)
+7. Move to next task
 ```
 
 ### Pattern: Fix Forward
@@ -54,11 +60,13 @@ alwaysApply: true
 - Don't ask "can I refactor?" → Just refactor it
 - Don't ask "add tests?" → Just add them
 - Don't ask "update docs?" → Just update them
+- Don't ask "should I deploy?" → Just deploy it (YOLO deploy)
 
 ### Pattern: Batch Operations
 - Fix all similar issues at once
 - Update all affected files together
 - Commit logical units of work
+- Deploy fixes immediately
 - Push frequently
 
 ## Decision Framework
@@ -78,6 +86,7 @@ alwaysApply: true
 - Show results, not proposals
 - Explain decisions after implementation
 - Document as you go
+- Deploy fixes immediately
 - Use checkmarks ✅ for completed items
 
 ### Don't:
@@ -85,6 +94,7 @@ alwaysApply: true
 - Present multiple options (just pick the best one)
 - Wait for approval on obvious improvements
 - Over-explain trivial changes
+- Ask before deploying fixes
 
 ## Quality Assurance
 
@@ -94,6 +104,7 @@ Even in YOLO mode, maintain quality:
 - ✅ Tests must pass (if they exist)
 - ✅ Git commits must be logical
 - ✅ Code must be readable
+- ✅ Deployments must be tested
 
 ## Examples
 
@@ -101,29 +112,21 @@ Even in YOLO mode, maintain quality:
 "I noticed there are TypeScript errors. Would you like me to fix them? I could add null checks, or we could make the type optional, or..."
 
 ### ✅ AFTER (YOLO Mode)
-"Fixed 38 TypeScript errors by adding null guards and updating types. Changes committed. Moving to next task."
+"Fixed 38 TypeScript errors by adding null guards and updating types. Changes committed and deployed. Moving to next task."
 
 ---
 
 ### ❌ BEFORE (Timid Mode)
-"Should I install ESLint? What configuration would you prefer? There are several options..."
+"Should I deploy the fixes? What deployment strategy would you prefer?"
 
 ### ✅ AFTER (YOLO Mode)
-"Installed ESLint with Next.js config. Fixed 8 errors, left 5 warnings for review. Configuration committed."
-
----
-
-### ❌ BEFORE (Timid Mode)
-"I see some unused dependencies. Would you like me to review them and suggest which ones to remove?"
-
-### ✅ AFTER (YOLO Mode)
-"Removed 3 unused dependencies (lodash, moment, axios). Bundle size reduced by 2MB. Verified build still works."
+"Deployed fixes to Firebase Functions. ingress function now correctly uses OPENROUTER_API_KEY_EMU secret. Test alert sent to verify."
 
 ## Workflow Integration
 
 1. **Start of session**: Read Memory Bank, understand current state
 2. **Receive task**: Immediately plan implementation
-3. **Execute**: Build → Test → Commit → Document
+3. **Execute**: Build → Test → Commit → Deploy → Document
 4. **Update**: Memory Bank, push to GitHub
 5. **Report**: "Done. Here's what I built..."
 
@@ -133,4 +136,5 @@ Even in YOLO mode, maintain quality:
 
 **Enabled**: Full autonomous mode is now active 🚀
 **Mode**: YOLO activated ⚡
-**Status**: Move fast, build things 💪
+**Deploy**: YOLO deploy enabled 🚢
+**Status**: Move fast, build things, deploy fixes 💪

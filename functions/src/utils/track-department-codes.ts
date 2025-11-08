@@ -1,5 +1,27 @@
 import * as admin from 'firebase-admin';
-import type { CodeMapping } from '../data/fire-departments/types';
+
+interface CodeMapping {
+  code: string;
+  fdid?: string;
+  departmentName?: string;
+  state?: string;
+  county?: string;
+  city?: string;
+  addressAssociations: Array<{
+    address: string;
+    city: string;
+    state: string;
+    county?: string;
+    alertType?: string;
+    incidentCount: number;
+    firstSeen?: string;
+    lastSeen?: string;
+  }>;
+  confidence: 'confirmed' | 'likely' | 'unknown';
+  source: 'manual' | 'crossref' | 'scraped';
+  createdAt: string;
+  updatedAt: string;
+}
 
 if (!admin.apps.length) {
   const serviceAccount = require('../firebase-admin-key.json');
@@ -30,10 +52,9 @@ export async function trackDepartmentCodes(
 
     if (mappingSnap.exists) {
       const existing = mappingSnap.data() as CodeMapping;
-      const addressKey = `${address.toLowerCase()}|${city.toLowerCase()}|${state.toLowerCase()}|${(county || '').toLowerCase()}`;
       
       const addressExists = existing.addressAssociations.some(
-        (a) => a.address.toLowerCase() === address.toLowerCase() &&
+        (a: CodeMapping['addressAssociations'][0]) => a.address.toLowerCase() === address.toLowerCase() &&
               a.city.toLowerCase() === city.toLowerCase() &&
               a.state.toLowerCase() === state.toLowerCase() &&
               (a.county || '').toLowerCase() === (county || '').toLowerCase()
@@ -52,7 +73,7 @@ export async function trackDepartmentCodes(
         });
       } else {
         const assoc = existing.addressAssociations.find(
-          (a) => a.address.toLowerCase() === address.toLowerCase() &&
+          (a: CodeMapping['addressAssociations'][0]) => a.address.toLowerCase() === address.toLowerCase() &&
                 a.city.toLowerCase() === city.toLowerCase() &&
                 a.state.toLowerCase() === state.toLowerCase() &&
                 (a.county || '').toLowerCase() === (county || '').toLowerCase()
@@ -69,7 +90,7 @@ export async function trackDepartmentCodes(
       }
 
       existing.updatedAt = now;
-      batch.update(mappingRef, existing);
+      batch.update(mappingRef, existing as Record<string, any>);
     } else {
       const stateMatch = code.match(/^([a-z]{2})\d+/i);
       const newMapping: CodeMapping = {
@@ -90,7 +111,7 @@ export async function trackDepartmentCodes(
         createdAt: now,
         updatedAt: now,
       };
-      batch.set(mappingRef, newMapping);
+      batch.set(mappingRef, newMapping as Record<string, any>);
     }
   }
 

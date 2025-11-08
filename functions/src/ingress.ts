@@ -10,8 +10,8 @@ import { mapIncidentToFirestore } from './ingress-utils/mappers';
 import { fetchWeatherForLocation } from './ingress-utils/weather';
 import { Client } from '@googlemaps/google-maps-services-js';
 import express from 'express';
-import type { CounterData, RequestWithRawBody, ExistingIncidentData, ParsedIncident, GenerateObjectResult, ErrorWithStatus } from './ingress-types';
-import { isExistingIncidentData, isGenerateObjectResult, isErrorWithStatus } from './ingress-types';
+import type { CounterData, RequestWithRawBody, ParsedIncident } from './ingress-types';
+import { isExistingIncidentData } from './ingress-types';
 import { trackDepartmentCodes } from './utils/track-department-codes';
 
 let db: ReturnType<typeof getFirestore> | null = null;
@@ -249,7 +249,7 @@ async function ingressHandler(request: RequestWithRawBody, response: express.Res
 
       const model = openrouter('meta-llama/llama-3.2-3b-instruct');
 
-      const result = await generateObject({
+      const result: { object?: ParsedIncident } = await (generateObject as any)({
         model,
         schema: incidentSchema,
         prompt: `You are an expert at parsing emergency notification messages and formatting them beautifully for display.
@@ -328,8 +328,13 @@ Now parse and format the message according to these requirements.`,
 
       const parsedIncident = result.object;
       
-      let lat = parsedIncident.latitude;
-      let lng = parsedIncident.longitude;
+      if (!parsedIncident) {
+        response.status(500).json({ error: 'Failed to parse incident data from message' });
+        return;
+      }
+      
+      let lat = (parsedIncident as any).latitude;
+      let lng = (parsedIncident as any).longitude;
       
       if (!lat || !lng) {
         try {
@@ -370,7 +375,7 @@ Now parse and format the message according to these requirements.`,
       }
       
       const firestoreIncident = mapIncidentToFirestore(
-        parsedIncident,
+        parsedIncident as any,
         notification.receivedAt,
         weatherInfo
       );
@@ -562,6 +567,10 @@ ingressApp.use(express.json({
 }));
 
 ingressApp.use((error: unknown, req: RequestWithRawBody, res: express.Response, next: express.NextFunction) => {
+  function isErrorWithStatus(err: unknown): err is { status?: number; message?: string } {
+    return typeof err === 'object' && err !== null && 'status' in err;
+  }
+  
   if (isErrorWithStatus(error) && error.status === 400) {
     console.warn('[Ingress] JSON parsing error from body-parser, attempting recovery:', error.message);
     
@@ -655,7 +664,7 @@ ingressApp.post('/webhook', async (req: express.Request, res: express.Response) 
       console.log('[Webhook V2] Has "on" keyword:', composedMessage.includes(' on '));
       console.log('[Webhook V2] Ends with department code pattern:', /[a-z]{2}\d+\/[a-z]+\d+/.test(composedMessage) || /[a-z]{2}\d+\s+[a-z]+\d+/.test(composedMessage));
       
-      const result = await generateObject({
+      const result: { object?: ParsedIncident; text?: string } = await (generateObject as any)({
         model: provider('anthropic/claude-3.5-sonnet'),
         schema: v2IncidentSchema,
         prompt: `Extract incident data from: ${composedMessage}
@@ -703,7 +712,7 @@ CRITICAL: Return ONLY valid JSON, no explanations or text.`,
       
       parsed = result.object;
       
-      if (!parsed && isGenerateObjectResult(result) && 'text' in result && typeof result.text === 'string') {
+      if (!parsed && result.text && typeof result.text === 'string') {
         console.log('[Webhook V2] Attempting to extract JSON from text response');
         const jsonMatch = result.text.match(/\{[\s\S]*?\}(?=\n|$)/);
         if (jsonMatch) {
