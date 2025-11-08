@@ -73,7 +73,20 @@ function isRoleRoute(pathname: string, role: string | null): boolean {
   if (!role) return false;
   
   const allowedRoutes = ROLE_ROUTES[role] || [];
-  return allowedRoutes.some(route => pathname.startsWith(route));
+  
+  // Routes in (app) group: /incidents, /incident/[id], /favorites, /map, /profile, /chat
+  const appRoutes = ['/incidents', '/incident', '/favorites', '/map', '/profile', '/chat'];
+  const isAppRoute = appRoutes.some(route => pathname.startsWith(route));
+  
+  // Check if route matches allowed patterns
+  return allowedRoutes.some(route => {
+    // Handle (app) route group - these routes don't have (app) in URL
+    if (route === '/(app)') {
+      return isAppRoute;
+    }
+    // Handle other routes normally
+    return pathname.startsWith(route);
+  });
 }
 
 /**
