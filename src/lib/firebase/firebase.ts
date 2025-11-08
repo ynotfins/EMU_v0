@@ -1,11 +1,10 @@
 ﻿import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth, setPersistence, browserLocalPersistence, onAuthStateChanged } from "firebase/auth";
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, type Firestore } from "firebase/firestore";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, type Firestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getMessaging, type Messaging } from "firebase/messaging";
 import { saveAuthState, loadAuthState } from "./auth-persistence";
 
-// Firebase configuration from environment variables
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
@@ -15,7 +14,6 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID_WEB!,
 };
 
-// Initialize Firebase app (singleton pattern)
 let app: FirebaseApp;
 if (!getApps().length) {
   app = initializeApp(firebaseConfig);
@@ -23,25 +21,35 @@ if (!getApps().length) {
   app = getApps()[0];
 }
 
-// Export Firebase services
 export const auth: Auth = getAuth(app);
 export const storage = getStorage(app);
 
-// Initialize Firestore with multi-tab persistent cache (CRITICAL for PWA)
-export const db: Firestore = typeof window !== "undefined" 
-  ? initializeFirestore(app, {
-      localCache: persistentLocalCache({
-        tabManager: persistentMultipleTabManager(),
-      }),
-    })
-  : initializeFirestore(app, {}); // Server-side: empty config
+let firestoreInstance: Firestore | null = null;
+
+export const db: Firestore = (() => {
+  if (firestoreInstance) return firestoreInstance;
+  
+  if (typeof window !== "undefined") {
+    try {
+      firestoreInstance = initializeFirestore(app, {
+        localCache: persistentLocalCache({
+          tabManager: persistentMultipleTabManager(),
+        }),
+      });
+      console.log("[Firestore] [OK] Offline persistence enabled (multi-tab support)");
+      console.log("[Firestore] [MOBILE] App will work offline with cached data!");
+    } catch (error) {
+      firestoreInstance = getFirestore(app);
+      console.warn("[Firestore] [WARN] Using default Firestore (persistence may already be initialized)");
+    }
+  } else {
+    firestoreInstance = getFirestore(app);
+  }
+  
+  return firestoreInstance;
+})();
 
 if (typeof window !== "undefined") {
-  console.log("[Firestore] [OK] Offline persistence enabled (multi-tab support)");
-  console.log("[Firestore] [MOBILE] App will work offline with cached data!");
-}
-
-// Set auth persistence to LOCAL (never expires until explicit sign out)
 // CRITICAL: This ensures users NEVER get signed out automatically
 if (typeof window !== "undefined") {
   setPersistence(auth, browserLocalPersistence)

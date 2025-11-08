@@ -9,13 +9,6 @@ const nextConfig = {
       bodySizeLimit: '2mb',
     },
   },
-  serverComponentsExternalPackages: [
-    'firebase-admin',
-    '@firebase/auth',
-    '@firebase/firestore',
-    '@firebase/database',
-    '@firebase/storage',
-  ],
   typedRoutes: true,
   images: {
     remotePatterns: [
