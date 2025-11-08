@@ -233,7 +233,7 @@ export default function SupeIncidentsPage() {
         )}
 
         {/* Incidents List */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-20">
+        <div data-testid="incidents-list" className="flex-1 overflow-y-auto p-4 space-y-3 pb-20">
           {safeIncidents.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-[#6B7280]">No incidents found</p>
