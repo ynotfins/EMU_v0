@@ -50,8 +50,6 @@ export const db: Firestore = (() => {
 })();
 
 if (typeof window !== "undefined") {
-// CRITICAL: This ensures users NEVER get signed out automatically
-if (typeof window !== "undefined") {
   setPersistence(auth, browserLocalPersistence)
     .then(() => {
       console.log("[Firebase] [OK] Auth persistence set to LOCAL - users stay signed in FOREVER");
