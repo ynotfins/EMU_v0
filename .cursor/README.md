@@ -7,8 +7,8 @@ This directory contains Cursor-specific configuration and documentation.
 **This project uses GLOBAL credential management.**
 
 All credentials, API keys, and project information are stored in:
-- **`C:\Users\ynotf\.mcp\global-credentials.yaml`**
-- **`C:\Users\ynotf\.mcp\global-profile.yaml`**
+- **`C:\Users\ynotf\Dropbox\.mcp\global-credentials.yaml`**
+- **`C:\Users\ynotf\Dropbox\.mcp\global-profile.yaml`**
 
 **DO NOT create** `.cursor/credentials.yaml` or `.cursor/profile.yaml` in this project.
 
@@ -22,8 +22,8 @@ This project does NOT have:
 - ~~`credentials.yaml`~~ (use global instead)
 - ~~`profile.yaml`~~ (use global instead)
 
-All project credentials are in: `C:\Users\ynotf\.mcp\global-credentials.yaml`
-All project metadata is in: `C:\Users\ynotf\.mcp\global-profile.yaml`
+All project credentials are in: `C:\Users\ynotf\Dropbox\.mcp\global-credentials.yaml`
+All project metadata is in: `C:\Users\ynotf\Dropbox\.mcp\global-profile.yaml`
 
 ---
 
