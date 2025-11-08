@@ -3,16 +3,18 @@ import { getAuth, type Auth, setPersistence, browserLocalPersistence, onAuthStat
 import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, type Firestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getMessaging, type Messaging } from "firebase/messaging";
-import { saveAuthState, loadAuthState } from "./auth-persistence";
+import { saveAuthState } from "./auth-persistence";
 
+// Firebase configuration - defined at module level to avoid HMR issues
+// Using object spread to capture env vars at initialization time
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID_WEB!,
-};
+  apiKey: String(process.env.NEXT_PUBLIC_FIREBASE_API_KEY || ""),
+  authDomain: String(process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || ""),
+  projectId: String(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || ""),
+  storageBucket: String(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || ""),
+  messagingSenderId: String(process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || ""),
+  appId: String(process.env.NEXT_PUBLIC_FIREBASE_APP_ID_WEB || ""),
+} as const;
 
 let app: FirebaseApp;
 if (!getApps().length) {
