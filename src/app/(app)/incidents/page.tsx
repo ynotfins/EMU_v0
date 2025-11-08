@@ -183,7 +183,7 @@ export default function SharedIncidentsPage() {
               </p>
             </div>
           ) : (
-            <div className="space-y-4 p-4">
+            <div data-testid="incidents-list" className="space-y-4 p-4">
               {safeIncidents.map((incident) => (
                 <IncidentListItem
                   key={incident.id}

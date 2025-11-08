@@ -82,7 +82,11 @@ export default function Client({ id }: { id: string }) {
   // Render incident detail UI
   return (
     <RoleLayout role="chaser">
-      <div className="flex flex-col h-screen bg-white">
+      <div 
+        data-testid="incident-details"
+        data-incident-id={id}
+        className="flex flex-col h-screen bg-white"
+      >
         {/* Header with Back Button - Fixed at top */}
         <div className="bg-[#007AFF] text-white p-4 flex items-center justify-between fixed top-0 left-0 right-0 z-20">
           <button onClick={() => window.history.back()} className="text-white">
@@ -263,7 +267,10 @@ export default function Client({ id }: { id: string }) {
                     <p className="text-sm font-semibold text-gray-900 mb-1">
                       {incident.type}
                     </p>
-                    <p className="text-gray-800 whitespace-pre-wrap wrap-break-word">
+                    <p 
+                      data-testid="incident-details-message"
+                      className="text-gray-800 whitespace-pre-wrap wrap-break-word break-words"
+                    >
                       {incident.description || incident.message || incident.address}
                     </p>
                   </div>
