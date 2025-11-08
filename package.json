@@ -25,6 +25,7 @@
     "deploy:preview": "vercel",
     "deploy:prod": "vercel --prod",
     "test:login": "tsx scripts/e2e-login.ts",
+    "test:e2e": "playwright test",
     "import:fire-departments": "tsx scripts/import-fire-departments.ts",
     "crossref:fire-departments": "tsx scripts/crossref-fire-departments.ts"
   },

@@ -1,23 +1,17 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  testDir: './tests/visual',
-  fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  timeout: 90_000,
+  expect: { timeout: 10_000 },
+  reporter: [['list']],
   use: {
     baseURL: 'https://rebuild.4axe.com',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
+    storageState: 'artifacts/auth.json',
+    serviceWorkers: 'block',
+    viewport: { width: 390, height: 844 },
   },
   projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
   ],
-  webServer: undefined, // We're testing against live site
+  globalSetup: './tests/setup/global-setup.ts',
 });
-
