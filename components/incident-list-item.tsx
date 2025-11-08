@@ -74,6 +74,8 @@ function IncidentListItemComponent({
 
   return (
     <Card
+      data-testid="incident-item"
+      data-incident-id={(incident as any).incidentId ?? incident.id}
       className={cn(
         "relative p-4 cursor-pointer hover:shadow-md transition-shadow",
         silenced && "opacity-50 bg-gray-50"
@@ -138,7 +140,7 @@ function IncidentListItemComponent({
             <div className="font-medium text-sm">{l2}</div>
 
             {/* Line 3: Type + Message - up to 6 lines */}
-            <div className="text-sm text-[#6B7280] line-clamp-6">{l3}</div>
+            <div data-testid="incident-message" className="text-sm text-[#6B7280] whitespace-pre-line break-words">{l3}</div>
           </div>
 
           {/* Actions - Favorite and Bookmark */}
