@@ -24,18 +24,22 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
       }
     });
 
-    return () => unsubscribe();
-  }, [router]);
+    // Fallback: if auth check takes too long, render children anyway
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.log("[ProtectedRoute] ⚠️ Auth check timeout, rendering children");
+        setLoading(false);
+      }
+    }, 3000);
+
+    return () => {
+      unsubscribe();
+      clearTimeout(timeout);
+    };
+  }, [router, loading]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 font-medium">Loading...</p>
-        </div>
-      </div>
-    );
+    return <></>; // Show nothing, not a blocking "Loading..."
   }
 
   if (!authenticated) {

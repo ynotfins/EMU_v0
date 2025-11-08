@@ -166,7 +166,7 @@ export function IncidentDetailTabs({ incidentId, userRole }: IncidentDetailTabsP
   if (!incident) return <div className="p-6">Incident not found</div>
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div data-testid="incident-details" data-incident-id={incidentId} className="flex flex-col min-h-screen">
       {/* Header - Reduced height by 50% */}
       <div className="bg-[#007AFF] text-white p-2">
         <div className="flex items-center justify-between mb-1">
@@ -275,7 +275,7 @@ export function IncidentDetailTabs({ incidentId, userRole }: IncidentDetailTabsP
                         <span>📍 UPDATE #{incident.updates!.length - index}</span>
                         <span className="ml-auto">{new Date(update.ts || update.timestamp || 0).toLocaleString()}</span>
                       </div>
-                      <p className="text-sm">{update.message}</p>
+                      <p className="text-sm whitespace-pre-line break-words">{update.message}</p>
                       {update.address && (
                         <p className="text-xs text-gray-500 mt-1">📍 {update.address}</p>
                       )}
