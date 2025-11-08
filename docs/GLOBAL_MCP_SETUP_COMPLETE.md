@@ -10,7 +10,7 @@
 - ✅ Path registered in global credentials
 
 ### 2️⃣ Updated Global Credentials
-**File**: `C:\Users\ynotf\.mcp\global-credentials.yaml`
+**File**: `C:\Users\ynotf\Dropbox\.mcp\global-credentials.yaml`
 
 Added EMU_v0 credentials:
 ```yaml
@@ -28,7 +28,7 @@ GITHUB_REPO_EMU: "https://github.com/ynotfins/EMU_v0"
 ```
 
 ### 3️⃣ Updated Global Profile
-**File**: `C:\Users\ynotf\.mcp\global-profile.yaml`
+**File**: `C:\Users\ynotf\Dropbox\.mcp\global-profile.yaml`
 
 - ✅ Updated OS: `Windows 11` (from "Windows")
 - ✅ Added RAM specs: `128GB`
@@ -67,8 +67,8 @@ Ensures all future projects:
 
 ### Global MCP System (Single Source of Truth)
 ```
-C:\Users\ynotf\.mcp\global-credentials.yaml           ✅ All credentials
-C:\Users\ynotf\.mcp\global-profile.yaml               ✅ All projects & machine info
+C:\Users\ynotf\Dropbox\.mcp\global-credentials.yaml           ✅ All credentials
+C:\Users\ynotf\Dropbox\.mcp\global-profile.yaml               ✅ All projects & machine info
 C:\Users\ynotf\.cursor\rules\global-mcp-system.md     ✅ Global rule enforcing this system
 ```
 
@@ -141,8 +141,8 @@ firebase: { ..., status: "active" }
 ## 📚 How the Global System Works
 
 ### For This Project (EMU_v0)
-1. ✅ Credentials stored in: `C:\Users\ynotf\.mcp\global-credentials.yaml`
-2. ✅ Project info stored in: `C:\Users\ynotf\.mcp\global-profile.yaml`
+1. ✅ Credentials stored in: `C:\Users\ynotf\Dropbox\.mcp\global-credentials.yaml`
+2. ✅ Project info stored in: `C:\Users\ynotf\Dropbox\.mcp\global-profile.yaml`
 3. ✅ AI reads global files at session start
 4. ✅ Project references global files in docs
 5. ✅ No credential duplication
@@ -211,8 +211,8 @@ firebase: { ..., status: "active" }
 
 | Item | Location |
 |------|----------|
-| All credentials | `C:\Users\ynotf\.mcp\global-credentials.yaml` |
-| All projects | `C:\Users\ynotf\.mcp\global-profile.yaml` |
+| All credentials | `C:\Users\ynotf\Dropbox\.mcp\global-credentials.yaml` |
+| All projects | `C:\Users\ynotf\Dropbox\.mcp\global-profile.yaml` |
 | Global rule | `C:\Users\ynotf\.cursor\rules\global-mcp-system.md` |
 | Project README | `.cursor/README.md` |
 | Firebase Admin Key | `./firebase-admin-key.json` |

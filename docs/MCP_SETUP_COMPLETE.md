@@ -146,8 +146,8 @@ After reload, check MCP status in Cursor:
 | File                                          | Purpose             | Updated                           |
 | --------------------------------------------- | ------------------- | --------------------------------- |
 | `C:\Users\ynotf\.cursor\mcp.json`             | MCP server config   | ✅ Yes                            |
-| `C:\Users\ynotf\.mcp\global-profile.yaml`     | MCP server registry | ✅ Yes                            |
-| `C:\Users\ynotf\.mcp\global-credentials.yaml` | Credentials         | ✅ Already had needed credentials |
+| `C:\Users\ynotf\Dropbox\.mcp\global-profile.yaml`     | MCP server registry | ✅ Yes                            |
+| `C:\Users\ynotf\Dropbox\.mcp\global-credentials.yaml` | Credentials         | ✅ Already had needed credentials |
 
 ---
 
