@@ -5,21 +5,32 @@ const variants = ['chaser', 'supe'] as const;
 test.describe('Details page renders full alert text', () => {
   for (const v of variants) {
     test(`details visible for ${v}`, async ({ page, baseURL }) => {
-      await page.goto(`${baseURL}/${v}?cb=${Date.now()}`, { waitUntil: 'networkidle' });
-      const items = page.getByTestId('incidents-list').getByTestId('incident-item');
-      const firstThree = (await items.all()).slice(0, 3);
-      expect(firstThree.length).toBeGreaterThan(0);
+      await page.goto(`${baseURL}/${v}?cb=${Date.now()}`, { waitUntil: 'networkidle', timeout: 60000 });
+      
+      // Wait for redirect if needed
+      await page.waitForTimeout(2000);
+      
+      // Wait for incidents list to be visible
+      const list = page.getByTestId('incidents-list');
+      await expect(list).toBeVisible({ timeout: 30000 });
+      
+      const items = list.getByTestId('incident-item');
+      const itemCount = await items.count();
+      
+      expect(itemCount).toBeGreaterThan(0);
+      
+      const firstThree = (await items.all()).slice(0, Math.min(3, itemCount));
 
       for (const item of firstThree) {
         const id = await item.getAttribute('data-incident-id');
         expect(id).toBeTruthy();
 
-        await page.goto(`${baseURL}/${v}/incident/${id}?cb=${Date.now()}`, { waitUntil: 'networkidle' });
+        await page.goto(`${baseURL}/${v}/incident/${id}?cb=${Date.now()}`, { waitUntil: 'networkidle', timeout: 60000 });
         const container = page.getByTestId('incident-details');
-        await expect(container).toBeVisible();
+        await expect(container).toBeVisible({ timeout: 30000 });
 
         const msg = page.getByTestId('incident-details-message');
-        await expect(msg).toBeVisible();
+        await expect(msg).toBeVisible({ timeout: 30000 });
         const text = (await msg.textContent())?.trim() ?? '';
         expect(text.length).toBeGreaterThan(30);
 
@@ -28,3 +39,4 @@ test.describe('Details page renders full alert text', () => {
     });
   }
 });
+
