@@ -257,7 +257,7 @@ export function IncidentDetailTabs({ incidentId, userRole }: IncidentDetailTabsP
                   <span>📍 INITIAL ALERT</span>
                   <span className="ml-auto">{new Date(incident.updatedAt).toLocaleString()}</span>
                 </div>
-                <p className="text-sm">{incident.type} | {incident.message}</p>
+                <p data-testid="incident-details-message" className="text-sm whitespace-pre-line break-words">{incident.type} | {incident.description || incident.message}</p>
                 <p className="text-xs text-gray-500 mt-1">📍 {incident.address}</p>
               </div>
               
