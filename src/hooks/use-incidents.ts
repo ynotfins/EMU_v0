@@ -131,7 +131,11 @@ function normalize(docId: string, data: FirestoreIncidentData): IncidentLite {
     ? cleanedType.toLowerCase() 
     : 'other') as 'fire' | 'accident' | 'medical' | 'hazard' | 'other';
   // Prioritize description field (used by new alerts) over legacy message fields
-  const rawDescription = (typeof data.description === 'string' ? data.description : '') || '';
+  // Handle both direct access and nested access for description
+  const rawDescription = 
+    (typeof data.description === 'string' ? data.description : '') ||
+    (typeof (data as any).description === 'string' ? (data as any).description : '') ||
+    '';
   const rawMessage = data.message || data.lastMessage || data.alertMessage || "";
   const message = rawMessage.replace(/\bBNN\b/gi, "").trim().replace(/\s+/g, " ");
   // Use description if available, otherwise fall back to message (backward compatibility)
