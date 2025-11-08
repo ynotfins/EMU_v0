@@ -12,6 +12,10 @@ const nextConfig = {
       resolveAlias: {
         process: false,
       },
+      moduleIdStrategy: 'deterministic',
+    },
+    turbopack: {
+      memoryLimit: 1024 * 1024 * 2,
     },
   },
   typedRoutes: true,
