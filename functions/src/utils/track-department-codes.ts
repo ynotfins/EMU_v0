@@ -23,14 +23,9 @@ interface CodeMapping {
   updatedAt: string;
 }
 
-if (!admin.apps.length) {
-  const serviceAccount = require('../firebase-admin-key.json');
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
+function getDb() {
+  return admin.firestore();
 }
-
-const db = admin.firestore();
 
 export async function trackDepartmentCodes(
   incidentId: string,
@@ -43,6 +38,7 @@ export async function trackDepartmentCodes(
 ): Promise<void> {
   if (!codes || codes.length === 0 || !address || !city || !state) return;
 
+  const db = getDb();
   const batch = db.batch();
   const now = new Date().toISOString();
 
