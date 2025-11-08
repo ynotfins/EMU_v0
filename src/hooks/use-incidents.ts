@@ -49,6 +49,7 @@ interface FirestoreIncidentData {
   message?: string;
   lastMessage?: string;
   alertMessage?: string;
+  description?: string; // Primary field for alert messages (bullet-separated)
   highAlert?: boolean;
   isSilenced?: boolean;
   updates?: IncidentUpdate[];
