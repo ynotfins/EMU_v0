@@ -89,21 +89,28 @@ export async function trackDepartmentCodes(
       }
 
       existing.updatedAt = now;
-      batch.update(mappingRef, existing as Record<string, any>);
+      // Filter out undefined values for Firestore
+      const updateData: Record<string, any> = {};
+      Object.keys(existing).forEach(key => {
+        const value = existing[key as keyof CodeMapping];
+        if (value !== undefined) {
+          updateData[key] = value;
+        }
+      });
+      batch.update(mappingRef, updateData);
     } else {
       const stateMatch = code.match(/^([a-z]{2})\d+/i);
-      const newMapping: CodeMapping = {
-        code: sanitizedCode, // Store sanitized code
-        originalCode: code, // Keep original for reference
-        state: stateMatch ? stateMatch[1].toUpperCase() : undefined,
+      const newMapping: Record<string, any> = {
+        code: sanitizedCode,
+        originalCode: code,
         confidence: 'unknown',
         source: 'crossref',
         addressAssociations: [{
           address,
           city,
           state,
-          county: county || undefined,
-          alertType: alertType || undefined,
+          ...(county ? { county } : {}),
+          ...(alertType ? { alertType } : {}),
           incidentCount: 1,
           firstSeen: now,
           lastSeen: now,
@@ -111,7 +118,10 @@ export async function trackDepartmentCodes(
         createdAt: now,
         updatedAt: now,
       };
-      batch.set(mappingRef, newMapping as Record<string, any>);
+      if (stateMatch) {
+        newMapping.state = stateMatch[1].toUpperCase();
+      }
+      batch.set(mappingRef, newMapping);
     }
   }
 
