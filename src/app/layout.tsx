@@ -40,11 +40,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
-        <FavoritesProvider>
           {children}
           <PWARegistration />
           <InstallPWAPrompt />
-        </FavoritesProvider>
       </body>
     </html>
   )
