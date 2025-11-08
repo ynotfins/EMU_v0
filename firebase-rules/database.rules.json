@@ -2,7 +2,6 @@
   "rules": {
     "incident-chats": {
       "$incidentId": {
-        // Only authenticated users can read/write
         ".read": "auth != null",
         ".write": "auth != null",
         
@@ -20,15 +19,8 @@
     
     "direct-chats": {
       "$chatId": {
-        // Only authenticated users who are participants can read
-        ".read": "auth != null && (
-          root.child('direct-chats/' + $chatId + '/metadata/participants/' + auth.uid).exists()
-        )",
-        
-        // Only authenticated participants can write
-        ".write": "auth != null && (
-          root.child('direct-chats/' + $chatId + '/metadata/participants/' + auth.uid).exists()
-        )",
+        ".read": "auth != null && (root.child('direct-chats/' + $chatId + '/metadata/participants/' + auth.uid).exists())",
+        ".write": "auth != null && (root.child('direct-chats/' + $chatId + '/metadata/participants/' + auth.uid).exists())",
         
         "metadata": {
           ".validate": "newData.hasChildren(['participants', 'createdAt'])"
@@ -40,7 +32,23 @@
           }
         }
       }
+    },
+    
+    "chaser-supe-group-chats": {
+      "$chaserUserId": {
+        ".read": "auth != null && (auth.uid == $chaserUserId || root.child('users/' + auth.uid + '/role').val() == 'supe' || root.child('users/' + auth.uid + '/role').val() == 'admin' || root.child('users/' + auth.uid + '/role').val() == 'super_admin')",
+        ".write": "auth != null && (auth.uid == $chaserUserId || root.child('users/' + auth.uid + '/role').val() == 'supe' || root.child('users/' + auth.uid + '/role').val() == 'admin' || root.child('users/' + auth.uid + '/role').val() == 'super_admin')",
+        
+        "participants": {
+          ".validate": "newData.hasChildren()"
+        },
+        
+        "messages": {
+          "$messageId": {
+            ".validate": "newData.hasChildren(['userId', 'userName', 'userRole', 'message', 'timestamp'])"
+          }
+        }
+      }
     }
   }
 }
-

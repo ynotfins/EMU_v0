@@ -1,7 +1,7 @@
 ﻿"use client"
 
 import { useState, useEffect } from "react"
-import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore"
+import { doc, onSnapshot, updateDoc } from "firebase/firestore"
 import { db, auth } from "@/lib/firebase/firebase"
 import { onAuthStateChanged } from "firebase/auth"
 import type { Profile } from "@/types/extended-domain"
@@ -12,46 +12,43 @@ export function useProfile(uid?: string | null) {
   const [error, setError] = useState<Error | null>(null)
   const [authReady, setAuthReady] = useState(false)
 
-  // Wait for auth to initialize before checking for user
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, () => {
       setAuthReady(true)
     })
     return () => unsubscribe()
   }, [])
 
-  // Use provided uid or get from auth.currentUser (only after auth is ready)
   const userId = uid || (authReady ? auth.currentUser?.uid : null)
 
   useEffect(() => {
-    // Wait for auth to be ready
     if (!authReady) {
       return
     }
 
     if (!userId) {
-      console.log("[useProfile] No user ID, setting to null")
       setData(null)
       setIsLoading(false)
       return
     }
 
-    console.log("[useProfile] Loading profile for user:", userId)
-
     const userDocRef = doc(db, "users", userId)
 
-    // Set up real-time listener
     const unsubscribe = onSnapshot(
       userDocRef,
       (docSnap) => {
         if (docSnap.exists()) {
           const userData = docSnap.data()
-          
-          // Map Firestore data to Profile type
+
           const profile: Profile = {
             uid: userId,
             email: userData.email || "",
-            displayName: userData.displayName || userData.name || userData.nickname || userData.email?.split("@")[0] || "User",
+            displayName:
+              userData.displayName ||
+              userData.name ||
+              userData.nickname ||
+              userData.email?.split("@")[0] ||
+              "User",
             role: userData.role || "chaser",
             agency: userData.agency,
             stats: {
@@ -72,18 +69,15 @@ export function useProfile(uid?: string | null) {
             },
           }
 
-          console.log("[useProfile] [OK] Profile loaded:", profile.displayName, profile.role)
           setData(profile)
           setError(null)
         } else {
-          console.warn("[useProfile] [WARN] User document not found:", userId)
           setData(null)
           setError(new Error("User profile not found"))
         }
         setIsLoading(false)
       },
       (err) => {
-        console.error("[useProfile] [X] Error loading profile:", err)
         setError(err)
         setIsLoading(false)
       }
@@ -94,13 +88,9 @@ export function useProfile(uid?: string | null) {
 
   const updateSettings = async (settings: Partial<Profile["settings"]>) => {
     if (!userId) return
-    
-    console.log("[useProfile] updateSettings:", settings)
-    
-    // Update local state immediately (optimistic update)
+
     setData((prev) => (prev ? { ...prev, settings: { ...prev.settings, ...settings } } : null))
-    
-    // Persist key settings to localStorage
+
     if (settings.pushEnabled !== undefined) {
       try {
         localStorage.setItem("emu.push", JSON.stringify(settings.pushEnabled))
@@ -115,8 +105,7 @@ export function useProfile(uid?: string | null) {
         console.error("[useProfile] Failed to save tracking setting to localStorage:", err)
       }
     }
-    
-    // Update Firestore
+
     try {
       const userDocRef = doc(db, "users", userId)
       const currentData = data?.settings || {}
@@ -126,21 +115,16 @@ export function useProfile(uid?: string | null) {
           ...settings,
         },
       })
-      console.log("[useProfile] [OK] Settings updated in Firestore")
     } catch (err) {
-      console.error("[useProfile] [X] Failed to update settings in Firestore:", err)
+      console.error("[useProfile] Failed to update settings in Firestore:", err)
     }
   }
 
   const updatePayout = async (payout: Partial<Profile["payout"]>) => {
     if (!userId) return
-    
-    console.log("[useProfile] updatePayout:", payout)
-    
-    // Update local state immediately (optimistic update)
+
     setData((prev) => (prev ? { ...prev, payout: { ...prev.payout, ...payout } } : null))
-    
-    // Update Firestore
+
     try {
       const userDocRef = doc(db, "users", userId)
       const currentData = data?.payout || {}
@@ -150,37 +134,30 @@ export function useProfile(uid?: string | null) {
           ...payout,
         },
       })
-      console.log("[useProfile] [OK] Payout updated in Firestore")
     } catch (err) {
-      console.error("[useProfile] [X] Failed to update payout in Firestore:", err)
+      console.error("[useProfile] Failed to update payout in Firestore:", err)
     }
   }
 
   return { data, isLoading, error, updateSettings, updatePayout }
 }
 
-// Action stubs
 export function updateProfile(userId: string, data: Partial<Profile>): void {
   console.debug("[useProfile] updateProfile:", { userId, data })
-  // TODO: Update Firestore: user_profiles/{userId} merge data
 }
 
 export function togglePush(userId: string, enabled: boolean): void {
   console.debug("[useProfile] togglePush:", { userId, enabled })
-  // TODO: Update Firestore: user_profiles/{userId} set pushEnabled field
 }
 
 export function toggleLocation(userId: string, enabled: boolean): void {
   console.debug("[useProfile] toggleLocation:", { userId, enabled })
-  // TODO: Update Firestore: user_profiles/{userId} set locationEnabled field
 }
 
 export function uploadAvatar(userId: string, file: File): void {
   console.debug("[useProfile] uploadAvatar:", { userId, fileName: file.name })
-  // TODO: Upload to Firebase Storage, then update user_profiles/{userId} avatar field
 }
 
 export function uploadID(userId: string, file: File): void {
   console.debug("[useProfile] uploadID:", { userId, fileName: file.name })
-  // TODO: Upload to Firebase Storage, then update user_profiles/{userId} isVerified field
 }

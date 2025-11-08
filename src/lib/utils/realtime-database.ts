@@ -21,6 +21,15 @@
  *     lastMessageTime: timestamp
  *     messages/
  *       {messageId}: { userId, userName, userRole, message, timestamp, read }
+ * 
+ * 3. CHASER-SUPE GROUP CHATS (Group: 1 chaser + ALL supes)
+ * chaser-supe-group-chats/
+ *   {chaserUserId}/
+ *     participants: { [userId]: role }  // chaser + all supes
+ *     createdBy: chaserUserId
+ *     createdAt: timestamp
+ *     messages/
+ *       {messageId}: { userId, userName, userRole, message, timestamp, read }
  */
 
 import { getDatabase, ref, push, set, onValue, off, serverTimestamp, type Database } from 'firebase/database';
@@ -274,6 +283,118 @@ export function subscribeToDirectChat(
   };
 }
 
+// ========================================
+// CHASER-SUPE GROUP CHATS (Group: 1 chaser + ALL supes)
+// ========================================
+
+/**
+ * Get all supes including admins and super_admins
+ */
+export async function getAllSupesForGroupChat(): Promise<Array<{ userId: string; userName: string }>> {
+  const usersRef = collection(db, 'users');
+  const supesQuery = query(usersRef, where('role', 'in', ['supe', 'admin', 'super_admin']));
+  const snapshot = await getDocs(supesQuery);
+  
+  return snapshot.docs.map((doc) => ({
+    userId: doc.id,
+    userName: doc.data().name || doc.data().nickname || doc.data().email?.split('@')[0] || 'Supe',
+  }));
+}
+
+/**
+ * Create or get a chaser-supe group chat (chaser + all supes)
+ */
+export async function createChaserSupeGroupChat(
+  chaserUserId: string,
+  chaserUserName: string
+): Promise<void> {
+  const chatRef = ref(rtdb, `chaser-supe-group-chats/${chaserUserId}`);
+  
+  // Get all supes
+  const supes = await getAllSupesForGroupChat();
+  
+  // Build participants object: chaser + all supes
+  const participants: Record<string, string> = {
+    [chaserUserId]: 'chaser',
+  };
+  
+  supes.forEach((supe) => {
+    participants[supe.userId] = 'supe'; // Will be 'supe', 'admin', or 'super_admin' from Firestore
+  });
+
+  await set(chatRef, {
+    participants,
+    createdBy: chaserUserId,
+    createdByName: chaserUserName,
+    createdAt: serverTimestamp(),
+  });
+
+  console.log(`[ChaserSupeGroupChat] ? Created group chat for chaser ${chaserUserId} with ${supes.length} supes`);
+}
+
+/**
+ * Send a message to a chaser-supe group chat
+ */
+export async function sendChaserSupeGroupMessage(
+  chaserUserId: string,
+  message: string,
+  userName: string,
+  userRole: 'chaser' | 'supe' | 'admin'
+): Promise<void> {
+  const userId = auth.currentUser?.uid;
+  if (!userId) {
+    throw new Error('User not authenticated');
+  }
+
+  const messagesRef = ref(rtdb, `chaser-supe-group-chats/${chaserUserId}/messages`);
+  const newMessageRef = push(messagesRef);
+
+  await set(newMessageRef, {
+    userId,
+    userName,
+    userRole,
+    message,
+    timestamp: serverTimestamp(),
+    read: false,
+  });
+
+  console.log(`[ChaserSupeGroupChat] ? Message sent to group chat for chaser ${chaserUserId}`);
+}
+
+/**
+ * Subscribe to chaser-supe group chat messages
+ */
+export function subscribeToChaserSupeGroupChat(
+  chaserUserId: string,
+  callback: (messages: ChatMessage[]) => void
+): () => void {
+  const messagesRef = ref(rtdb, `chaser-supe-group-chats/${chaserUserId}/messages`);
+
+  const listener = onValue(messagesRef, (snapshot) => {
+    const data = snapshot.val();
+    
+    if (!data) {
+      callback([]);
+      return;
+    }
+
+    const messages: ChatMessage[] = Object.entries(data).map(([id, msg]: [string, any]) => ({
+      id,
+      userId: msg.userId,
+      userName: msg.userName,
+      userRole: msg.userRole,
+      message: msg.message,
+      timestamp: msg.timestamp || 0,
+      read: msg.read || false,
+    })).sort((a, b) => a.timestamp - b.timestamp);
+
+    callback(messages);
+  });
+
+  return () => {
+    off(messagesRef, 'value', listener);
+  };
+}
 
 /**
  * Mark message as read

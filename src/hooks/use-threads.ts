@@ -8,10 +8,5 @@ export function useThreads() {
   const [isLoading] = useState(false)
   const [error] = useState<Error | null>(null)
 
-  // TODO: Replace with Firestore query to 'threads' collection
-  // const threadsRef = collection(db, 'threads')
-  // const q = query(threadsRef, where('participants', 'array-contains', currentUserId), orderBy('lastMessageAt', 'desc'))
-  // Use onSnapshot for real-time updates
-
   return { data, isLoading, error }
 }

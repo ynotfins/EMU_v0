@@ -1,83 +1,77 @@
-﻿"use client";
+﻿"use client"
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase/firebase";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, Mail, Phone, User, Camera, CheckCircle2 } from "lucide-react";
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth"
+import { doc, setDoc } from "firebase/firestore"
+import { auth, db } from "@/lib/firebase/firebase"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { ArrowRight, Mail, Phone, User, Camera, CheckCircle2 } from "lucide-react"
+import { signupNewSchema, type SignupNewInput } from "@/schemas/signup-new.schema"
 
-type Step = "info" | "verify" | "id" | "processing" | "complete";
+type Step = "info" | "verify" | "id" | "processing" | "complete"
 
 export default function NewSignupPage() {
-  const router = useRouter();
-  const [step, setStep] = useState<Step>("info");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const router = useRouter()
+  const [step, setStep] = useState<Step>("info")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [password, setPassword] = useState("")
+  const [idImage, setIdImage] = useState<string | null>(null)
+  const [formData, setFormData] = useState<SignupNewInput | null>(null)
 
-  // Form data
-  const [nickname, setNickname] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [idImage, setIdImage] = useState<string | null>(null);
+  const form = useForm<SignupNewInput>({
+    resolver: zodResolver(signupNewSchema),
+    defaultValues: {
+      nickname: "",
+      email: "",
+      phone: "",
+    },
+  })
 
-  // Step 1: Collect nickname, email, phone
-  const handleStep1Submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  const formatPhone = (value: string) => {
+    const input = value.replace(/\D/g, "").slice(0, 10)
+    if (input.length > 6) {
+      return `(${input.slice(0, 3)}) ${input.slice(3, 6)}-${input.slice(6)}`
+    } else if (input.length > 3) {
+      return `(${input.slice(0, 3)}) ${input.slice(3)}`
+    } else if (input.length > 0) {
+      return `(${input}`
+    }
+    return input
+  }
+
+  const handleStep1Submit = async (values: SignupNewInput) => {
+    setError("")
+    setLoading(true)
+    setFormData(values)
 
     try {
-      // Validate fields
-      if (!nickname.trim()) {
-        setError("Nickname is required");
-        setLoading(false);
-        return;
-      }
+      const tempPassword = Math.random().toString(36).slice(-8) + "!Aa1"
+      setPassword(tempPassword)
 
-      if (!email.trim()) {
-        setError("Email is required");
-        setLoading(false);
-        return;
-      }
+      const userCredential = await createUserWithEmailAndPassword(auth, values.email, tempPassword)
+      await sendEmailVerification(userCredential.user)
 
-      const phoneDigits = phone.replace(/\D/g, "");
-      if (phoneDigits.length !== 10) {
-        setError("Phone must be exactly 10 digits");
-        setLoading(false);
-        return;
-      }
-
-      // Generate temporary password (will be updated later)
-      const tempPassword = Math.random().toString(36).slice(-8) + "!Aa1";
-      setPassword(tempPassword);
-
-      // Create Firebase Auth user
-      const userCredential = await createUserWithEmailAndPassword(auth, email, tempPassword);
-
-      // Send verification email
-      await sendEmailVerification(userCredential.user);
-
-      console.log("[Signup] [OK] Account created, verification email sent");
-      setStep("verify");
-    } catch (err: any) {
-      console.error("[Signup] [X] Error:", err);
-
-      if (err.code === "auth/email-already-in-use") {
-        setError("Email already in use");
-      } else if (err.code === "auth/invalid-email") {
-        setError("Invalid email address");
+      setStep("verify")
+    } catch (err) {
+      const error = err as { code?: string }
+      if (error.code === "auth/email-already-in-use") {
+        setError("Email already in use")
+      } else if (error.code === "auth/invalid-email") {
+        setError("Invalid email address")
       } else {
-        setError("Failed to create account. Please try again.");
+        setError("Failed to create account. Please try again.")
       }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   // Step 2: Wait for email verification
   const checkVerification = async () => {
@@ -150,15 +144,16 @@ export default function NewSignupPage() {
 
       console.log("[Signup] [OK] OCR complete, extracted data:", extractedData);
 
-      // Create Firestore user profile
-      await setDoc(doc(db, "users", auth.currentUser!.uid), {
-        id: auth.currentUser!.uid,
-        email: email,
-        nickname: nickname,
+      if (!auth.currentUser || !formData) return
+
+      await setDoc(doc(db, "users", auth.currentUser.uid), {
+        id: auth.currentUser.uid,
+        email: formData.email,
+        nickname: formData.nickname,
         name: `${extractedData.firstName} ${extractedData.lastName}`,
         firstName: extractedData.firstName,
         lastName: extractedData.lastName,
-        phone: phone.replace(/\D/g, ""),
+        phone: formData.phone.replace(/\D/g, ""),
         role: "chaser",
         settings: {
           pushEnabled: true,
@@ -189,23 +184,22 @@ export default function NewSignupPage() {
           zip: extractedData.zip,
         },
         createdAt: new Date().toISOString(),
-      });
+      })
 
-      // Add to CRM Independent Contractors collection
-      await setDoc(doc(db, "independent_contractors", auth.currentUser!.uid), {
-        id: auth.currentUser!.uid,
-        nickname: nickname,
+      await setDoc(doc(db, "independent_contractors", auth.currentUser.uid), {
+        id: auth.currentUser.uid,
+        nickname: formData.nickname,
         firstName: extractedData.firstName,
         lastName: extractedData.lastName,
-        email: email,
-        phone: phone.replace(/\D/g, ""),
+        email: formData.email,
+        phone: formData.phone.replace(/\D/g, ""),
         role: "chaser",
         status: "active",
         idVerified: true,
         idData: extractedData,
         hireDate: new Date().toISOString(),
         createdAt: new Date().toISOString(),
-      });
+      })
 
       console.log("[Signup] [OK] User profile and contractor record created");
       setStep("complete");
@@ -270,84 +264,99 @@ export default function NewSignupPage() {
             </div>
           )}
 
-          {/* STEP 1: Basic Info */}
           {step === "info" && (
-            <form onSubmit={handleStep1Submit} className="space-y-5">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  Nickname
-                </label>
-                <Input
-                  type="text"
-                  placeholder="What should we call you?"
-                  value={nickname}
-                  onChange={(e) => setNickname(e.target.value)}
-                  className="h-14 text-base border-2 focus:border-blue-500 rounded-xl"
-                  required
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleStep1Submit)} className="space-y-5">
+                <FormField
+                  control={form.control}
+                  name="nickname"
+                  render={({ field }) => (
+                    <FormItem className="space-y-2">
+                      <FormLabel className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        Nickname
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="What should we call you?"
+                          className="h-14 text-base border-2 focus:border-blue-500 rounded-xl"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  Email
-                </label>
-                <Input
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="h-14 text-base border-2 focus:border-blue-500 rounded-xl"
-                  required
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem className="space-y-2">
+                      <FormLabel className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                        <Mail className="h-4 w-4" />
+                        Email
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="you@example.com"
+                          className="h-14 text-base border-2 focus:border-blue-500 rounded-xl"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  <Phone className="h-4 w-4" />
-                  Phone Number
-                </label>
-                <Input
-                  type="tel"
-                  inputMode="numeric"
-                  placeholder="(555) 123-4567"
-                  value={phone}
-                  onChange={(e) => {
-                    const input = e.target.value.replace(/\D/g, "").slice(0, 10);
-                    let formatted = input;
-                    if (input.length > 6) {
-                      formatted = `(${input.slice(0, 3)}) ${input.slice(3, 6)}-${input.slice(6)}`;
-                    } else if (input.length > 3) {
-                      formatted = `(${input.slice(0, 3)}) ${input.slice(3)}`;
-                    } else if (input.length > 0) {
-                      formatted = `(${input}`;
-                    }
-                    setPhone(formatted);
-                  }}
-                  className="h-14 text-base border-2 focus:border-blue-500 rounded-xl"
-                  required
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem className="space-y-2">
+                      <FormLabel className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                        <Phone className="h-4 w-4" />
+                        Phone Number
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="tel"
+                          inputMode="numeric"
+                          placeholder="(555) 123-4567"
+                          className="h-14 text-base border-2 focus:border-blue-500 rounded-xl"
+                          {...field}
+                          onChange={(e) => {
+                            const formatted = formatPhone(e.target.value)
+                            field.onChange(formatted)
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base rounded-xl shadow-lg hover:shadow-xl transition-all"
-              >
-                {loading ? (
-                  <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Creating Account...</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <span>Continue</span>
-                    <ArrowRight className="h-5 w-5" />
-                  </div>
-                )}
-              </Button>
-            </form>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base rounded-xl shadow-lg hover:shadow-xl transition-all"
+                >
+                  {loading ? (
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Creating Account...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span>Continue</span>
+                      <ArrowRight className="h-5 w-5" />
+                    </div>
+                  )}
+                </Button>
+              </form>
+            </Form>
           )}
 
           {/* STEP 2: Email Verification */}
@@ -364,7 +373,7 @@ export default function NewSignupPage() {
                 <p className="text-sm text-gray-600">
                   We sent a verification link to:
                   <br />
-                  <strong className="text-gray-900">{email}</strong>
+                  <strong className="text-gray-900">{formData?.email}</strong>
                 </p>
               </div>
 
@@ -457,7 +466,7 @@ export default function NewSignupPage() {
 
               <div className="space-y-2">
                 <p className="text-2xl font-bold text-gray-900">
-                  Welcome, {nickname}! 🎉
+                  Welcome, {formData?.nickname}! 🎉
                 </p>
                 <p className="text-sm text-gray-600">
                   Your account has been created successfully

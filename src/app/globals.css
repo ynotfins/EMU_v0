@@ -6,13 +6,13 @@
 /* Flashing animation for risky sort by distance button */
 @keyframes flash-red-white {
   0%, 100% { 
-    background-color: #FF3B30;
+    background-color: var(--color-destructive);
     color: white;
   }
   50% { 
     background-color: white;
-    color: #FF3B30;
-    border-color: #FF3B30;
+    color: var(--color-destructive);
+    border-color: var(--color-destructive);
   }
 }
 
@@ -22,16 +22,6 @@
 
 /* Updated color tokens to match EMU Alerts theme */
 :root {
-  --emu-blue: #007aff;
-  --emu-red: #ff3b30;
-  --emu-green: #34c759;
-  --emu-gray: #6b7280;
-  --emu-bg-primary: #ffffff;
-  --emu-bg-secondary: #f2f2f7;
-  --emu-text-primary: #000000;
-  --emu-text-secondary: #6b7280;
-  --emu-divider: #e5e7eb;
-
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);

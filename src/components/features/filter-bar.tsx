@@ -1,14 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { Search, Bell, BellOff, ChevronDown } from "lucide-react"
+import { Search, ChevronDown } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Switch } from "@/components/ui/switch"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
-import { mockHighAlertSounds } from "@/lib/mock/sounds"
 
 interface FilterBarProps {
   distanceMi?: number
@@ -63,7 +60,6 @@ export function FilterBar({
 
   const handleCustomDistance = () => {
     const value = Number.parseInt(customDistance)
-    console.log("[v0] Custom distance set:", value)
     if (!isNaN(value) && value > 0) {
       onDistanceChange(value)
       setShowCustomDistance(false)
@@ -73,7 +69,6 @@ export function FilterBar({
 
   const handleCustomUpdates = () => {
     const value = Number.parseInt(customUpdates)
-    console.log("[v0] Custom updates set:", value)
     if (!isNaN(value) && value > 0) {
       onMinUpdatesChange(value)
       setShowCustomUpdates(false)
@@ -85,17 +80,16 @@ export function FilterBar({
   const isCustomUpdates = minUpdates && !UPDATES_OPTIONS.includes(minUpdates)
 
   return (
-    <div className="bg-white border-b border-[#E5E7EB] p-3 space-y-2">
-      {/* Row 1: Distance badges (compact) */}
+    <div className="bg-background border-b border-border p-3 space-y-2">
       <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="text-xs font-medium text-[#6B7280]">Distance:</span>
+        <span className="text-xs font-medium text-muted-foreground">Distance:</span>
         {DISTANCE_OPTIONS.map((distance) => (
           <Badge
             key={distance}
             variant={distanceMi === distance ? "default" : "outline"}
             className={cn(
               "cursor-pointer text-xs px-2 py-0.5",
-              distanceMi === distance ? "bg-[#007AFF] hover:bg-[#0051D5]" : "hover:bg-[#F2F2F7]",
+              distanceMi === distance ? "bg-primary hover:bg-primary/90" : "hover:bg-muted",
             )}
             onClick={() => onDistanceChange(distance)}
           >
@@ -103,7 +97,7 @@ export function FilterBar({
           </Badge>
         ))}
         {isCustomDistance && (
-          <Badge variant="default" className="bg-[#007AFF] text-xs px-2 py-0.5">
+          <Badge variant="default" className="bg-primary text-xs px-2 py-0.5">
             {distanceMi} mi
           </Badge>
         )}
@@ -128,7 +122,7 @@ export function FilterBar({
         ) : (
           <Badge
             variant="outline"
-            className="cursor-pointer hover:bg-[#F2F2F7] text-xs px-2 py-0.5 border-[#34C759] text-[#34C759]"
+            className="cursor-pointer hover:bg-muted text-xs px-2 py-0.5 border-primary text-primary"
             onClick={() => setShowCustomDistance(true)}
           >
             Custom
@@ -136,25 +130,22 @@ export function FilterBar({
         )}
       </div>
 
-      {/* Row 2: Search + Distance + Type badges (compact on mobile) */}
       <div className="flex items-center gap-1.5 flex-wrap">
-        {/* Search Button FIRST (green oval) */}
         {!searchExpanded && (
           <Badge
             variant="outline"
-            className="cursor-pointer hover:bg-[#F2F2F7] text-xs px-2 py-0.5 border-[#34C759] text-[#34C759]"
+            className="cursor-pointer hover:bg-muted text-xs px-2 py-0.5 border-primary text-primary"
             onClick={() => setSearchExpanded(true)}
           >
             Search
           </Badge>
         )}
 
-        {/* Distance Button SECOND */}
         <Badge
           variant="outline"
           className={cn(
             "cursor-pointer text-xs px-2 py-0.5 flex items-center gap-0.5",
-            distanceMi ? "bg-[#007AFF] text-white hover:bg-[#0051D5]" : "hover:bg-[#F2F2F7]"
+            distanceMi ? "bg-primary text-primary-foreground hover:bg-primary/90" : "hover:bg-muted"
           )}
           onClick={() => onDistanceChange(distanceMi ? undefined : 50)}
         >
@@ -162,12 +153,11 @@ export function FilterBar({
           Dist
         </Badge>
 
-        {/* THEN Type badges (more compact) */}
         <Badge
           variant={types.length === 0 ? "default" : "outline"}
           className={cn(
             "cursor-pointer text-xs px-1.5 py-0.5",
-            types.length === 0 ? "bg-[#007AFF] hover:bg-[#0051D5]" : "hover:bg-[#F2F2F7]",
+            types.length === 0 ? "bg-primary hover:bg-primary/90" : "hover:bg-muted",
           )}
           onClick={() => onTypesChange([])}
         >
@@ -179,7 +169,7 @@ export function FilterBar({
             variant={types.includes(type) ? "default" : "outline"}
             className={cn(
               "cursor-pointer text-xs px-1.5 py-0.5 whitespace-nowrap",
-              types.includes(type) ? "bg-[#007AFF] hover:bg-[#0051D5]" : "hover:bg-[#F2F2F7]",
+              types.includes(type) ? "bg-primary hover:bg-primary/90" : "hover:bg-muted",
             )}
             onClick={() => toggleType(type)}
           >
@@ -188,10 +178,9 @@ export function FilterBar({
         ))}
       </div>
 
-      {/* Expanded Search Row (appears when Search clicked) */}
       {searchExpanded && (
         <div className="relative">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-[#6B7280]" />
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <Input
             placeholder="Search by keyword..."
             value={keyword}
@@ -205,16 +194,15 @@ export function FilterBar({
         </div>
       )}
 
-      {/* Row 3: Updates badges (no label to save space) */}
       <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="text-xs font-medium text-[#6B7280]">Updates:</span>
+        <span className="text-xs font-medium text-muted-foreground">Updates:</span>
         {UPDATES_OPTIONS.map((updates) => (
           <Badge
             key={updates}
             variant={minUpdates === updates ? "default" : "outline"}
             className={cn(
               "cursor-pointer text-xs px-2 py-0.5",
-              minUpdates === updates ? "bg-[#007AFF] hover:bg-[#0051D5]" : "hover:bg-[#F2F2F7]",
+              minUpdates === updates ? "bg-primary hover:bg-primary/90" : "hover:bg-muted",
             )}
             onClick={() => onMinUpdatesChange(updates)}
           >
@@ -222,7 +210,7 @@ export function FilterBar({
           </Badge>
         ))}
         {isCustomUpdates && (
-          <Badge variant="default" className="bg-[#007AFF] text-xs px-2 py-0.5">
+          <Badge variant="default" className="bg-primary text-xs px-2 py-0.5">
             {minUpdates}
           </Badge>
         )}
@@ -247,7 +235,7 @@ export function FilterBar({
         ) : (
           <Badge
             variant="outline"
-            className="cursor-pointer hover:bg-[#F2F2F7] text-xs px-2 py-0.5"
+            className="cursor-pointer hover:bg-muted text-xs px-2 py-0.5"
             onClick={() => setShowCustomUpdates(true)}
           >
             Custom

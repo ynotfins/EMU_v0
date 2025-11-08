@@ -1,9 +1,8 @@
 ﻿import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { FavoritesProvider } from "@/lib/context/favorites-context"
-import ErrorBoundary from "@/components/features/ErrorBoundary"
 import { PWARegistration } from "@/components/features/pwa-registration"
 import { InstallPWAPrompt } from "@/components/features/install-pwa-prompt"
 import "./globals.css"
@@ -25,13 +24,13 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "EMU Alerts",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false, // Prevent zoom on company phones
-  },
-  themeColor: "#007AFF",
+}
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 export default function RootLayout({
@@ -42,14 +41,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
-        <ErrorBoundary>
-          <FavoritesProvider>
-            {children}
-            <PWARegistration />
-            <InstallPWAPrompt />
-          </FavoritesProvider>
-          <Analytics />
-        </ErrorBoundary>
+        <FavoritesProvider>
+          {children}
+          <PWARegistration />
+          <InstallPWAPrompt />
+        </FavoritesProvider>
+        <Analytics />
       </body>
     </html>
   )

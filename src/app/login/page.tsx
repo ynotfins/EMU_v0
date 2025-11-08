@@ -1,124 +1,109 @@
-﻿"use client";
+﻿"use client"
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useRouter } from "next/navigation"
 import {
   signInWithPopup,
   signInWithEmailAndPassword,
   GoogleAuthProvider,
-  onAuthStateChanged,
-} from "firebase/auth";
-import { auth } from "@/lib/firebase/firebase";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+} from "firebase/auth"
+import { auth } from "@/lib/firebase/firebase"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/card"
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { loginSchema, type LoginInput } from "@/schemas/auth.schema"
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showEmailLogin, setShowEmailLogin] = useState(false);
-  const [redirecting, setRedirecting] = useState(false);
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [showEmailLogin, setShowEmailLogin] = useState(false)
+  const [redirecting, setRedirecting] = useState(false)
 
-  // Redirect if already logged in - ONE-TIME CHECK ONLY
+  const form = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  })
+
   useEffect(() => {
-    // Use a one-time check instead of listener to avoid race conditions
     const checkAuthAndRedirect = async () => {
-      const user = auth.currentUser;
-      
+      const user = auth.currentUser
+
       if (user) {
-        console.log("[Login] User already authenticated:", user.email);
-        setRedirecting(true);
-        
+        setRedirecting(true)
+
         try {
-          // Check user role and redirect accordingly
-          const { doc: docRef, getDoc } = await import("firebase/firestore");
-          const { db } = await import("@/lib/firebase/firebase");
-          
-          const userDocRef = docRef(db, "users", user.uid);
-          const userDoc = await getDoc(userDocRef);
-          
-          let userRole = "supe"; // Default to supe
-          if (userDoc.exists()) {
-            userRole = userDoc.data().role || "supe";
-          }
+          const { doc: docRef, getDoc } = await import("firebase/firestore")
+          const { db } = await import("@/lib/firebase/firebase")
 
-          console.log("[Login] Redirecting to:", userRole);
+          const userDocRef = docRef(db, "users", user.uid)
+          const userDoc = await getDoc(userDocRef)
 
-          // Immediate redirect - no delay
-          const targetPath = (userRole === "super_admin" || userRole === "admin" || userRole === "supe") 
-            ? "/supe/incidents" 
-            : "/chaser/incidents";
-          
-          console.log("[Login] Navigating to:", targetPath);
-          window.location.href = targetPath; // Force hard navigation to break any loops
+          const userRole = userDoc.exists() ? userDoc.data().role || "supe" : "supe"
+
+          const targetPath = (userRole === "super_admin" || userRole === "admin" || userRole === "supe")
+            ? "/supe/incidents"
+            : "/chaser/incidents"
+
+          window.location.href = targetPath
         } catch (err) {
-          console.error("[Login] Error during redirect:", err);
-          setRedirecting(false);
+          console.error("[Login] Error during redirect:", err)
+          setRedirecting(false)
         }
       }
-    };
+    }
 
-    // Wait a tiny bit for auth to initialize, then check once
-    const timer = setTimeout(checkAuthAndRedirect, 50);
-    
-    return () => clearTimeout(timer);
-  }, []);
+    const timer = setTimeout(checkAuthAndRedirect, 50)
+    return () => clearTimeout(timer)
+  }, [])
 
   const handleGoogleSignIn = async () => {
-    setLoading(true);
-    setError(null);
+    setLoading(true)
+    setError(null)
 
     try {
-      const provider = new GoogleAuthProvider();
-      
-      // Check if we're on desktop and popup might be blocked
-      const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768;
-      
-      // Try popup first, fallback to redirect on desktop if popup fails
-      let result;
+      const provider = new GoogleAuthProvider()
+      const isDesktop = typeof window !== "undefined" && window.innerWidth >= 768
+
+      let result
       try {
-        result = await signInWithPopup(auth, provider);
-      } catch (popupError: any) {
-        if (popupError.code === "auth/popup-blocked" && isDesktop) {
-          // On desktop, try redirect flow as fallback
-          setError("Popup blocked. Please allow popups or use email/password sign-in.");
-          setLoading(false);
-          return;
+        result = await signInWithPopup(auth, provider)
+      } catch (popupError) {
+        const error = popupError as { code?: string }
+        if (error.code === "auth/popup-blocked" && isDesktop) {
+          setError("Popup blocked. Please allow popups or use email/password sign-in.")
+          setLoading(false)
+          return
         }
-        throw popupError;
+        throw popupError
       }
-      
-      const user = result.user;
 
-      console.log("[Login] [OK] Google sign-in successful:", user.email);
+      const user = result.user
 
-      // Check if user profile exists in Firestore
-      const { doc: docRef, getDoc } = await import("firebase/firestore");
-      const { db } = await import("@/lib/firebase/firebase");
-      
-      const userDocRef = docRef(db, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
+      const { doc: docRef, getDoc, setDoc, updateDoc } = await import("firebase/firestore")
+      const { db } = await import("@/lib/firebase/firebase")
 
-      let userRole = "chaser"; // Default to chaser for new users
+      const userDocRef = docRef(db, "users", user.uid)
+      const userDoc = await getDoc(userDocRef)
+
+      const isSuperAdmin = user.email === "ynotfins@gmail.com"
+      let userRole = "chaser"
 
       if (!userDoc.exists()) {
-        console.log("[Login] 🆕 New Google user - creating profile...");
-        
-        // Special handling for ynotfins@gmail.com - default to super_admin
-        const isSuperAdmin = user.email === "ynotfins@gmail.com";
-        const defaultRole = isSuperAdmin ? "super_admin" : "chaser";
-        
-        // Create Firestore profile for new Google user
-        const { setDoc } = await import("firebase/firestore");
+        const defaultRole = isSuperAdmin ? "super_admin" : "chaser"
         await setDoc(userDocRef, {
           id: user.uid,
           uid: user.uid,
@@ -127,7 +112,7 @@ export default function LoginPage() {
           name: isSuperAdmin ? "Tony" : (user.displayName || user.email?.split("@")[0] || "User"),
           nickname: isSuperAdmin ? "Tony" : (user.displayName || user.email?.split("@")[0] || "User"),
           phone: user.phoneNumber || "",
-          role: defaultRole, // super_admin for ynotfins@gmail.com, chaser for others
+          role: defaultRole,
           settings: {
             pushEnabled: true,
             trackingEnabled: true,
@@ -145,78 +130,58 @@ export default function LoginPage() {
             daysActive: 1,
           },
           createdAt: new Date().toISOString(),
-        });
-
-        console.log("[Login] [OK] Firestore profile created for Google user");
-        userRole = defaultRole;
+        })
+        userRole = defaultRole
       } else {
-        // Get existing role, but update name if ynotfins@gmail.com
-        const userData = userDoc.data();
-        userRole = userData.role || "chaser";
-        
-        // Update name to Tony if it's ynotfins@gmail.com
-        if (user.email === "ynotfins@gmail.com" && userData.displayName !== "Tony") {
-          const { updateDoc } = await import("firebase/firestore");
+        const userData = userDoc.data()
+        userRole = userData.role || "chaser"
+
+        if (isSuperAdmin && userData.displayName !== "Tony") {
           await updateDoc(userDocRef, {
             displayName: "Tony",
             name: "Tony",
             nickname: "Tony",
-          });
+          })
         }
       }
 
-      // Redirect based on role - super_admin defaults to supe view
-      console.log("[Login] Google sign-in complete, redirecting to:", userRole);
-      const targetPath = (userRole === "super_admin" || userRole === "admin" || userRole === "supe") 
-        ? "/supe/incidents" 
-        : "/chaser/incidents";
-      
-      // Use hard navigation to break any potential loops
-      window.location.href = targetPath;
-    } catch (err: any) {
-      console.error("[Login] [X] Google sign-in error:", err);
+      const targetPath = (userRole === "super_admin" || userRole === "admin" || userRole === "supe")
+        ? "/supe/incidents"
+        : "/chaser/incidents"
 
-      if (err.code === "auth/popup-closed-by-user") {
-        setError("Sign-in cancelled. Please try again.");
-      } else if (err.code === "auth/popup-blocked") {
-        setError("Popup blocked. Please allow popups for this site or use email/password sign-in.");
+      window.location.href = targetPath
+    } catch (err) {
+      const error = err as { code?: string }
+      if (error.code === "auth/popup-closed-by-user") {
+        setError("Sign-in cancelled. Please try again.")
+      } else if (error.code === "auth/popup-blocked") {
+        setError("Popup blocked. Please allow popups for this site or use email/password sign-in.")
       } else {
-        setError("Failed to sign in with Google. Please try again.");
+        setError("Failed to sign in with Google. Please try again.")
       }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const handleEmailSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    if (!email || !password) {
-      setError("Please enter both email and password.");
-      setLoading(false);
-      return;
-    }
+  const handleEmailSignIn = async (values: LoginInput) => {
+    setLoading(true)
+    setError(null)
 
     try {
-      const result = await signInWithEmailAndPassword(auth, email, password);
-      console.log("[Login] [OK] Email sign-in successful:", result.user.email);
-      
-      // Check user role and redirect accordingly
-      const { doc: docRef, getDoc } = await import("firebase/firestore");
-      const { db } = await import("@/lib/firebase/firebase");
-      
-      const userDocRef = docRef(db, "users", result.user.uid);
-      const userDoc = await getDoc(userDocRef);
-      
-      let userRole = "chaser"; // Default to chaser
+      const result = await signInWithEmailAndPassword(auth, values.email, values.password)
+
+      const { doc: docRef, getDoc, setDoc } = await import("firebase/firestore")
+      const { db } = await import("@/lib/firebase/firebase")
+
+      const userDocRef = docRef(db, "users", result.user.uid)
+      const userDoc = await getDoc(userDocRef)
+
+      let userRole = "chaser"
       if (userDoc.exists()) {
-        userRole = userDoc.data().role || "chaser";
+        userRole = userDoc.data().role || "chaser"
       } else {
-        // Check if this is ynotfins@gmail.com - create profile with super_admin role
         if (result.user.email === "ynotfins@gmail.com") {
-          const { setDoc } = await import("firebase/firestore");
           await setDoc(userDocRef, {
             id: result.user.uid,
             uid: result.user.uid,
@@ -243,57 +208,52 @@ export default function LoginPage() {
               daysActive: 1,
             },
             createdAt: new Date().toISOString(),
-          });
-          userRole = "super_admin";
+          })
+          userRole = "super_admin"
         }
       }
 
-      // Redirect based on role - super_admin defaults to supe view
-      console.log("[Login] Email sign-in complete, redirecting to:", userRole);
-      const targetPath = (userRole === "super_admin" || userRole === "admin" || userRole === "supe") 
-        ? "/supe/incidents" 
-        : "/chaser/incidents";
-      
-      // Use hard navigation to break any potential loops
-      window.location.href = targetPath;
-    } catch (err: any) {
-      console.error("[Login] [X] Email sign-in error:", err);
+      const targetPath = (userRole === "super_admin" || userRole === "admin" || userRole === "supe")
+        ? "/supe/incidents"
+        : "/chaser/incidents"
 
-      if (err.code === "auth/user-not-found") {
-        setError("No account found with this email.");
-      } else if (err.code === "auth/wrong-password") {
-        setError("Incorrect password.");
-      } else if (err.code === "auth/invalid-credential") {
-        setError("Invalid email or password.");
-      } else if (err.code === "auth/invalid-email") {
-        setError("Invalid email address.");
-      } else if (err.code === "auth/too-many-requests") {
-        setError("Too many failed attempts. Please try again later.");
+      window.location.href = targetPath
+    } catch (err) {
+      const error = err as { code?: string }
+      if (error.code === "auth/user-not-found") {
+        setError("No account found with this email.")
+      } else if (error.code === "auth/wrong-password") {
+        setError("Incorrect password.")
+      } else if (error.code === "auth/invalid-credential") {
+        setError("Invalid email or password.")
+      } else if (error.code === "auth/invalid-email") {
+        setError("Invalid email address.")
+      } else if (error.code === "auth/too-many-requests") {
+        setError("Too many failed attempts. Please try again later.")
       } else {
-        setError("Failed to sign in. Please check your credentials.");
+        setError("Failed to sign in. Please check your credentials.")
       }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  // Show loading state while redirecting
   if (redirecting) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
         <div className="text-center space-y-4">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-gray-600 font-medium">Redirecting...</p>
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-muted-foreground font-medium">Redirecting...</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5 p-4">
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
+          <div className="mx-auto w-20 h-20 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center shadow-lg">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -309,32 +269,31 @@ export default function LoginPage() {
               />
             </svg>
           </div>
-          <CardTitle className="text-3xl font-bold text-gray-900">
+          <CardTitle className="text-3xl font-bold text-foreground">
             EMU Alerts
           </CardTitle>
-          <CardDescription className="text-base text-gray-600">
+          <CardDescription className="text-base text-muted-foreground">
             Sign in to access emergency alerts and incident management
           </CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-6">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
-              {error}
-            </div>
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
 
           {!showEmailLogin ? (
             <>
-              {/* Google Sign-In Button */}
               <Button
                 onClick={handleGoogleSignIn}
                 disabled={loading}
-                className="w-full h-12 bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-300 font-semibold text-base shadow-md hover:shadow-lg transition-all"
+                className="w-full h-12 bg-background hover:bg-muted text-foreground border-2 border-border font-semibold text-base shadow-md hover:shadow-lg transition-all"
               >
                 {loading ? (
                   <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-border border-t-primary rounded-full animate-spin" />
                     <span>Signing in...</span>
                   </div>
                 ) : (
@@ -362,77 +321,88 @@ export default function LoginPage() {
                 )}
               </Button>
 
-              {/* Divider */}
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-gray-300" />
+                  <span className="w-full border-t border-border" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">Or</span>
+                  <span className="px-2 bg-background text-muted-foreground">Or</span>
                 </div>
               </div>
 
-              {/* Email/Password Button */}
               <Button
                 onClick={() => setShowEmailLogin(true)}
                 variant="outline"
-                className="w-full h-12 text-gray-900 border-2 border-gray-300 font-semibold text-base hover:bg-gray-50"
+                className="w-full h-12 text-foreground border-2 border-border font-semibold text-base hover:bg-muted"
               >
                 Sign in with Email
               </Button>
             </>
           ) : (
             <>
-              {/* Email/Password Form */}
-              <form onSubmit={handleEmailSignIn} className="space-y-4">
-                <div>
-                  <Input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={loading}
-                    className="h-12 text-base"
-                    required
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleEmailSignIn)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="Email"
+                            disabled={loading}
+                            className="h-12 text-base"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-                <div>
-                  <Input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={loading}
-                    className="h-12 text-base"
-                    required
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="Password"
+                            disabled={loading}
+                            className="h-12 text-base"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base"
-                >
-                  {loading ? (
-                    <div className="flex items-center gap-3">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Signing in...</span>
-                    </div>
-                  ) : (
-                    "Sign In"
-                  )}
-                </Button>
-              </form>
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base"
+                  >
+                    {loading ? (
+                      <div className="flex items-center gap-3">
+                        <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                        <span>Signing in...</span>
+                      </div>
+                    ) : (
+                      "Sign In"
+                    )}
+                  </Button>
+                </form>
+              </Form>
 
-              {/* Back to options */}
               <Button
                 onClick={() => {
-                  setShowEmailLogin(false);
-                  setError(null);
-                  setEmail("");
-                  setPassword("");
+                  setShowEmailLogin(false)
+                  setError(null)
+                  form.reset()
                 }}
                 variant="ghost"
-                className="w-full text-sm text-gray-600"
+                className="w-full text-sm text-muted-foreground"
                 disabled={loading}
               >
                 ← Back to sign-in options
@@ -440,7 +410,7 @@ export default function LoginPage() {
             </>
           )}
 
-          <div className="text-center text-sm text-gray-500 space-y-2">
+          <div className="text-center text-sm text-muted-foreground space-y-2">
             <p className="text-xs">
               By signing in, you agree to our terms of service
             </p>
@@ -448,7 +418,7 @@ export default function LoginPage() {
               Don't have an account?{" "}
               <a
                 href="/signup"
-                className="font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+                className="font-semibold text-primary hover:underline"
               >
                 Create Account
               </a>
@@ -457,5 +427,5 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

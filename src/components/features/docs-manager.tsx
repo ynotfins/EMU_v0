@@ -1,13 +1,16 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Camera, Upload, FileText, ImageIcon, Trash2 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form"
 import { Badge } from "@/components/ui/badge"
 import type { FileMeta } from "@/types/extended-domain"
+import { docsMessageSchema, type DocsMessageInput } from "@/schemas/docs.schema"
 
 interface DocsManagerProps {
   incidentId?: string
@@ -18,13 +21,18 @@ interface DocsManagerProps {
 }
 
 export function DocsManager({ files, onPickFile, onDeleteFile, canDelete }: DocsManagerProps) {
-  const [message, setMessage] = useState("")
+  const form = useForm<DocsMessageInput>({
+    resolver: zodResolver(docsMessageSchema),
+    defaultValues: {
+      message: "",
+    },
+  })
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       onPickFile(file)
-      setMessage("")
+      form.reset()
     }
   }
 
@@ -43,9 +51,9 @@ export function DocsManager({ files, onPickFile, onDeleteFile, canDelete }: Docs
       {/* Upload Tiles */}
       <div className="grid grid-cols-2 gap-3">
         <label htmlFor="camera-input">
-          <Card className="p-6 cursor-pointer hover:shadow-md transition-shadow bg-[#F2F2F7]">
+          <Card className="p-6 cursor-pointer hover:shadow-md transition-shadow bg-muted">
             <div className="flex flex-col items-center gap-2 text-center">
-              <Camera className="h-8 w-8 text-[#007AFF]" />
+              <Camera className="h-8 w-8 text-primary" />
               <span className="text-sm font-medium text-foreground">Take Photo</span>
             </div>
           </Card>
@@ -60,9 +68,9 @@ export function DocsManager({ files, onPickFile, onDeleteFile, canDelete }: Docs
         </label>
 
         <label htmlFor="file-input">
-          <Card className="p-6 cursor-pointer hover:shadow-md transition-shadow bg-[#F2F2F7]">
+          <Card className="p-6 cursor-pointer hover:shadow-md transition-shadow bg-muted">
             <div className="flex flex-col items-center gap-2 text-center">
-              <Upload className="h-8 w-8 text-[#007AFF]" />
+              <Upload className="h-8 w-8 text-primary" />
               <span className="text-sm font-medium text-foreground">Upload Document</span>
             </div>
           </Card>
@@ -76,53 +84,69 @@ export function DocsManager({ files, onPickFile, onDeleteFile, canDelete }: Docs
         </label>
       </div>
 
-      {/* Message Box */}
-      <div className="space-y-2">
-        <Textarea
-          placeholder="Add a message with your upload (optional)"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          className="resize-none"
-          rows={3}
+      <Form {...form}>
+        <FormField
+          control={form.control}
+          name="message"
+          render={({ field }) => (
+            <FormItem className="space-y-2">
+              <FormControl>
+                <Textarea
+                  placeholder="Add a message with your upload (optional)"
+                  className="resize-none"
+                  rows={3}
+                  {...field}
+                />
+              </FormControl>
+              <div className="text-xs text-muted-foreground text-right">
+                {field.value?.length || 0}/500
+              </div>
+            </FormItem>
+          )}
         />
-        <div className="text-xs text-[#6B7280] text-right">{message.length}/500</div>
-      </div>
+      </Form>
 
       {/* Files List */}
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-foreground">Uploaded Files</h3>
         {files.length === 0 ? (
-          <p className="text-sm text-[#6B7280] text-center py-8">No files uploaded yet</p>
+          <p className="text-sm text-muted-foreground text-center py-8">No files uploaded yet</p>
         ) : (
           files.map((file) => (
             <Card key={file.id} className="p-4">
               <div className="flex items-start gap-3">
-                <div className="h-12 w-12 bg-[#F2F2F7] rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="h-12 w-12 bg-muted rounded-lg flex items-center justify-center shrink-0">
                   {file.kind === "pdf" ? (
-                    <FileText className="h-6 w-6 text-[#FF3B30]" />
+                    <FileText className="h-6 w-6 text-destructive" />
                   ) : (
-                    <ImageIcon className="h-6 w-6 text-[#007AFF]" />
+                    <ImageIcon className="h-6 w-6 text-primary" />
                   )}
                 </div>
                 <div className="flex-1 space-y-1">
                   <p className="text-sm font-medium text-foreground">{file.name}</p>
                   <div className="flex items-center gap-2 flex-wrap">
                     <Badge variant="outline" className="text-xs">
-                      {file.uploadedBy.name}
+                      {file.uploadedBy}
                     </Badge>
-                    <Badge variant="outline" className="text-xs capitalize">
-                      {file.uploadedBy.role}
-                    </Badge>
-                    <span className="text-xs text-[#6B7280]">{formatTime(file.ts)}</span>
+                    {file.role && (
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {file.role}
+                      </Badge>
+                    )}
+                    {file.ts && (
+                      <span className="text-xs text-muted-foreground">
+                        {formatTime(typeof file.ts === 'string' ? file.ts : file.ts.toISOString())}
+                      </span>
+                    )}
                   </div>
-                  {file.message && <p className="text-xs text-[#6B7280] mt-1">{file.message}</p>}
+                  {file.message && <p className="text-xs text-muted-foreground mt-1">{file.message}</p>}
                 </div>
                 {canDelete && onDeleteFile && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => onDeleteFile(file.id)}
-                    className="text-[#FF3B30] hover:text-[#FF3B30] hover:bg-[#FF3B30]/10"
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
