@@ -5,9 +5,12 @@ const variants = ['chaser', 'supe'] as const;
 test.describe('Incidents page shows visible messages', () => {
   for (const v of variants) {
     test(`incidents visible for ${v}`, async ({ page, baseURL }) => {
-      // Navigate directly to /incidents since /chaser and /supe redirect there
-      const url = `${baseURL}/incidents?cb=${Date.now()}`;
-      await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
+      // Navigate to the role-specific incidents route
+      const url = `${baseURL}/${v}/incidents?cb=${Date.now()}`;
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      
+      // Wait for page to fully load
+      await page.waitForTimeout(2000);
       
       const list = page.getByTestId('incidents-list');
       await expect(list).toBeVisible({ timeout: 30000 });
@@ -28,5 +31,6 @@ test.describe('Incidents page shows visible messages', () => {
     });
   }
 });
+
 
 

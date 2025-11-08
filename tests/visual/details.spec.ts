@@ -5,8 +5,11 @@ const variants = ['chaser', 'supe'] as const;
 test.describe('Details page renders full alert text', () => {
   for (const v of variants) {
     test(`details visible for ${v}`, async ({ page, baseURL }) => {
-      // Navigate directly to /incidents
-      await page.goto(`${baseURL}/incidents?cb=${Date.now()}`, { waitUntil: 'networkidle', timeout: 60000 });
+      // Navigate to the role-specific incidents route
+      await page.goto(`${baseURL}/${v}/incidents?cb=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      
+      // Wait for page to fully load
+      await page.waitForTimeout(2000);
       
       // Wait for incidents list to be visible
       const list = page.getByTestId('incidents-list');
@@ -23,7 +26,9 @@ test.describe('Details page renders full alert text', () => {
         const id = await item.getAttribute('data-incident-id');
         expect(id).toBeTruthy();
 
-        await page.goto(`${baseURL}/${v}/incident/${id}?cb=${Date.now()}`, { waitUntil: 'networkidle', timeout: 60000 });
+        await page.goto(`${baseURL}/${v}/incident/${id}?cb=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForTimeout(2000);
+        
         const container = page.getByTestId('incident-details');
         await expect(container).toBeVisible({ timeout: 30000 });
 
@@ -37,5 +42,6 @@ test.describe('Details page renders full alert text', () => {
     });
   }
 });
+
 
 
