@@ -196,10 +196,10 @@ export default function ChaserIncidentsPage() {
             onKeywordChange={setKeyword}
             highAlertEnabled={filters.highAlertOnly}
             onHighAlertChange={setHighAlertOnly}
-            highAlertSound={profile.settings.highAlertSound}
-            onHighAlertSoundChange={(soundId) => updateSettings({ highAlertSound: soundId })}
-            muted={profile.settings.muted}
-            onMutedChange={(muted) => updateSettings({ muted })}
+            highAlertSound={effectiveProfile.settings?.highAlertSound || "train"}
+            onHighAlertSoundChange={(soundId) => updateSettings?.({ highAlertSound: soundId })}
+            muted={effectiveProfile.settings?.muted || false}
+            onMutedChange={(muted) => updateSettings?.({ muted })}
             minUpdates={filters.minUpdates}
             onMinUpdatesChange={setMinUpdates}
           />
