@@ -340,10 +340,27 @@ emu_alerts_incidents:
           purpose: "Auto-geocoding on incident creation"
         - name: "scheduleGeocodeMissing"
           trigger: "Scheduled every 15 minutes"
+          region: "us-central1"
           purpose: "Geocode missing addresses"
         - name: "ingress"
           trigger: "HTTP onRequest"
+          region: "us-central1"
           purpose: "AI-powered webhook for incident parsing"
+          endpoints:
+            - path: "/"
+              authentication: "Required (Secret Manager: 4axe-com_webhook)"
+              ai_model: "meta-llama/llama-3.2-3b-instruct"
+            - path: "/webhook"
+              authentication: "None (public endpoint)"
+              ai_model: "anthropic/claude-3.5-sonnet"
+              url: "https://us-central1-emu-incidents.cloudfunctions.net/ingress/webhook"
+              status: "Active - Use this for MacroDroid"
+          features:
+            - "AI-powered incident parsing"
+            - "Department code tracking"
+            - "Address association tracking"
+            - "Original text preservation (appends with separators)"
+            - "Automatic geocoding"
       dependencies:
         - "firebase-admin@^12.0.0"
         - "firebase-functions@^6.0.0"
@@ -376,7 +393,11 @@ emu_alerts_incidents:
     deployment:
       frontend: "Vercel (rebuild.4axe.com)"
       backend: "Firebase Cloud Functions (us-central1)"
-      webhook: "Cloud Run (via Firebase Functions ingress)"
+      webhook: 
+        primary_endpoint: "https://us-central1-emu-incidents.cloudfunctions.net/ingress/webhook"
+        authentication: "None required"
+        status: "Active and tested"
+        last_deployment: "2025-01-07"
       cicd: "GitHub Actions"
     
     additional_services:
@@ -393,8 +414,10 @@ emu_alerts_incidents:
   
   key_features:
     - "Real-time incident updates"
-    - "AI-powered incident parsing"
+    - "AI-powered incident parsing (Claude 3.5 Sonnet)"
     - "Automatic geocoding"
+    - "Department code tracking and address associations"
+    - "Original text preservation (all alerts appended)"
     - "Role-based access (Chaser/Supe/Admin)"
     - "Mobile-responsive UI"
     - "Type-safe throughout"
@@ -423,8 +446,18 @@ emu_alerts_incidents:
       - "NEXT_PUBLIC_APP_URL"
       - "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY"
     secrets:
-      - "OPENROUTER_API_KEY_EMU (Secret Manager)"
-      - "GOOGLE_MAPS_API_KEY (Secret Manager)"
+      - name: "OPENROUTER_API_KEY_EMU"
+        location: "Google Cloud Secret Manager"
+        usage: "AI model API key for Claude 3.5 Sonnet and Llama models"
+        functions: ["ingress"]
+      - name: "GOOGLE_MAPS_API_KEY"
+        location: "Google Cloud Secret Manager"
+        usage: "Geocoding API for address to coordinates conversion"
+        functions: ["autoGeocodeIncident", "scheduleGeocodeMissing"]
+      - name: "4axe-com_webhook"
+        location: "Google Cloud Secret Manager"
+        usage: "Webhook authentication token (for root / endpoint only)"
+        functions: ["ingress (root endpoint)"]
   
   deployment_info:
     vercel_config: "vercel.json"
@@ -522,4 +555,86 @@ display_format_rules:
     - "Detail page shows ALL alerts for the incidentId"
     - "Detail page has no line limit"
     - "Fire department info and codes only visible to Supe role users"
+  
+---
+# Update 2025-01-07T20:00:00Z
+# [id]: prof_20250107_200000_webhook_endpoints
+# [source]: action
+# [reason]: Document webhook endpoints and authentication requirements
+# [status]: active
+
+# Webhook Endpoints Documentation
+
+webhook_endpoints:
+  ingress_function:
+    base_url: "https://us-central1-emu-incidents.cloudfunctions.net/ingress"
+    region: "us-central1"
+    deployment_status: "active"
+    
+    endpoints:
+      root:
+        path: "/"
+        full_url: "https://us-central1-emu-incidents.cloudfunctions.net/ingress"
+        authentication: "Required"
+        auth_methods:
+          - "Authorization: Bearer <token> header"
+          - "x-webhook-token: <token> header"
+          - "authToken: <token> in request body"
+        auth_secret: "4axe-com_webhook (Google Secret Manager)"
+        ai_model: "meta-llama/llama-3.2-3b-instruct"
+        status: "Active but requires authentication"
+        
+      webhook:
+        path: "/webhook"
+        full_url: "https://us-central1-emu-incidents.cloudfunctions.net/ingress/webhook"
+        authentication: "None (public endpoint)"
+        ai_model: "anthropic/claude-3.5-sonnet"
+        status: "Active - Recommended for MacroDroid"
+        features:
+          - "No authentication required"
+          - "Claude 3.5 Sonnet for better parsing"
+          - "Department code tracking"
+          - "Address association tracking"
+          - "Original text preservation"
+        last_tested: "2025-01-07T20:00:00Z"
+        test_result: "Success - Alert ID 19000001 processed"
+  
+  department_code_tracking:
+    collection: "fireDepartmentMappings"
+    features:
+      - "Tracks all addresses associated with each department code"
+      - "Records county and alert type with each association"
+      - "Maintains incident counts and timestamps"
+      - "Sanitizes codes with slashes (nj179/pas4795 → nj179_pas4795)"
+    data_structure:
+      document_id: "sanitized_code (slashes replaced with underscores)"
+      fields:
+        - "code: sanitized code"
+        - "originalCode: original code before sanitization"
+        - "state: extracted from code pattern"
+        - "addressAssociations: array of address objects"
+        - "confidence: confirmed/likely/unknown"
+        - "source: manual/crossref/scraped"
+  
+  recent_fixes:
+    - fix_date: "2025-01-07T20:00:00Z"
+      issue: "OPENROUTER_API_KEY secret name mismatch"
+      solution: "Changed to OPENROUTER_API_KEY_EMU"
+      status: "fixed"
+    - fix_date: "2025-01-07T20:00:00Z"
+      issue: "scheduleGeocodeMissing missing region"
+      solution: "Added region: us-central1"
+      status: "fixed"
+    - fix_date: "2025-01-07T20:00:00Z"
+      issue: "Department codes with slashes causing Firestore errors"
+      solution: "Sanitize codes: replace / with _ for document IDs"
+      status: "fixed"
+    - fix_date: "2025-01-07T20:00:00Z"
+      issue: "Undefined values in Firestore updates"
+      solution: "Filter undefined values before batch operations"
+      status: "fixed"
+    - fix_date: "2025-01-07T20:00:00Z"
+      issue: "originalText being overwritten on updates"
+      solution: "Append originalText with separator instead of overwriting"
+      status: "fixed"
 
