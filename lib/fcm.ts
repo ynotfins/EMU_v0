@@ -1,5 +1,5 @@
 import { getMessaging, getToken, onMessage, isSupported, type Messaging } from "firebase/messaging"
-import app from "./firebase"
+import app, { isFirebaseConfigured } from "./firebase"
 
 /**
  * Safely get Firebase Messaging instance
@@ -7,6 +7,10 @@ import app from "./firebase"
  */
 export async function getMessagingSafe(): Promise<Messaging | null> {
   try {
+    if (!isFirebaseConfigured) {
+      return null
+    }
+
     const supported = await isSupported()
     if (!supported) {
       console.debug("[FCM] Firebase Messaging not supported in this environment")

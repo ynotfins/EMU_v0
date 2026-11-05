@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, type ReactNode } from "react"
+import * as React from "react"
 
 interface FavoritesContextType {
   favorites: Set<string>
@@ -11,12 +11,25 @@ interface FavoritesContextType {
   toggleSilence: (id: string) => void
 }
 
-const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined)
+const defaultFavoritesContext: FavoritesContextType = {
+  favorites: new Set(["inc-001", "inc-004"]),
+  bookmarks: new Set(["inc-002", "inc-004"]),
+  silenced: new Set(),
+  toggleFavorite: () => {},
+  toggleBookmark: () => {},
+  toggleSilence: () => {},
+}
 
-export function FavoritesProvider({ children }: { children: ReactNode }) {
-  const [favorites, setFavorites] = useState<Set<string>>(new Set(["inc-001", "inc-004"]))
-  const [bookmarks, setBookmarks] = useState<Set<string>>(new Set(["inc-002", "inc-004"]))
-  const [silenced, setSilenced] = useState<Set<string>>(new Set())
+const FavoritesContext = React.createContext<FavoritesContextType>(defaultFavoritesContext)
+
+function StatefulFavoritesProvider({ children }: { children: React.ReactNode }) {
+  const [favorites, setFavorites] = React.useState<Set<string>>(
+    new Set(defaultFavoritesContext.favorites),
+  )
+  const [bookmarks, setBookmarks] = React.useState<Set<string>>(
+    new Set(defaultFavoritesContext.bookmarks),
+  )
+  const [silenced, setSilenced] = React.useState<Set<string>>(new Set())
 
   const toggleFavorite = (id: string) => {
     setFavorites((prev) => {
@@ -66,10 +79,17 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   )
 }
 
-export function useFavoritesContext() {
-  const context = useContext(FavoritesContext)
-  if (!context) {
-    throw new Error("useFavoritesContext must be used within FavoritesProvider")
+export function FavoritesProvider({ children }: { children: React.ReactNode }) {
+  if (typeof window === "undefined") {
+    return <FavoritesContext.Provider value={defaultFavoritesContext}>{children}</FavoritesContext.Provider>
   }
+
+  return (
+    <StatefulFavoritesProvider>{children}</StatefulFavoritesProvider>
+  )
+}
+
+export function useFavoritesContext() {
+  const context = React.useContext(FavoritesContext)
   return context
 }
