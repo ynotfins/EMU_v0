@@ -4,7 +4,7 @@ import { getFirestore, type Firestore, enableIndexedDbPersistence, enableMultiTa
 import { getStorage } from "firebase/storage";
 import { getMessaging, type Messaging } from "firebase/messaging";
 import { getFunctions, type Functions } from "firebase/functions";
-import { saveAuthState, loadAuthState } from "./auth-persistence";
+import { saveAuthState } from "./auth-persistence";
 
 import { config } from './config';
 
@@ -18,20 +18,37 @@ const firebaseConfig = {
   appId: config.firebaseAppId,
 };
 
-// Initialize Firebase app (singleton pattern)
-let app: FirebaseApp;
-if (!getApps().length) {
-  app = initializeApp(firebaseConfig);
-} else {
-  app = getApps()[0];
+const hasFirebaseClientConfig = Boolean(
+  firebaseConfig.apiKey &&
+  firebaseConfig.projectId &&
+  firebaseConfig.appId,
+);
+export const isFirebaseConfigured = hasFirebaseClientConfig;
+
+// Only initialize the client SDK when the public Firebase config is actually present.
+// Next.js evaluates client imports during prerender, and missing browser envs should not
+// make the entire build fail.
+let firebaseApp: FirebaseApp | null = null;
+
+if (hasFirebaseClientConfig) {
+  if (!getApps().length) {
+    firebaseApp = initializeApp(firebaseConfig);
+  } else {
+    firebaseApp = getApps()[0];
+  }
+} else if (typeof window !== "undefined") {
+  console.warn("[Firebase] Missing public Firebase config; client SDK initialization skipped");
 }
 
-// Export Firebase services
-export const auth: Auth = getAuth(app);
-export const functions: Functions = getFunctions(app);
-// Persist session in browser and mirror a lightweight cookie for Edge middleware
-setPersistence(auth, browserLocalPersistence).catch(() => {})
-if (typeof window !== "undefined") {
+export const app: FirebaseApp = (firebaseApp ?? ({} as FirebaseApp));
+export const auth: Auth = (firebaseApp ? getAuth(app) : ({ currentUser: null } as Auth));
+export const functions: Functions = (firebaseApp ? getFunctions(app) : ({} as Functions));
+export const db: Firestore = (firebaseApp ? getFirestore(app) : ({} as Firestore));
+export const storage = (firebaseApp ? getStorage(app) : ({} as ReturnType<typeof getStorage>));
+
+if (typeof window !== "undefined" && firebaseApp) {
+  // Persist session in browser and mirror a lightweight cookie for Edge middleware
+  setPersistence(auth, browserLocalPersistence).catch(() => {})
   onAuthStateChanged(auth, (u) => {
     try {
       // Scope cookie to both 4axe.com and www.4axe.com
@@ -40,11 +57,9 @@ if (typeof window !== "undefined") {
     } catch {}
   })
 }
-export const db: Firestore = getFirestore(app);
-export const storage = getStorage(app);
 
 // Enable Firestore offline persistence (CRITICAL for PWA)
-if (typeof window !== "undefined") {
+if (typeof window !== "undefined" && firebaseApp) {
   enableMultiTabIndexedDbPersistence(db)
     .then(() => {
       console.log("[Firestore] ✅ Offline persistence enabled (multi-tab support)");
@@ -63,7 +78,7 @@ if (typeof window !== "undefined") {
 
 // Set auth persistence to LOCAL (never expires until explicit sign out)
 // CRITICAL: This ensures users NEVER get signed out automatically
-if (typeof window !== "undefined") {
+if (typeof window !== "undefined" && firebaseApp) {
   // Additional check: Verify persistence is actually set
   setTimeout(() => {
     if (auth.currentUser) {
@@ -85,7 +100,7 @@ if (typeof window !== "undefined") {
 
 // Messaging only available in browser context AND if browser supports it
 export const messaging: Messaging | null = (() => {
-  if (typeof window === "undefined") return null;
+  if (typeof window === "undefined" || !firebaseApp) return null;
   
   try {
     // Check if browser supports service workers (required for FCM)
@@ -102,7 +117,7 @@ export const messaging: Messaging | null = (() => {
 })();
 
 // Log authentication state changes (for debugging)
-if (typeof window !== "undefined") {
+if (typeof window !== "undefined" && firebaseApp) {
   auth.onAuthStateChanged((user) => {
     if (user) {
       console.log("[Firebase] ✅ User authenticated:", user.email || user.uid);

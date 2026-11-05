@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { leadGenerationService } from '@/lib/lead-generation'
 
 // Service configuration state (in production, this would be in a database)
 let serviceConfig = {
@@ -10,6 +9,11 @@ let serviceConfig = {
   seoTrackingEnabled: true,
   autoConversionEnabled: false,
   minimumLossThreshold: 25000
+}
+
+async function getLeadGenerationService() {
+  const { leadGenerationService } = await import('@/lib/lead-generation')
+  return leadGenerationService
 }
 
 export async function GET() {
@@ -34,6 +38,7 @@ export async function POST(request: NextRequest) {
           }
           
           // Start the service
+          const leadGenerationService = await getLeadGenerationService()
           await leadGenerationService.start()
           serviceConfig.isRunning = true
           
@@ -51,6 +56,7 @@ export async function POST(request: NextRequest) {
 
       case 'stop':
         if (serviceConfig.isRunning) {
+          const leadGenerationService = await getLeadGenerationService()
           leadGenerationService.stop()
           serviceConfig.isRunning = false
           
@@ -71,6 +77,7 @@ export async function POST(request: NextRequest) {
           
           // Restart service if running to apply new config
           if (serviceConfig.isRunning) {
+            const leadGenerationService = await getLeadGenerationService()
             leadGenerationService.stop()
             await leadGenerationService.start()
           }

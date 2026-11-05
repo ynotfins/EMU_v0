@@ -1,11 +1,7 @@
 import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
-import { FavoritesProvider } from "@/lib/context/favorites-context"
-import ErrorBoundary from "@/components/ErrorBoundary"
-import { PWARegistration } from "@/components/pwa-registration"
-import { InstallPWAPrompt } from "@/components/install-pwa-prompt"
+import { AppShell } from "@/components/app-shell"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -25,12 +21,13 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "EMU Alerts",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false, // Prevent zoom on company phones
-  },
+}
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   themeColor: "#007AFF",
 }
 
@@ -44,8 +41,13 @@ export default function RootLayout({
       <head>
         {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
           <>
-            <script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`} />
             <script
+              key="ga-loader"
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
+            />
+            <script
+              key="ga-config"
               dangerouslySetInnerHTML={{
                 __html: `
                   window.dataLayer = window.dataLayer || [];
@@ -59,14 +61,7 @@ export default function RootLayout({
         )}
       </head>
       <body className={`font-sans antialiased`}>
-        <ErrorBoundary>
-          <FavoritesProvider>
-            {children}
-            <PWARegistration />
-            <InstallPWAPrompt />
-          </FavoritesProvider>
-          <Analytics />
-        </ErrorBoundary>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   )
